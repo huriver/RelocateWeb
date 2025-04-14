@@ -1,0 +1,8 @@
+server:
+  port: 8080
+
+# 数据库连接配置
+spring:
+  datasource:
+    username: root
+    password: 1234
