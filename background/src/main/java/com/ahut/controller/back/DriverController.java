@@ -2,10 +2,10 @@ package com.***REMOVED***.controller.back;
 
 import com.***REMOVED***.constant.JwtClaimsConstant;
 import com.***REMOVED***.dto.UserLoginDTO;
-import com.***REMOVED***.entity.AdminUser;
+import com.***REMOVED***.entity.Driver;
 import com.***REMOVED***.properties.JwtProperties;
 import com.***REMOVED***.result.Result;
-import com.***REMOVED***.service.AdminUserService;
+import com.***REMOVED***.service.DriverService;
 import com.***REMOVED***.utils.JwtUtil;
 import com.***REMOVED***.vo.UserLoginVO;
 import lombok.extern.slf4j.Slf4j;
@@ -22,34 +22,34 @@ import java.util.Map;
  * 员工管理
  */
 @RestController
-@RequestMapping("/back/admin")
+@RequestMapping("/back/driver")
 @Slf4j
-public class AdminUserController {
+public class DriverController {
 
     @Autowired
-    private AdminUserService adminUserService;
+    private DriverService driverService;
     @Autowired
     private JwtProperties jwtProperties;
 
 
     @PostMapping("/login")
     public Result<UserLoginVO> login(@RequestBody UserLoginDTO userLoginDTO) {
-        log.info("管理员登录：{}", userLoginDTO);
-        AdminUser adminUser = adminUserService.login(userLoginDTO);
+        log.info("司机登录：{}", userLoginDTO);
+        Driver driver = driverService.login(userLoginDTO);
 
         //登录成功后，生成jwt令牌
         Map<String, Object> claims = new HashMap<>();
-        claims.put(JwtClaimsConstant.ID, adminUser.getId());
-        claims.put(JwtClaimsConstant.ROLE, JwtClaimsConstant.ROLE_ADMIN);
+        claims.put(JwtClaimsConstant.ID, driver.getId());
+        claims.put(JwtClaimsConstant.ROLE, JwtClaimsConstant.ROLE_DRIVER);
         String token = JwtUtil.createJWT(
                 jwtProperties.getBackSecretKey(),
                 jwtProperties.getBackTtl(),
                 claims);
 
         UserLoginVO userLoginVO = UserLoginVO.builder()
-                .id(adminUser.getId())
-                .username(adminUser.getUsername())
-                .name(adminUser.getName())
+                .id(driver.getId())
+                .username(driver.getUsername())
+                .name(driver.getName())
                 .token(token)
                 .build();
 
