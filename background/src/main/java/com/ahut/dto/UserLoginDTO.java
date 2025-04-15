@@ -3,7 +3,7 @@ package com.ahut.dto;
 import lombok.Data;
 
 @Data
-public class AdminUserLoginDTO {
+public class UserLoginDTO {
     private String username;
     private String password;
 }
