@@ -11,6 +11,19 @@ spring:
       max-request-size: -1
       enabled: true
 
+relocate:
+  jwt:
+    # 设置jwt签名加密时使用的秘钥
+    back-secret-key: ahut
+    # 设置jwt过期时间
+    back-ttl: 72000000
+    # 设置前端传递过来的令牌名称
+    back-token-name: token
+
+    front-secret-key: ahut
+    front-ttl: 72000000
+    front-token-name: authentication
+
 # 日志配置
 logging:
   pattern:

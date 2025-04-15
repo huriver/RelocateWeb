@@ -1,4 +1,4 @@
-package com.ahut.controller.admin;
+package com.ahut.controller.back;
 
 import com.ahut.result.Result;
 import lombok.extern.slf4j.Slf4j;
