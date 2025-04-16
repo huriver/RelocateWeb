@@ -8,6 +8,6 @@ import org.apache.ibatis.annotations.Select;
 public interface CustomerMapper {
 
     // 根据用户名查询用户信息
-    @Select("select id, username, password, create_time, update_time from customer where username = #{username};")
+    @Select("select id, username, password, name, gender, phone, id_card, email, family_phone, photo_url, create_time, update_time, create_user, update_user, create_user_role, update_user_role from customer where username = #{username};")
     Customer getByUsername(String username);
 }
