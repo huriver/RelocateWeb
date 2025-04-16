@@ -31,9 +31,9 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from) => {
-  const token = JSON.parse(localStorage.getItem("token"));
+  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
   const path = ["/userLogin", "/userRegister"];
-  if (path.includes(to.path) || token) {
+  if (path.includes(to.path) || userInfo.token) {
     // 去的地方不需要校验，或者有token
     return true;
   }

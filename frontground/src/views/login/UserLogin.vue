@@ -7,7 +7,7 @@ import { userLoginApi } from '@/api/userApi.js'
 const loginForm = ref({})
 const loginFormRef = ref(null)
 const rules = ref({
-  employeeNumber: { required: true, message: '请输入用户名', trigger: 'blur' },
+  username: { required: true, message: '请输入用户名', trigger: 'blur' },
   password: { required: true, message: '请输入密码', trigger: 'blur' }
 })
 
@@ -20,12 +20,12 @@ const login = (formEl) => {
       // 表单校验成功
       loginForm.value.clientId = store.clientId
       const { data: res } = await userLoginApi(loginForm.value)
-      if (res.code !== 0)
+      if (res.code !== 1)
         return ElMessage.error(res.msg)
       // 保存用户信息
       store.saveUserInfo(res.data)
       loginForm.value = {}
-      router.push('/home/main')
+      router.push('/userHome')
     } else {
       // 表单校验失败
       console.log('error submit!', fields)
@@ -45,8 +45,8 @@ const login = (formEl) => {
       </template>
       <!-- 主体内容 -->
       <el-form ref="loginFormRef" :model="loginForm" status-icon :rules="rules" label-width="auto">
-        <el-form-item label="用户名" prop="employeeNumber">
-          <el-input v-model="loginForm.employeeNumber" placeholder="请输入用户名" autocomplete="off"
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="loginForm.username" placeholder="请输入用户名" autocomplete="off"
             @keypress.enter="login(loginFormRef)" />
         </el-form-item>
         <el-form-item label="密码" prop="password">
