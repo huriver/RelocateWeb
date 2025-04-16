@@ -13,6 +13,11 @@ const router = createRouter({
       component: () => import("@/views/home/UserHome.vue"),
     },
     {
+      path: "/backHome",
+      name: "backHome",
+      component: () => import("@/views/home/BackHome.vue"),
+    },
+    {
       path: "/userLogin",
       name: "userLogin",
       component: () => import("@/views/login/UserLogin.vue"),
@@ -27,7 +32,7 @@ const router = createRouter({
 
 router.beforeEach((to, from) => {
   const token = JSON.parse(localStorage.getItem("token"));
-  const path = ["/userLogin"];
+  const path = ["/userLogin", "/userRegister"];
   if (path.includes(to.path) || token) {
     // 去的地方不需要校验，或者有token
     return true;
