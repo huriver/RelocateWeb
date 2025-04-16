@@ -19,5 +19,9 @@ public class AdminUser {
     private String name;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
+    private Long createUser;
+    private Long updateUser;
+    private String createUserRole;
+    private String updateUserRole;
 
 }

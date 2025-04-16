@@ -53,7 +53,7 @@ public class JwtTokenBackInterceptor implements HandlerInterceptor {
             log.info("当前后端用户id：{}, 角色：{}", userId, role);
 
             BaseContext.setCurrentId(userId);
-            BaseContext.setCurrentRole(role); // 存储角色
+            BaseContext.setCurrentUserRole(role); // 存储角色
             //3、通过，放行
             return true;
         } catch (Exception ex) {
@@ -74,8 +74,7 @@ public class JwtTokenBackInterceptor implements HandlerInterceptor {
      */
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-        BaseContext.removeCurrentId();
-        BaseContext.removeCurrentRole();
+        BaseContext.remove();
     }
 
 
