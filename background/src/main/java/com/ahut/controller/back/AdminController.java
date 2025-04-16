@@ -2,10 +2,10 @@ package com.ahut.controller.back;
 
 import com.ahut.constant.JwtClaimsConstant;
 import com.ahut.dto.UserLoginDTO;
-import com.ahut.entity.AdminUser;
+import com.ahut.entity.Admin;
 import com.ahut.properties.JwtProperties;
 import com.ahut.result.Result;
-import com.ahut.service.AdminUserService;
+import com.ahut.service.AdminService;
 import com.ahut.utils.JwtUtil;
 import com.ahut.vo.UserLoginVO;
 import lombok.extern.slf4j.Slf4j;
@@ -24,10 +24,10 @@ import java.util.Map;
 @RestController
 @RequestMapping("/back/admin")
 @Slf4j
-public class AdminUserController {
+public class AdminController {
 
     @Autowired
-    private AdminUserService adminUserService;
+    private AdminService adminService;
     @Autowired
     private JwtProperties jwtProperties;
 
@@ -35,11 +35,11 @@ public class AdminUserController {
     @PostMapping("/login")
     public Result<UserLoginVO> login(@RequestBody UserLoginDTO userLoginDTO) {
         log.info("管理员登录：{}", userLoginDTO);
-        AdminUser adminUser = adminUserService.login(userLoginDTO);
+        Admin admin = adminService.login(userLoginDTO);
 
         //登录成功后，生成jwt令牌
         Map<String, Object> claims = new HashMap<>();
-        claims.put(JwtClaimsConstant.ID, adminUser.getId());
+        claims.put(JwtClaimsConstant.ID, admin.getId());
         claims.put(JwtClaimsConstant.ROLE, JwtClaimsConstant.ROLE_ADMIN);
         String token = JwtUtil.createJWT(
                 jwtProperties.getBackSecretKey(),
@@ -47,9 +47,9 @@ public class AdminUserController {
                 claims);
 
         UserLoginVO userLoginVO = UserLoginVO.builder()
-                .id(adminUser.getId())
-                .username(adminUser.getUsername())
-                .name(adminUser.getName())
+                .id(admin.getId())
+                .username(admin.getUsername())
+                .name(admin.getName())
                 .token(token)
                 .build();
 

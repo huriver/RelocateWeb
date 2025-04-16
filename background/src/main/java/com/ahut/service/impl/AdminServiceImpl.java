@@ -2,37 +2,37 @@ package com.ahut.service.impl;
 
 import com.ahut.constant.MessageConstant;
 import com.ahut.dto.UserLoginDTO;
-import com.ahut.entity.AdminUser;
+import com.ahut.entity.Admin;
 import com.ahut.exception.AccountNotFoundException;
 import com.ahut.exception.PasswordErrorException;
-import com.ahut.mapper.AdminUserMapper;
-import com.ahut.service.AdminUserService;
+import com.ahut.mapper.AdminMapper;
+import com.ahut.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 @Service
-public class AdminUserServiceImpl implements AdminUserService {
+public class AdminServiceImpl implements AdminService {
 
     @Autowired
-    private AdminUserMapper adminUserMapper;
+    private AdminMapper adminMapper;
 
     /**
      * 管理员登录
      *
-     * @param adminUserLoginDTO
+     * @param userLoginDTO
      * @return
      */
     @Override
-    public AdminUser login(UserLoginDTO adminUserLoginDTO) {
-        String username = adminUserLoginDTO.getUsername();
-        String password = adminUserLoginDTO.getPassword();
+    public Admin login(UserLoginDTO userLoginDTO) {
+        String username = userLoginDTO.getUsername();
+        String password = userLoginDTO.getPassword();
 
         //1、根据用户名查询数据库中的数据
-        AdminUser adminUser = adminUserMapper.getByUsername(username);
+        Admin admin = adminMapper.getByUsername(username);
 
         //2、处理各种异常情况（用户名不存在、密码不对）
-        if (adminUser == null) {
+        if (admin == null) {
             //账号不存在
             throw new AccountNotFoundException(MessageConstant.ACCOUNT_NOT_FOUND);
         }
@@ -40,13 +40,13 @@ public class AdminUserServiceImpl implements AdminUserService {
         //密码比对
         //后期需要进行md5加密，然后再进行比对
         password = DigestUtils.md5DigestAsHex(password.getBytes());
-        if (!password.equals(adminUser.getPassword())) {
+        if (!password.equals(admin.getPassword())) {
             //密码错误
             throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
         }
 
         //3、返回实体对象
-        return adminUser;
+        return admin;
     }
 
 }
