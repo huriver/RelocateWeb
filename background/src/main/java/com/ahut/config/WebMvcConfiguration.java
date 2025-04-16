@@ -46,7 +46,7 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
 
         registry.addInterceptor(jwtTokenFrontInterceptor)
                 .addPathPatterns("/front/**") // 前端用户相关接口拦截 (假设你的前端接口都在 /front/** 下)
-                .excludePathPatterns("/front/user/login") // 放行用户登录接口 (根据你的实际路径修改)
+                .excludePathPatterns("/front/customer/login") // 放行用户登录接口 (根据你的实际路径修改)
                 .excludePathPatterns("/front/shop/status"); // 放行店铺状态接口 (根据你的实际路径修改)
     }
 
