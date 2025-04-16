@@ -89,7 +89,7 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
      */
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("*")
+                .allowedOrigins("http://localhost:5173")
                 .allowedMethods("GET", "POST", "PUT", "DELETE")
                 .maxAge(3600)
                 .allowedHeaders("Origin", "Accept", "Content-Type", "Authorization", "token")
