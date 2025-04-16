@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
 import java.util.List;
@@ -22,10 +23,10 @@ import java.util.List;
 public class WebMvcConfiguration extends WebMvcConfigurationSupport {
 
     @Autowired
-    private JwtTokenBackInterceptor jwtTokenAdminInterceptor;
+    private JwtTokenBackInterceptor jwtTokenBackInterceptor;
 
     @Autowired
-    private JwtTokenFrontInterceptor jwtTokenUserInterceptor;
+    private JwtTokenFrontInterceptor jwtTokenFrontInterceptor;
 
     /**
      * 注册自定义拦截器
@@ -34,14 +35,19 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
      */
     protected void addInterceptors(InterceptorRegistry registry) {
         log.info("开始注册自定义拦截器...");
-        registry.addInterceptor(jwtTokenAdminInterceptor)
-                .addPathPatterns("/admin/**")
-                .excludePathPatterns("/admin/employee/login");
+        registry.addInterceptor(jwtTokenBackInterceptor)
+                .addPathPatterns("/back/**") // 后台管理接口拦截
+                .excludePathPatterns("/back/admin/login") // 放行管理员登录接口
+                .excludePathPatterns("/back/driver/login") // 放行司机登录接口
+                .excludePathPatterns("/back/mover/login")   // 放行搬运工登录接口
+                .excludePathPatterns("/back/admin")
+                .excludePathPatterns("/back/driver")
+                .excludePathPatterns("/back/mover");
 
-        registry.addInterceptor(jwtTokenUserInterceptor)
-                .addPathPatterns("/user/**")
-                .excludePathPatterns("/user/user/login")
-                .excludePathPatterns("/user/shop/status");
+        registry.addInterceptor(jwtTokenFrontInterceptor)
+                .addPathPatterns("/front/**") // 前端用户相关接口拦截 (假设你的前端接口都在 /front/** 下)
+                .excludePathPatterns("/front/user/login") // 放行用户登录接口 (根据你的实际路径修改)
+                .excludePathPatterns("/front/shop/status"); // 放行店铺状态接口 (根据你的实际路径修改)
     }
 
 
@@ -62,5 +68,16 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
 
         //将自己的消息转化器加入容器中
         converters.add(0, converter);
+    }
+
+    /**
+     * 配置静态资源处理器
+     *
+     * @param registry
+     */
+    @Override
+    protected void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/images/**")
+                .addResourceLocations("file:D:/Java/code/RelocateWeb/background/uploads/images/");
     }
 }

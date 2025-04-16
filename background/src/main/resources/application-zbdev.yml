@@ -6,3 +6,9 @@ spring:
   datasource:
     username: root
     password: 1234
+
+upload:
+  image:
+    # 图片上传的本地存储路径，如果修改此路径，还需要同步修改 WebMvcConfiguration.java 中的 addResourceLocations 方法
+    base-path: D:\\Java\\code\\RelocateWeb\\background\\uploads\\images\\
+    base-url: http://localhost:8081/images/
