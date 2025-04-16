@@ -1,6 +1,7 @@
 package com.ahut.controller.back;
 
 import com.ahut.constant.JwtClaimsConstant;
+import com.ahut.dto.DriverDTO;
 import com.ahut.dto.UserLoginDTO;
 import com.ahut.entity.Driver;
 import com.ahut.properties.JwtProperties;
@@ -56,6 +57,14 @@ public class DriverController {
         return Result.success(userLoginVO);
     }
 
+    @PostMapping
+    public Result save(@RequestBody DriverDTO driverDTO) {
+        log.info("新增司机:{}", driverDTO);
+        System.out.println("当前线程id：" + Thread.currentThread().getId());
+        driverService.save(driverDTO);
+        return Result.success();
+    }
+
     /**
      * 退出
      *
@@ -67,20 +76,7 @@ public class DriverController {
 //        return Result.success();
 //    }
 //
-//    /**
-//     * 新增员工
-//     *
-//     * @param employeeDTO
-//     * @return
-//     */
-//    @PostMapping
-//    @ApiOperation("新增员工")
-//    public Result save(@RequestBody EmployeeDTO employeeDTO) {
-//        log.info("新增员工:{}", employeeDTO);
-//        System.out.println("当前线程id：" + Thread.currentThread().getId());
-//        employeeService.save(employeeDTO);
-//        return Result.success();
-//    }
+
 //
 //    /**
 //     * 员工分页查询

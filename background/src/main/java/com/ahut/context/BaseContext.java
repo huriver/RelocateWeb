@@ -3,7 +3,7 @@ package com.ahut.context;
 public class BaseContext {
 
     private static final ThreadLocal<Long> currentId = new ThreadLocal<>();
-    private static final ThreadLocal<String> currentRole = new ThreadLocal<>();
+    private static final ThreadLocal<String> currentUserRole = new ThreadLocal<>();
 
     public static void setCurrentId(Long id) {
         currentId.set(id);
@@ -13,20 +13,17 @@ public class BaseContext {
         return currentId.get();
     }
 
-    public static void removeCurrentId() {
+    public static void setCurrentUserRole(String role) {
+        currentUserRole.set(role);
+    }
+
+    public static String getCurrentUserRole() {
+        return currentUserRole.get();
+    }
+
+    public static void remove() {
         currentId.remove();
-    }
-
-    public static void setCurrentRole(String role) {
-        currentRole.set(role);
-    }
-
-    public static String getCurrentRole() {
-        return currentRole.get();
-    }
-
-    public static void removeCurrentRole() {
-        currentRole.remove();
+        currentUserRole.remove();
     }
 
 }

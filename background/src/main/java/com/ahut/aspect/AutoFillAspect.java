@@ -47,12 +47,14 @@ public class AutoFillAspect {
         if (args == null || args.length == 0) {
             return;
         }
-        
+
 
         Object entity = args[0];
         //准备赋值的数据
         LocalDateTime now = LocalDateTime.now();
         Long currentId = BaseContext.getCurrentId();
+        String currentUserRole = BaseContext.getCurrentUserRole(); // 获取当前用户角色
+
 
         //根据当前不同的操作类型，为对应的属性通过反射来赋值
         if (operationType == OperationType.INSERT) {
@@ -62,14 +64,19 @@ public class AutoFillAspect {
                 Method setUpdateTime = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
                 Method setCreateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_CREATE_USER, Long.class);
                 Method setUpdateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
+                Method setCreateUserRole = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_CREATE_USER_ROLE, String.class);
+                Method setUpdateUserRole = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER_ROLE, String.class);
 
                 //通过反射为对象属性赋值
                 setCreateTime.invoke(entity, now);
                 setUpdateTime.invoke(entity, now);
                 setCreateUser.invoke(entity, currentId);
                 setUpdateUser.invoke(entity, currentId);
+                setCreateUserRole.invoke(entity, currentUserRole);
+                setUpdateUserRole.invoke(entity, currentUserRole); // 创建和更新时角色通常相同
 
             } catch (Exception e) {
+                log.error("自动填充更新公共字段失败: {}", e.getMessage());
                 e.printStackTrace();
             }
 
@@ -78,12 +85,15 @@ public class AutoFillAspect {
             try {
                 Method setUpdateTime = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
                 Method setUpdateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
+                Method setUpdateUserRole = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER_ROLE, String.class);
 
                 //通过反射为对象属性赋值
                 setUpdateTime.invoke(entity, now);
                 setUpdateUser.invoke(entity, currentId);
+                setUpdateUserRole.invoke(entity, currentUserRole);
 
             } catch (Exception e) {
+                log.error("自动填充更新公共字段失败: {}", e.getMessage());
                 e.printStackTrace();
             }
         }

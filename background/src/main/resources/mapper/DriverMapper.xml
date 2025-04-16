@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.ahut.mapper.DriverMapper">
+
+    <update id="update" parameterType="Driver">
+        update driver
+        <set>
+            <if test="username != null and username != ''">username = #{username},</if>
+            <if test="password != null and password != ''">password = #{password},</if>
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="gender != null and gender != ''">gender = #{gender},</if>
+            <if test="phone != null and phone != ''">phone = #{phone},</if>
+            <if test="idCard != null and idCard != ''">id_card = #{idCard},</if>
+            <if test="drivingYears != null">driving_years = #{drivingYears},</if>
+            <if test="photoUrl != null and photoUrl != ''">photo_url = #{photoUrl},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="createUser != null">create_user = #{createUser},</if>
+            <if test="createUserRole != null and createUserRole != ''">create_user_role = #{createUserRole},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="updateUser != null">update_user = #{updateUser},</if>
+            <if test="updateUserRole != null and updateUserRole != ''">update_user_role = #{updateUserRole},</if>
+        </set>
+        where id = #{id}
+    </update>
+
+</mapper>
