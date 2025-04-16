@@ -27,13 +27,13 @@ const router = createRouter({
 
 router.beforeEach((to, from) => {
   const token = JSON.parse(localStorage.getItem("token"));
-  const path = ["/login"];
+  const path = ["/userLogin"];
   if (path.includes(to.path) || token) {
     // 去的地方不需要校验，或者有token
     return true;
   }
   ElMessage.error("请先登录");
-  return "/login";
+  return "/userLogin";
 });
 
 export default router;
