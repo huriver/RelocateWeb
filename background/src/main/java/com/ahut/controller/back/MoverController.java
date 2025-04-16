@@ -1,6 +1,7 @@
 package com.ahut.controller.back;
 
 import com.ahut.constant.JwtClaimsConstant;
+import com.ahut.dto.MoverDTO;
 import com.ahut.dto.UserLoginDTO;
 import com.ahut.entity.Mover;
 import com.ahut.properties.JwtProperties;
@@ -56,6 +57,15 @@ public class MoverController {
         return Result.success(userLoginVO);
     }
 
+
+    @PostMapping
+    public Result save(@RequestBody MoverDTO moverDTO) {
+        log.info("新增搬家工人:{}", moverDTO);
+        System.out.println("当前线程id：" + Thread.currentThread().getId());
+        moverService.save(moverDTO);
+        return Result.success();
+    }
+
     /**
      * 退出
      *
@@ -66,21 +76,7 @@ public class MoverController {
 //    public Result<String> logout() {
 //        return Result.success();
 //    }
-//
-//    /**
-//     * 新增员工
-//     *
-//     * @param employeeDTO
-//     * @return
-//     */
-//    @PostMapping
-//    @ApiOperation("新增员工")
-//    public Result save(@RequestBody EmployeeDTO employeeDTO) {
-//        log.info("新增员工:{}", employeeDTO);
-//        System.out.println("当前线程id：" + Thread.currentThread().getId());
-//        employeeService.save(employeeDTO);
-//        return Result.success();
-//    }
+
 //
 //    /**
 //     * 员工分页查询
