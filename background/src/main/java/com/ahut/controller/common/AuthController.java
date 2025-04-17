@@ -2,6 +2,7 @@ package com.***REMOVED***.controller.common;
 
 import com.***REMOVED***.constant.JwtClaimsConstant;
 import com.***REMOVED***.dto.UserLoginDTO;
+import com.***REMOVED***.dto.UserRegisterDTO;
 import com.***REMOVED***.entity.Admin;
 import com.***REMOVED***.entity.Customer;
 import com.***REMOVED***.entity.Driver;
@@ -40,6 +41,12 @@ public class AuthController {
     @Autowired
     private JwtProperties jwtProperties;
 
+    /**
+     * 角色登录
+     *
+     * @param userLoginDTO
+     * @return
+     */
     @PostMapping("/login")
     public Result<UserLoginVO> login(@RequestBody UserLoginDTO userLoginDTO) {
         log.info("用户登录：{}", userLoginDTO);
@@ -98,6 +105,35 @@ public class AuthController {
                 .build();
 
         return Result.success(userLoginVO);
+    }
+
+    /**
+     * 角色注册
+     *
+     * @param userRegisterDTO
+     * @return
+     */
+    @PostMapping("/register")
+    public Result register(@RequestBody UserRegisterDTO userRegisterDTO) {
+        log.info("用户注册：{}", userRegisterDTO);
+        String role = userRegisterDTO.getRole();
+
+        switch (role) {
+            case JwtClaimsConstant.ROLE_ADMIN:
+                adminService.save(userRegisterDTO);
+                return Result.success();
+            case JwtClaimsConstant.ROLE_DRIVER:
+                driverService.save(userRegisterDTO);
+                return Result.success();
+            case JwtClaimsConstant.ROLE_MOVER:
+                moverService.save(userRegisterDTO);
+                return Result.success();
+            case JwtClaimsConstant.ROLE_CUSTOMER:
+                customerService.save(userRegisterDTO);
+                return Result.success();
+            default:
+                return Result.error("无效的用户角色");
+        }
     }
 
 

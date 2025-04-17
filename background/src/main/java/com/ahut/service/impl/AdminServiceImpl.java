@@ -1,12 +1,15 @@
 package com.***REMOVED***.service.impl;
 
 import com.***REMOVED***.constant.MessageConstant;
+import com.***REMOVED***.context.BaseContext;
 import com.***REMOVED***.dto.UserLoginDTO;
+import com.***REMOVED***.dto.UserRegisterDTO;
 import com.***REMOVED***.entity.Admin;
 import com.***REMOVED***.exception.AccountNotFoundException;
 import com.***REMOVED***.exception.PasswordErrorException;
 import com.***REMOVED***.mapper.AdminMapper;
 import com.***REMOVED***.service.AdminService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -47,6 +50,19 @@ public class AdminServiceImpl implements AdminService {
 
         //3、返回实体对象
         return admin;
+    }
+
+    @Override
+    public void save(UserRegisterDTO userRegisterDTO) {
+        Admin admin = new Admin();
+        // 对象属性拷贝
+        BeanUtils.copyProperties(userRegisterDTO, admin);
+        // 对密码进行加密
+        admin.setPassword(DigestUtils.md5DigestAsHex(userRegisterDTO.getPassword().getBytes()));
+        admin.setName(admin.getUsername());
+        admin.setCreateUser(BaseContext.getCurrentId());
+        admin.setUpdateUser(BaseContext.getCurrentId());
+        adminMapper.insert(admin);
     }
 
 }

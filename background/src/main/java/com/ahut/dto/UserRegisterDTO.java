@@ -1,0 +1,10 @@
+package com.***REMOVED***.dto;
+
+import lombok.Data;
+
+@Data
+public class UserRegisterDTO {
+    private String username;
+    private String password;
+    private String role; // 例如：admin, driver, mover, customer
+}

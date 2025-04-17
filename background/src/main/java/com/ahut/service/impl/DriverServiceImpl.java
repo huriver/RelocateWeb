@@ -1,11 +1,10 @@
 package com.***REMOVED***.service.impl;
 
-import com.***REMOVED***.constant.JwtClaimsConstant;
 import com.***REMOVED***.constant.MessageConstant;
-import com.***REMOVED***.context.BaseContext;
-import com.***REMOVED***.dto.DriverDTO;
 import com.***REMOVED***.dto.UserLoginDTO;
+import com.***REMOVED***.dto.UserRegisterDTO;
 import com.***REMOVED***.entity.Driver;
+import com.***REMOVED***.exception.AccountLockedException;
 import com.***REMOVED***.exception.AccountNotFoundException;
 import com.***REMOVED***.exception.PasswordErrorException;
 import com.***REMOVED***.mapper.DriverMapper;
@@ -56,29 +55,14 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
-    public void save(DriverDTO driverDTO) {
+    public void save(UserRegisterDTO userRegisterDTO) {
         Driver driver = new Driver();
         // 对象属性拷贝
-        BeanUtils.copyProperties(driverDTO, driver);
+        BeanUtils.copyProperties(userRegisterDTO, driver);
         // 对密码进行加密
-        driver.setPassword(DigestUtils.md5DigestAsHex(driverDTO.getPassword().getBytes()));
+        driver.setPassword(DigestUtils.md5DigestAsHex(userRegisterDTO.getPassword().getBytes()));
+        driver.setName(driver.getUsername());
         driverMapper.insert(driver);
-
-        // 说明是司机自己注册账号
-        if (driver.getCreateUser() == null && driver.getCreateUserRole() == null) {
-            Long driverId = driver.getId(); // 获取新插入的司机 ID
-
-            // 设置update aop无法覆盖的 createUser 和 createUserRole
-            driver.setCreateUser(driverId);
-            driver.setCreateUserRole(JwtClaimsConstant.ROLE_DRIVER);
-
-            BaseContext.setCurrentId(driverId);
-            BaseContext.setCurrentUserRole(JwtClaimsConstant.ROLE_DRIVER);
-
-            driverMapper.update(driver); // 再次更新记录
-            BaseContext.remove();
-        }
     }
-
 
 }

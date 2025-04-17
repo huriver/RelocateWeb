@@ -2,12 +2,14 @@ package com.***REMOVED***.service.impl;
 
 import com.***REMOVED***.constant.MessageConstant;
 import com.***REMOVED***.dto.UserLoginDTO;
+import com.***REMOVED***.dto.UserRegisterDTO;
 import com.***REMOVED***.entity.Customer;
 import com.***REMOVED***.exception.AccountLockedException;
 import com.***REMOVED***.exception.AccountNotFoundException;
 import com.***REMOVED***.exception.PasswordErrorException;
 import com.***REMOVED***.mapper.CustomerMapper;
 import com.***REMOVED***.service.CustomerService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -48,6 +50,17 @@ public class CustomerServiceImpl implements CustomerService {
 
         //3、返回实体对象
         return customer;
+    }
+
+    @Override
+    public void save(UserRegisterDTO userRegisterDTO) {
+        Customer customer = new Customer();
+        // 对象属性拷贝
+        BeanUtils.copyProperties(userRegisterDTO, customer);
+        // 对密码进行加密
+        customer.setPassword(DigestUtils.md5DigestAsHex(userRegisterDTO.getPassword().getBytes()));
+        customer.setName(customer.getUsername());
+        customerMapper.insert(customer);
     }
 
 }
