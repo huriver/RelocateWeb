@@ -44,6 +44,11 @@ public class MoverServiceImpl implements MoverService {
             throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
         }
 
+        //账号被封禁
+        if (mover.getIsBanned()) {
+            throw new AccountLockedException(MessageConstant.ACCOUNT_LOCKED);
+        }
+
         //3、返回实体对象
         return mover;
     }

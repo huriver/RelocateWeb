@@ -20,10 +20,7 @@ public class Mover {
     private String phone;
     private String idCard;
     private String photoUrl;
+    private Boolean isBanned;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
-    private Long createUser;
-    private Long updateUser;
-    private String createUserRole;
-    private String updateUserRole;
 }

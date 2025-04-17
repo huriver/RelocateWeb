@@ -14,12 +14,8 @@
             <if test="idCard != null and idCard != ''">id_card = #{idCard},</if>
             <if test="drivingYears != null">driving_years = #{drivingYears},</if>
             <if test="photoUrl != null and photoUrl != ''">photo_url = #{photoUrl},</if>
-            <if test="createTime != null">create_time = #{createTime},</if>
-            <if test="createUser != null">create_user = #{createUser},</if>
-            <if test="createUserRole != null and createUserRole != ''">create_user_role = #{createUserRole},</if>
+            <if test="isBanned != null">is_banned = #{isBanned},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
-            <if test="updateUser != null">update_user = #{updateUser},</if>
-            <if test="updateUserRole != null and updateUserRole != ''">update_user_role = #{updateUserRole},</if>
         </set>
         where id = #{id}
     </update>

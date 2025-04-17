@@ -46,6 +46,11 @@ public class DriverServiceImpl implements DriverService {
             throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
         }
 
+        //账号被封禁
+        if (driver.getIsBanned()) {
+            throw new AccountLockedException(MessageConstant.ACCOUNT_LOCKED);
+        }
+
         //3、返回实体对象
         return driver;
     }
