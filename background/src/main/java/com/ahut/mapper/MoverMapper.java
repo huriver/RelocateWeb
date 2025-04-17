@@ -12,7 +12,9 @@ import org.apache.ibatis.annotations.Select;
 public interface MoverMapper {
 
     // 根据用户名查询用户信息
-    @Select("select id, username, password, create_time, update_time from mover where username = #{username};")
+    @Select("select id, username, password, name, gender, phone, id_card, photo_url, create_time, " +
+            "update_time, create_user, update_user, create_user_role, update_user_role " +
+            "from mover where username = #{username};")
     Mover getByUsername(String username);
 
     // 新增搬家工人
