@@ -1,22 +1,11 @@
 package com.***REMOVED***.controller.back;
 
-import com.***REMOVED***.constant.JwtClaimsConstant;
-import com.***REMOVED***.dto.UserLoginDTO;
-import com.***REMOVED***.entity.Admin;
 import com.***REMOVED***.properties.JwtProperties;
-import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.AdminService;
-import com.***REMOVED***.utils.JwtUtil;
-import com.***REMOVED***.vo.UserLoginVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 员工管理
@@ -30,31 +19,6 @@ public class AdminController {
     private AdminService adminService;
     @Autowired
     private JwtProperties jwtProperties;
-
-
-    @PostMapping("/login")
-    public Result<UserLoginVO> login(@RequestBody UserLoginDTO userLoginDTO) {
-        log.info("管理员登录：{}", userLoginDTO);
-        Admin admin = adminService.login(userLoginDTO);
-
-        //登录成功后，生成jwt令牌
-        Map<String, Object> claims = new HashMap<>();
-        claims.put(JwtClaimsConstant.ID, admin.getId());
-        claims.put(JwtClaimsConstant.ROLE, JwtClaimsConstant.ROLE_ADMIN);
-        String token = JwtUtil.createJWT(
-                jwtProperties.getBackSecretKey(),
-                jwtProperties.getBackTtl(),
-                claims);
-
-        UserLoginVO userLoginVO = UserLoginVO.builder()
-                .id(admin.getId())
-                .username(admin.getUsername())
-                .name(admin.getName())
-                .token(token)
-                .build();
-
-        return Result.success(userLoginVO);
-    }
 
     /**
      * 退出

@@ -1,23 +1,15 @@
 package com.***REMOVED***.controller.back;
 
-import com.***REMOVED***.constant.JwtClaimsConstant;
 import com.***REMOVED***.dto.MoverDTO;
-import com.***REMOVED***.dto.UserLoginDTO;
-import com.***REMOVED***.entity.Mover;
 import com.***REMOVED***.properties.JwtProperties;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.MoverService;
-import com.***REMOVED***.utils.JwtUtil;
-import com.***REMOVED***.vo.UserLoginVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 员工管理
@@ -31,31 +23,6 @@ public class MoverController {
     private MoverService moverService;
     @Autowired
     private JwtProperties jwtProperties;
-
-
-    @PostMapping("/login")
-    public Result<UserLoginVO> login(@RequestBody UserLoginDTO userLoginDTO) {
-        log.info("搬家工人登录：{}", userLoginDTO);
-        Mover mover = moverService.login(userLoginDTO);
-
-        //登录成功后，生成jwt令牌
-        Map<String, Object> claims = new HashMap<>();
-        claims.put(JwtClaimsConstant.ID, mover.getId());
-        claims.put(JwtClaimsConstant.ROLE, JwtClaimsConstant.ROLE_MOVER);
-        String token = JwtUtil.createJWT(
-                jwtProperties.getBackSecretKey(),
-                jwtProperties.getBackTtl(),
-                claims);
-
-        UserLoginVO userLoginVO = UserLoginVO.builder()
-                .id(mover.getId())
-                .username(mover.getUsername())
-                .name(mover.getName())
-                .token(token)
-                .build();
-
-        return Result.success(userLoginVO);
-    }
 
 
     @PostMapping
