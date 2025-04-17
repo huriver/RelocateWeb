@@ -1,23 +1,15 @@
 package com.ahut.controller.back;
 
-import com.ahut.constant.JwtClaimsConstant;
 import com.ahut.dto.DriverDTO;
-import com.ahut.dto.UserLoginDTO;
-import com.ahut.entity.Driver;
 import com.ahut.properties.JwtProperties;
 import com.ahut.result.Result;
 import com.ahut.service.DriverService;
-import com.ahut.utils.JwtUtil;
-import com.ahut.vo.UserLoginVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 员工管理
@@ -32,30 +24,6 @@ public class DriverController {
     @Autowired
     private JwtProperties jwtProperties;
 
-
-    @PostMapping("/login")
-    public Result<UserLoginVO> login(@RequestBody UserLoginDTO userLoginDTO) {
-        log.info("司机登录：{}", userLoginDTO);
-        Driver driver = driverService.login(userLoginDTO);
-
-        //登录成功后，生成jwt令牌
-        Map<String, Object> claims = new HashMap<>();
-        claims.put(JwtClaimsConstant.ID, driver.getId());
-        claims.put(JwtClaimsConstant.ROLE, JwtClaimsConstant.ROLE_DRIVER);
-        String token = JwtUtil.createJWT(
-                jwtProperties.getBackSecretKey(),
-                jwtProperties.getBackTtl(),
-                claims);
-
-        UserLoginVO userLoginVO = UserLoginVO.builder()
-                .id(driver.getId())
-                .username(driver.getUsername())
-                .name(driver.getName())
-                .token(token)
-                .build();
-
-        return Result.success(userLoginVO);
-    }
 
     @PostMapping
     public Result save(@RequestBody DriverDTO driverDTO) {

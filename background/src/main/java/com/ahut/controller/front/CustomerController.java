@@ -1,22 +1,11 @@
 package com.ahut.controller.front;
 
-import com.ahut.constant.JwtClaimsConstant;
-import com.ahut.dto.UserLoginDTO;
-import com.ahut.entity.Customer;
 import com.ahut.properties.JwtProperties;
-import com.ahut.result.Result;
 import com.ahut.service.CustomerService;
-import com.ahut.utils.JwtUtil;
-import com.ahut.vo.UserLoginVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 员工管理
@@ -31,30 +20,6 @@ public class CustomerController {
     @Autowired
     private JwtProperties jwtProperties;
 
-
-    @PostMapping("/login")
-    public Result<UserLoginVO> login(@RequestBody UserLoginDTO userLoginDTO) {
-        log.info("消费者登录：{}", userLoginDTO);
-        Customer customer = customerService.login(userLoginDTO);
-
-        //登录成功后，生成jwt令牌
-        Map<String, Object> claims = new HashMap<>();
-        claims.put(JwtClaimsConstant.ID, customer.getId());
-        claims.put(JwtClaimsConstant.ROLE, JwtClaimsConstant.ROLE_CUSTOMER);
-        String token = JwtUtil.createJWT(
-                jwtProperties.getBackSecretKey(),
-                jwtProperties.getBackTtl(),
-                claims);
-
-        UserLoginVO userLoginVO = UserLoginVO.builder()
-                .id(customer.getId())
-                .username(customer.getUsername())
-                .name(customer.getName())
-                .token(token)
-                .build();
-
-        return Result.success(userLoginVO);
-    }
 
     /**
      * 退出
