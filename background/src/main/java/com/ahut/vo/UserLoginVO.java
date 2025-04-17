@@ -10,10 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserLoginVO {
-
     private Long id;
     private String username;
     private String name;
     private String token;
-
 }

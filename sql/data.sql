@@ -19,8 +19,6 @@ CREATE TABLE `admin` (
   `update_time` datetime COMMENT '修改时间',
   `create_user` bigint(20) COMMENT '创建用户ID',
   `update_user` bigint(20) COMMENT '更新用户ID',
-  `create_user_role` varchar(50) COMMENT '创建用户角色',
-  `update_user_role` varchar(50) COMMENT '更新用户角色',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `username` (`username`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='管理员';
@@ -37,8 +35,6 @@ CREATE TABLE `configuration` (
   `update_time` datetime COMMENT '修改时间',
   `create_user` bigint(20) COMMENT '创建用户ID',
   `update_user` bigint(20) COMMENT '更新用户ID',
-  `create_user_role` varchar(50) COMMENT '创建用户角色',
-  `update_user_role` varchar(50) COMMENT '更新用户角色',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='配置表';
 
@@ -53,16 +49,13 @@ CREATE TABLE `customer` (
   `name` varchar(200) NOT NULL COMMENT '姓名',
   `gender` varchar(20) COMMENT '性别',
   `phone` varchar(200) COMMENT '手机号码',
-  `id_card` varchar(200) COMMENT '身份证号码',
   `email` varchar(200) COMMENT '邮箱',
+  `id_card` varchar(200) COMMENT '身份证号码',
   `family_phone` varchar(200) COMMENT '家属电话',
   `photo_url` varchar(200) COMMENT '照片URL',
+  `is_banned` tinyint(1) DEFAULT 0 COMMENT '是否被封禁：0-否，1-是',
   `create_time` datetime COMMENT '创建时间',
   `update_time` datetime COMMENT '修改时间',
-  `create_user` bigint(20) COMMENT '创建用户ID',
-  `update_user` bigint(20) COMMENT '更新用户ID',
-  `create_user_role` varchar(50) COMMENT '创建用户角色',
-  `update_user_role` varchar(50) COMMENT '更新用户角色',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `username` (`username`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='消费者表';
@@ -81,12 +74,9 @@ CREATE TABLE `driver` (
   `id_card` varchar(200) COMMENT '身份证号码',
   `driving_years` int(11) COMMENT '驾龄（年）',
   `photo_url` varchar(200) COMMENT '照片URL',
+  `is_banned` tinyint(1) DEFAULT 0 COMMENT '是否被封禁：0-否，1-是',
   `create_time` datetime COMMENT '创建时间',
   `update_time` datetime COMMENT '修改时间',
-  `create_user` bigint(20) COMMENT '创建用户ID',
-  `update_user` bigint(20) COMMENT '更新用户ID',
-  `create_user_role` varchar(50) COMMENT '创建用户角色',
-  `update_user_role` varchar(50) COMMENT '更新用户角色',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `username` (`username`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='司机表';
@@ -116,12 +106,9 @@ CREATE TABLE `mover` (
   `phone` varchar(200) COMMENT '手机号码',
   `id_card` varchar(200) COMMENT '身份证号码',
   `photo_url` varchar(200) COMMENT '照片URL',
+  `is_banned` tinyint(1) DEFAULT 0 COMMENT '是否被封禁：0-否，1-是',
   `create_time` datetime COMMENT '创建时间',
   `update_time` datetime COMMENT '修改时间',
-  `create_user` bigint(20) COMMENT '创建用户ID',
-  `update_user` bigint(20) COMMENT '更新用户ID',
-  `create_user_role` varchar(50) COMMENT '创建用户角色',
-  `update_user_role` varchar(50) COMMENT '更新用户角色',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `username` (`username`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='搬运工人表';
@@ -151,10 +138,6 @@ CREATE TABLE `moving_order` (
   `notes` text COMMENT '备注',
   `create_time` datetime COMMENT '创建时间',
   `update_time` datetime COMMENT '修改时间',
-  `create_user` bigint(20) COMMENT '创建用户ID',
-  `update_user` bigint(20) COMMENT '更新用户ID',
-  `create_user_role` varchar(50) COMMENT '创建用户角色',
-  `update_user_role` varchar(50) COMMENT '更新用户角色',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `order_number` (`order_number`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='搬家订单表';
@@ -167,8 +150,6 @@ CREATE TABLE `order_mover` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键，自增',
   `order_id` bigint(20) NOT NULL COMMENT '订单ID，外键，关联 moving_order',
   `mover_id` bigint(20) NOT NULL COMMENT '搬运工人ID，外键，关联 mover',
-  `create_time` datetime COMMENT '创建时间',
-  `update_time` datetime COMMENT '修改时间',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订单搬运工人关联表';
 
@@ -184,8 +165,6 @@ CREATE TABLE `rating` (
   `rating_type` varchar(50) NOT NULL COMMENT '评分类型（例如：司机，搬运工人，服务）',
   `rating_value` int(11) NOT NULL COMMENT '评分值（例如：1-5星）',
   `comment` text COMMENT '评价内容',
-  `create_time` datetime COMMENT '评分时间，默认当前时间',
-  `update_time` datetime COMMENT '修改时间',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='评分表';
 
@@ -205,8 +184,6 @@ CREATE TABLE `service` (
   `update_time` datetime COMMENT '修改时间',
   `create_user` bigint(20) COMMENT '创建用户ID',
   `update_user` bigint(20) COMMENT '更新用户ID',
-  `create_user_role` varchar(50) COMMENT '创建用户角色',
-  `update_user_role` varchar(50) COMMENT '更新用户角色',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='服务项表';
 
@@ -222,8 +199,6 @@ CREATE TABLE `service_category` (
   `update_time` datetime COMMENT '修改时间',
   `create_user` bigint(20) COMMENT '创建用户ID',
   `update_user` bigint(20) COMMENT '更新用户ID',
-  `create_user_role` varchar(50) COMMENT '创建用户角色',
-  `update_user_role` varchar(50) COMMENT '更新用户角色',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='服务类型表';
 
@@ -261,8 +236,6 @@ CREATE TABLE `truck_type` (
   `update_time` datetime COMMENT '修改时间',
   `create_user` bigint(20) COMMENT '创建用户ID',
   `update_user` bigint(20) COMMENT '更新用户ID',
-  `create_user_role` varchar(50) COMMENT '创建用户角色',
-  `update_user_role` varchar(50) COMMENT '更新用户角色',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='货车类型表';
 
@@ -280,112 +253,84 @@ CREATE TABLE `vehicle` (
   `update_time` datetime COMMENT '修改时间',
   `create_user` bigint(20) COMMENT '创建用户ID',
   `update_user` bigint(20) COMMENT '更新用户ID',
-  `create_user_role` varchar(50) COMMENT '创建用户角色',
-  `update_user_role` varchar(50) COMMENT '更新用户角色',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `license_plate_number` (`license_plate_number`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='车辆信息表';
 
 
 
--- ----------------------------
--- Inserting data for table admin
--- ----------------------------
-INSERT INTO `admin` (`id`, `username`, `password`, `name`, `create_time`, `update_time`) VALUES
-(1, 'admin1', 'password123', '超级管理员', '2025-04-16 10:00:00', '2025-04-16 10:00:00'),
-(2, 'editor1', 'editor456', '内容编辑员', '2025-04-16 10:05:00', '2025-04-16 10:05:00');
+-- 插入管理员数据
+INSERT INTO `admin` (`username`, `password`, `name`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
+('admin1', '81dc9bdb52d04dc20036dbd8313ed055', '超级管理员', '2025-04-17 10:00:00', '2025-04-17 10:00:00', NULL, NULL),
+('manager2', '81dc9bdb52d04dc20036dbd8313ed055', '运营经理', '2025-04-17 10:05:00', '2025-04-17 10:05:00', 1, 1);
 
--- ----------------------------
--- Inserting data for table configuration
--- ----------------------------
-INSERT INTO `configuration` (`id`, `name`, `value`) VALUES
-(1, 'default_base_distance', '5'),
-(2, 'price_unit', '公里');
+-- 插入配置数据
+INSERT INTO `configuration` (`name`, `value`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
+('website_name', '轻松搬家网', '2025-04-17 10:10:00', '2025-04-17 10:10:00', 1, 1),
+('default_currency', 'CNY', '2025-04-17 10:12:00', '2025-04-17 10:12:00', 1, 1);
 
--- ----------------------------
--- Inserting data for table customer
--- ----------------------------
-INSERT INTO `customer` (`id`, `username`, `password`, `name`, `gender`, `phone`, `email`) VALUES
-(1, 'customer1', 'custpass1', '张三', '男', '13812345678', 'zhangsan@example.com'),
-(2, 'customer2', 'custpass2', '李四', '女', '13987654321', 'lisi@example.com');
+-- 插入消费者数据
+INSERT INTO `customer` (`username`, `password`, `name`, `gender`, `phone`, `email`, `id_card`, `family_phone`, `photo_url`, `is_banned`, `create_time`, `update_time`) VALUES
+('customer1', '81dc9bdb52d04dc20036dbd8313ed055', '张三', '男', '13812345678', 'zhangsan@example.com', '310101199001011234', '021-1234567', NULL, 0, '2025-04-17 10:15:00', '2025-04-17 10:15:00'),
+('customer2', '81dc9bdb52d04dc20036dbd8313ed055', '李四', '女', '13987654321', 'lisi@example.com', '440301198505054321', '010-9876543', NULL, 0, '2025-04-17 10:18:00', '2025-04-17 10:18:00');
 
--- ----------------------------
--- Inserting data for table driver
--- ----------------------------
-INSERT INTO `driver` (`id`, `username`, `password`, `name`, `gender`, `phone`, `driving_years`) VALUES
-(1, 'driver1', 'drivepass1', '王五', '男', '13511112222', 5),
-(2, 'driver2', 'drivepass2', '赵六', '男', '13633334444', 10);
+-- 插入司机数据
+INSERT INTO `driver` (`username`, `password`, `name`, `gender`, `phone`, `id_card`, `driving_years`, `photo_url`, `is_banned`, `create_time`, `update_time`) VALUES
+('driver1', '81dc9bdb52d04dc20036dbd8313ed055', '王五', '男', '13555556666', '320501198808087890', 5, NULL, 0, '2025-04-17 10:22:00', '2025-04-17 10:22:00'),
+('driver2', '81dc9bdb52d04dc20036dbd8313ed055', '赵六', '男', '13666667777', '510701199209091234', 10, NULL, 0, '2025-04-17 10:25:00', '2025-04-17 10:25:00');
 
--- ----------------------------
--- Inserting data for table driver_truck_type
--- ----------------------------
+-- 插入搬运工人数据
+INSERT INTO `mover` (`username`, `password`, `name`, `gender`, `phone`, `id_card`, `photo_url`, `is_banned`, `create_time`, `update_time`) VALUES
+('mover1', '81dc9bdb52d04dc20036dbd8313ed055', '孙七', '男', '13777778888', '420101199510105678', NULL, 0, '2025-04-17 10:28:00', '2025-04-17 10:28:00'),
+('mover2', '81dc9bdb52d04dc20036dbd8313ed055', '周八', '男', '13000009999', '610801199811112345', NULL, 0, '2025-04-17 10:31:00', '2025-04-17 10:31:00');
+
+-- 插入服务类型数据
+INSERT INTO `service_category` (`type_name`, `description`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
+('标准搬家', '适用于普通家庭或个人搬家', '2025-04-17 10:35:00', '2025-04-17 10:35:00', 1, 1),
+('长途搬家', '跨城市或地区的搬家服务', '2025-04-17 10:38:00', '2025-04-17 10:38:00', 1, 1);
+
+-- 插入货车类型数据
+INSERT INTO `truck_type` (`type_name`, `capacity`, `description`, `base_fare`, `price_per_km_tier1`, `price_per_km_tier2`, `price_per_km_tier3`, `price_per_km_tier4`, `price_per_km_tier5`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
+('小型面包车', '1.8*1.3*1.1m', '适合少量物品搬运', 80.00, 5.00, 4.50, 4.00, 3.50, 3.00, '2025-04-17 10:42:00', '2025-04-17 10:42:00', 1, 1),
+('中型厢式货车', '2.5*1.8*1.6m', '适合普通家庭搬运', 120.00, 7.00, 6.50, 6.00, 5.50, 5.00, '2025-04-17 10:45:00', '2025-04-17 10:45:00', 1, 1);
+
+-- 插入服务项数据
+INSERT INTO `service` (`category_id`, `truck_type_id`, `service_name`, `short_description`, `loading_capacity_description`, `default_price`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
+(1, 1, '小型搬家', '经济型小型搬家服务', '可装载少量家具和行李', 150.00, '2025-04-17 10:50:00', '2025-04-17 10:50:00', 1, 1),
+(1, 2, '标准搬家', '适合2-3人家庭的搬家服务', '可装载普通家庭的家具和电器', 250.00, '2025-04-17 10:53:00', '2025-04-17 10:53:00', 1, 1),
+(2, 2, '同城长途搬家', '同城市内的较远距离搬家', '根据实际距离和物品数量报价', 300.00, '2025-04-17 10:56:00', '2025-04-17 10:56:00', 1, 1);
+
+-- 插入车辆信息数据
+INSERT INTO `vehicle` (`driver_id`, `truck_type_id`, `license_plate_number`, `vehicle_brand`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
+(1, 1, '沪A12345', '五菱宏光', '2025-04-17 11:00:00', '2025-04-17 11:00:00', 1, 1),
+(2, 2, '京B98765', '福田时代', '2025-04-17 11:03:00', '2025-04-17 11:03:00', 1, 1);
+
+-- 插入搬家订单数据
+INSERT INTO `moving_order` (`customer_id`, `order_number`, `service_id`, `truck_type_id`, `driver_id`, `vehicle_id`, `order_status`, `reservation_time`, `moving_origin`, `moving_destination`, `moving_price`, `is_paid`, `payment_time`, `moving_start_time`, `moving_end_time`, `number_of_helpers`, `notes`, `create_time`, `update_time`) VALUES
+(1, 'MO20250417001', 1, 1, 1, 1, 4, '2025-04-18 09:00:00', '上海市浦东新区', '上海市徐汇区', 180.00, 1, '2025-04-17 16:00:00', '2025-04-18 09:30:00', '2025-04-18 11:30:00', 1, '无', '2025-04-17 11:10:00', '2025-04-17 11:10:00'),
+(2, 'MO20250417002', 2, 2, 2, 2, 3, '2025-04-19 14:00:00', '北京市朝阳区', '北京市海淀区', 320.00, 0, NULL, '2025-04-19 14:30:00', NULL, 2, '需要搬运钢琴', '2025-04-17 11:15:00', '2025-04-17 11:15:00');
+
+-- 插入订单搬运工人关联数据
+INSERT INTO `order_mover` (`order_id`, `mover_id`) VALUES
+(1, 1),
+(2, 1),
+(2, 2);
+
+-- 插入评分数据
+INSERT INTO `rating` (`order_id`, `customer_id`, `ratee_id`, `rating_type`, `rating_value`, `comment`) VALUES
+(1, 1, 1, '司机', 5, '司机师傅很专业，服务态度好'),
+(1, 1, 1, '搬运工人', 4, '搬运速度很快，物品保护得不错'),
+(2, 2, 2, '司机', 4, '司机准时到达，路线熟悉'),
+(2, 2, 1, '搬运工人', 5, '非常给力，很细心');
+
+-- 插入司机货车类型关联数据
 INSERT INTO `driver_truck_type` (`driver_id`, `truck_type_id`) VALUES
 (1, 1),
-(1, 2),
 (2, 2),
-(2, 3);
+(2, 1);
 
--- ----------------------------
--- Inserting data for table mover
--- ----------------------------
-INSERT INTO `mover` (`id`, `username`, `password`, `name`, `gender`, `phone`) VALUES
-(1, 'mover1', 'movepass1', '孙七', '男', '13755556666'),
-(2, 'mover2', 'movepass2', '周八', '男', '13077778888');
-
--- ----------------------------
--- Inserting data for table moving_order
--- ----------------------------
-INSERT INTO `moving_order` (`id`, `customer_id`, `order_number`, `service_id`, `truck_type_id`, `driver_id`, `vehicle_id`, `order_status`, `reservation_time`, `moving_origin`, `moving_destination`, `moving_price`, `is_paid`) VALUES
-(1, 1, 'MO202504160001', 1, 1, 1, 1, 4, '2025-04-20 09:00:00', '北京市海淀区', '上海市浦东新区', 2500.00, 1),
-(2, 2, 'MO202504160002', 2, 2, 2, 2, 3, '2025-04-22 14:00:00', '广州市天河区', '深圳市南山区', 1800.50, 0);
-
--- ----------------------------
--- Inserting data for table order_mover
--- ----------------------------
-INSERT INTO `order_mover` (`id`, `order_id`, `mover_id`) VALUES
-(1, 1, 1),
-(2, 1, 2),
-(3, 2, 2);
-
--- ----------------------------
--- Inserting data for table rating
--- ----------------------------
-INSERT INTO `rating` (`id`, `order_id`, `customer_id`, `ratee_id`, `rating_type`, `rating_value`, `comment`) VALUES
-(1, 1, 1, 1, '司机', 5, '司机师傅非常专业，服务很好！'),
-(2, 1, 1, 1, '搬运工人', 4, '搬运工人很给力，效率很高。');
-
--- ----------------------------
--- Inserting data for table service
--- ----------------------------
-INSERT INTO `service` (`id`, `category_id`, `truck_type_id`, `service_name`, `default_price`) VALUES
-(1, 1, 1, '同城搬家-小型面包车', 300.00),
-(2, 1, 2, '同城搬家-中型厢式货车', 500.00);
-
--- ----------------------------
--- Inserting data for table service_category
--- ----------------------------
-INSERT INTO `service_category` (`id`, `type_name`, `description`) VALUES
-(1, '同城搬家', '在同一个城市内的搬家服务'),
-(2, '跨城搬家', '从一个城市搬到另一个城市的服务');
-
--- ----------------------------
--- Inserting data for table system_log
--- ----------------------------
-INSERT INTO `system_log` (`id`, `log_time`, `user_id`, `user_type`, `operation`, `details`, `ip_address`) VALUES
-(1, '2025-04-16 17:30:00', 1, 'admin', '用户登录', '管理员 admin1 成功登录系统', '192.168.1.100'),
-(2, '2025-04-16 17:35:00', 1, 'customer', '创建订单', '用户 customer1 创建了一个新的搬家订单', '192.168.1.101');
-
--- ----------------------------
--- Inserting data for table truck_type
--- ----------------------------
-INSERT INTO `truck_type` (`id`, `type_name`, `capacity`, `description`, `base_fare`, `price_per_km_tier1`, `price_per_km_tier2`, `price_per_km_tier3`, `price_per_km_tier4`, `price_per_km_tier5`) VALUES
-(1, '小型面包车', '1.8*1.3*1.1m', '适用于少量物品搬运', 80.00, 3.00, 2.80, 2.50, 2.20, 2.00),
-(2, '中型厢式货车', '2.5*1.8*1.6m', '适用于普通家庭搬运', 150.00, 5.00, 4.50, 4.00, 3.50, 3.00),
-(3, '大型厢式货车', '3.5*2.0*1.8m', '适用于大型物品或长途搬运', 250.00, 8.00, 7.50, 7.00, 6.50, 6.00);
-
--- ----------------------------
--- Inserting data for table vehicle
--- ----------------------------
-INSERT INTO `vehicle` (`id`, `driver_id`, `truck_type_id`, `license_plate_number`, `vehicle_brand`) VALUES
-(1, 1, 1, '京A12345', '五菱宏光'),
-(2, 2, 2, '沪B67890', '依维柯');
+-- 插入系统日志数据
+INSERT INTO `system_log` (`log_time`, `user_id`, `user_type`, `operation`, `details`, `ip_address`) VALUES
+('2025-04-17 11:20:00', 1, 'customer', '创建订单', '用户张三创建了一个从上海市浦东新区到上海市徐汇区的搬家订单，订单号：MO20250417001', '192.168.1.100'),
+('2025-04-17 11:25:00', 1, 'driver', '接单', '司机王五接了订单号为MO20250417001的搬家订单', '192.168.1.101'),
+('2025-04-17 11:30:00', 2, 'customer', '创建订单', '用户李四创建了一个从北京市朝阳区到北京市海淀区的搬家订单，订单号：MO20250417002', '10.0.1.50');

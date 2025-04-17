@@ -3,7 +3,6 @@ package com.ahut.aspect;
 
 import com.ahut.annotation.AutoFill;
 import com.ahut.constant.AutoFillConstant;
-import com.ahut.context.BaseContext;
 import com.ahut.enumeration.OperationType;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -52,8 +51,7 @@ public class AutoFillAspect {
         Object entity = args[0];
         //准备赋值的数据
         LocalDateTime now = LocalDateTime.now();
-        Long currentId = BaseContext.getCurrentId();
-        String currentUserRole = BaseContext.getCurrentUserRole(); // 获取当前用户角色
+        //Long currentId = BaseContext.getCurrentId();
 
 
         //根据当前不同的操作类型，为对应的属性通过反射来赋值
@@ -62,18 +60,14 @@ public class AutoFillAspect {
             try {
                 Method setCreateTime = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_CREATE_TIME, LocalDateTime.class);
                 Method setUpdateTime = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
-                Method setCreateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_CREATE_USER, Long.class);
-                Method setUpdateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
-                Method setCreateUserRole = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_CREATE_USER_ROLE, String.class);
-                Method setUpdateUserRole = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER_ROLE, String.class);
+                //Method setCreateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_CREATE_USER, Long.class);
+                //Method setUpdateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
 
                 //通过反射为对象属性赋值
                 setCreateTime.invoke(entity, now);
                 setUpdateTime.invoke(entity, now);
-                setCreateUser.invoke(entity, currentId);
-                setUpdateUser.invoke(entity, currentId);
-                setCreateUserRole.invoke(entity, currentUserRole);
-                setUpdateUserRole.invoke(entity, currentUserRole); // 创建和更新时角色通常相同
+                //setCreateUser.invoke(entity, currentId);
+                //setUpdateUser.invoke(entity, currentId);
 
             } catch (Exception e) {
                 log.error("自动填充更新公共字段失败: {}", e.getMessage());
@@ -84,13 +78,11 @@ public class AutoFillAspect {
             //为2个公共字段赋值
             try {
                 Method setUpdateTime = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_TIME, LocalDateTime.class);
-                Method setUpdateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
-                Method setUpdateUserRole = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER_ROLE, String.class);
+                //Method setUpdateUser = entity.getClass().getDeclaredMethod(AutoFillConstant.SET_UPDATE_USER, Long.class);
 
                 //通过反射为对象属性赋值
                 setUpdateTime.invoke(entity, now);
-                setUpdateUser.invoke(entity, currentId);
-                setUpdateUserRole.invoke(entity, currentUserRole);
+                //setUpdateUser.invoke(entity, currentId);
 
             } catch (Exception e) {
                 log.error("自动填充更新公共字段失败: {}", e.getMessage());

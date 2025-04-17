@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Driver {
-
     private Long id;
     private String username;
     private String password;
@@ -22,10 +21,7 @@ public class Driver {
     private String idCard;
     private Integer drivingYears;
     private String photoUrl;
+    private Boolean isBanned;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
-    private Long createUser;
-    private Long updateUser;
-    private String createUserRole;
-    private String updateUserRole;
 }

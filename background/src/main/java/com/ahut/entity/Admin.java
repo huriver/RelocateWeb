@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Admin {
-
     private Long id;
     private String username;
     private String password;
@@ -21,7 +20,4 @@ public class Admin {
     private LocalDateTime updateTime;
     private Long createUser;
     private Long updateUser;
-    private String createUserRole;
-    private String updateUserRole;
-
 }

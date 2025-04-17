@@ -3,6 +3,7 @@ package com.ahut.service.impl;
 import com.ahut.constant.MessageConstant;
 import com.ahut.dto.UserLoginDTO;
 import com.ahut.entity.Customer;
+import com.ahut.exception.AccountLockedException;
 import com.ahut.exception.AccountNotFoundException;
 import com.ahut.exception.PasswordErrorException;
 import com.ahut.mapper.CustomerMapper;
@@ -24,7 +25,7 @@ public class CustomerServiceImpl implements CustomerService {
         String password = userLoginDTO.getPassword();
 
         //1、根据用户名查询数据库中的数据
-        Customer customer= customerMapper.getByUsername(username);
+        Customer customer = customerMapper.getByUsername(username);
 
         //2、处理各种异常情况（用户名不存在、密码不对）
         if (customer == null) {
@@ -38,6 +39,11 @@ public class CustomerServiceImpl implements CustomerService {
         if (!password.equals(customer.getPassword())) {
             //密码错误
             throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
+        }
+
+        //账号被封禁
+        if (customer.getIsBanned()) {
+            throw new AccountLockedException(MessageConstant.ACCOUNT_LOCKED);
         }
 
         //3、返回实体对象
