@@ -38,9 +38,7 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
         log.info("开始注册自定义拦截器...");
         registry.addInterceptor(jwtTokenBackInterceptor)
                 .addPathPatterns("/back/**") // 后台管理接口拦截
-                .excludePathPatterns("/back/admin")
-                .excludePathPatterns("/back/driver")// 放行司机注册接口 (POST 请求到 /back/driver)
-                .excludePathPatterns("/back/mover");
+                .addPathPatterns("/auth/register");
 
         registry.addInterceptor(jwtTokenFrontInterceptor)
                 .addPathPatterns("/front/**"); // 前端用户相关接口拦截 (假设你的前端接口都在 /front/** 下)

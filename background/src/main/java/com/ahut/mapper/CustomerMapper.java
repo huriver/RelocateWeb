@@ -1,6 +1,9 @@
 package com.ahut.mapper;
 
+import com.ahut.annotation.AutoFill;
 import com.ahut.entity.Customer;
+import com.ahut.enumeration.OperationType;
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
@@ -12,4 +15,10 @@ public interface CustomerMapper {
             "is_banned, create_time, update_time " +
             "from customer where username = #{username};")
     Customer getByUsername(String username);
+
+    // 新增消费者
+    @Insert("insert into customer (username, password, name, create_time, update_time) values " +
+            "(#{username}, #{password}, #{name}, #{createTime}, #{updateTime})")
+    @AutoFill(value = OperationType.INSERT)
+    void insert(Customer customer);
 }

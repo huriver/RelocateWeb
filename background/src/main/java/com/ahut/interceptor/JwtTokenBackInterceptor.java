@@ -40,6 +40,13 @@ public class JwtTokenBackInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        String requestURI = request.getRequestURI();
+
+        // 如果是消费者注册接口，直接放行
+        if (requestURI.equals("/auth/register") && isCustomerRegistration(request)) {
+            return true;
+        }
+
         //1、从请求头中获取令牌
         String token = request.getHeader(jwtProperties.getBackTokenName());
 
@@ -61,6 +68,11 @@ public class JwtTokenBackInterceptor implements HandlerInterceptor {
             response.setStatus(401);
             return false;
         }
+    }
+
+    private boolean isCustomerRegistration(HttpServletRequest request) {
+        String role = request.getHeader("role");
+        return JwtClaimsConstant.ROLE_CUSTOMER.equals(role);
     }
 
     /**

@@ -1,11 +1,10 @@
 package com.ahut.service.impl;
 
-import com.ahut.constant.JwtClaimsConstant;
 import com.ahut.constant.MessageConstant;
-import com.ahut.context.BaseContext;
-import com.ahut.dto.DriverDTO;
 import com.ahut.dto.UserLoginDTO;
+import com.ahut.dto.UserRegisterDTO;
 import com.ahut.entity.Driver;
+import com.ahut.exception.AccountLockedException;
 import com.ahut.exception.AccountNotFoundException;
 import com.ahut.exception.PasswordErrorException;
 import com.ahut.mapper.DriverMapper;
@@ -56,29 +55,14 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
-    public void save(DriverDTO driverDTO) {
+    public void save(UserRegisterDTO userRegisterDTO) {
         Driver driver = new Driver();
         // 对象属性拷贝
-        BeanUtils.copyProperties(driverDTO, driver);
+        BeanUtils.copyProperties(userRegisterDTO, driver);
         // 对密码进行加密
-        driver.setPassword(DigestUtils.md5DigestAsHex(driverDTO.getPassword().getBytes()));
+        driver.setPassword(DigestUtils.md5DigestAsHex(userRegisterDTO.getPassword().getBytes()));
+        driver.setName(driver.getUsername());
         driverMapper.insert(driver);
-
-        // 说明是司机自己注册账号
-        if (driver.getCreateUser() == null && driver.getCreateUserRole() == null) {
-            Long driverId = driver.getId(); // 获取新插入的司机 ID
-
-            // 设置update aop无法覆盖的 createUser 和 createUserRole
-            driver.setCreateUser(driverId);
-            driver.setCreateUserRole(JwtClaimsConstant.ROLE_DRIVER);
-
-            BaseContext.setCurrentId(driverId);
-            BaseContext.setCurrentUserRole(JwtClaimsConstant.ROLE_DRIVER);
-
-            driverMapper.update(driver); // 再次更新记录
-            BaseContext.remove();
-        }
     }
-
 
 }

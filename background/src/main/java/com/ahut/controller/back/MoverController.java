@@ -1,13 +1,9 @@
 package com.ahut.controller.back;
 
-import com.ahut.dto.MoverDTO;
 import com.ahut.properties.JwtProperties;
-import com.ahut.result.Result;
 import com.ahut.service.MoverService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,14 +20,6 @@ public class MoverController {
     @Autowired
     private JwtProperties jwtProperties;
 
-
-    @PostMapping
-    public Result save(@RequestBody MoverDTO moverDTO) {
-        log.info("新增搬家工人:{}", moverDTO);
-        System.out.println("当前线程id：" + Thread.currentThread().getId());
-        moverService.save(moverDTO);
-        return Result.success();
-    }
 
     /**
      * 退出

@@ -1,12 +1,15 @@
 package com.ahut.service.impl;
 
 import com.ahut.constant.MessageConstant;
+import com.ahut.context.BaseContext;
 import com.ahut.dto.UserLoginDTO;
+import com.ahut.dto.UserRegisterDTO;
 import com.ahut.entity.Admin;
 import com.ahut.exception.AccountNotFoundException;
 import com.ahut.exception.PasswordErrorException;
 import com.ahut.mapper.AdminMapper;
 import com.ahut.service.AdminService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -47,6 +50,19 @@ public class AdminServiceImpl implements AdminService {
 
         //3、返回实体对象
         return admin;
+    }
+
+    @Override
+    public void save(UserRegisterDTO userRegisterDTO) {
+        Admin admin = new Admin();
+        // 对象属性拷贝
+        BeanUtils.copyProperties(userRegisterDTO, admin);
+        // 对密码进行加密
+        admin.setPassword(DigestUtils.md5DigestAsHex(userRegisterDTO.getPassword().getBytes()));
+        admin.setName(admin.getUsername());
+        admin.setCreateUser(BaseContext.getCurrentId());
+        admin.setUpdateUser(BaseContext.getCurrentId());
+        adminMapper.insert(admin);
     }
 
 }

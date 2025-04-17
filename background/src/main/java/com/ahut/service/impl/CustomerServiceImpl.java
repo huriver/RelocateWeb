@@ -2,12 +2,14 @@ package com.ahut.service.impl;
 
 import com.ahut.constant.MessageConstant;
 import com.ahut.dto.UserLoginDTO;
+import com.ahut.dto.UserRegisterDTO;
 import com.ahut.entity.Customer;
 import com.ahut.exception.AccountLockedException;
 import com.ahut.exception.AccountNotFoundException;
 import com.ahut.exception.PasswordErrorException;
 import com.ahut.mapper.CustomerMapper;
 import com.ahut.service.CustomerService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -48,6 +50,17 @@ public class CustomerServiceImpl implements CustomerService {
 
         //3、返回实体对象
         return customer;
+    }
+
+    @Override
+    public void save(UserRegisterDTO userRegisterDTO) {
+        Customer customer = new Customer();
+        // 对象属性拷贝
+        BeanUtils.copyProperties(userRegisterDTO, customer);
+        // 对密码进行加密
+        customer.setPassword(DigestUtils.md5DigestAsHex(userRegisterDTO.getPassword().getBytes()));
+        customer.setName(customer.getUsername());
+        customerMapper.insert(customer);
     }
 
 }

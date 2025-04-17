@@ -5,7 +5,6 @@ import com.ahut.entity.Driver;
 import com.ahut.enumeration.OperationType;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Select;
 
 @Mapper
@@ -20,7 +19,6 @@ public interface DriverMapper {
     // 新增司机
     @Insert("insert into driver (username, password, name, create_time, update_time) values " +
             "(#{username}, #{password}, #{name}, #{createTime}, #{updateTime})")
-    @Options(useGeneratedKeys = true, keyProperty = "id")
     @AutoFill(value = OperationType.INSERT)
     void insert(Driver driver);
 

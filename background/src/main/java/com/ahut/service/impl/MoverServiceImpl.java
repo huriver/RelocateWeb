@@ -1,11 +1,10 @@
 package com.ahut.service.impl;
 
-import com.ahut.constant.JwtClaimsConstant;
 import com.ahut.constant.MessageConstant;
-import com.ahut.context.BaseContext;
-import com.ahut.dto.MoverDTO;
 import com.ahut.dto.UserLoginDTO;
+import com.ahut.dto.UserRegisterDTO;
 import com.ahut.entity.Mover;
+import com.ahut.exception.AccountLockedException;
 import com.ahut.exception.AccountNotFoundException;
 import com.ahut.exception.PasswordErrorException;
 import com.ahut.mapper.MoverMapper;
@@ -55,27 +54,13 @@ public class MoverServiceImpl implements MoverService {
 
 
     @Override
-    public void save(MoverDTO moverDTO) {
+    public void save(UserRegisterDTO userRegisterDTO) {
         Mover mover = new Mover();
         // 对象属性拷贝
-        BeanUtils.copyProperties(moverDTO, mover);
+        BeanUtils.copyProperties(userRegisterDTO, mover);
         // 对密码进行加密
-        mover.setPassword(DigestUtils.md5DigestAsHex(moverDTO.getPassword().getBytes()));
+        mover.setPassword(DigestUtils.md5DigestAsHex(userRegisterDTO.getPassword().getBytes()));
+        mover.setName(mover.getUsername());
         moverMapper.insert(mover);
-
-        // 说明是司机自己注册账号
-        if (mover.getCreateUser() == null && mover.getCreateUserRole() == null) {
-            Long moverId = mover.getId(); // 获取新插入的司机 ID
-
-            // 设置update aop无法覆盖的 createUser 和 createUserRole
-            mover.setCreateUser(moverId);
-            mover.setCreateUserRole(JwtClaimsConstant.ROLE_DRIVER);
-
-            BaseContext.setCurrentId(moverId);
-            BaseContext.setCurrentUserRole(JwtClaimsConstant.ROLE_DRIVER);
-
-            moverMapper.update(mover); // 再次更新记录
-            BaseContext.remove();
-        }
     }
 }
