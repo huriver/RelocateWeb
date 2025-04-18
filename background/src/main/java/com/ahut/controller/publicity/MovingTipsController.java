@@ -1,4 +1,4 @@
-package com.***REMOVED***.controller.common;
+package com.***REMOVED***.controller.publicity;
 
 import com.***REMOVED***.dto.MovingTipsPageQueryDTO;
 import com.***REMOVED***.result.PageResult;
@@ -10,9 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * 员工管理
- */
+
 @RestController
 @RequestMapping("/public/moving-tips")
 @Slf4j
@@ -25,7 +23,7 @@ public class MovingTipsController {
     @GetMapping("/page")
     public Result<PageResult> page(MovingTipsPageQueryDTO movingTipsPageQueryDTO) {
         movingTipsPageQueryDTO.setIsPublished(true);
-        log.info("用户端搬家新闻分页查询，参数为:{}", movingTipsPageQueryDTO);
+        log.info("用户端搬家须知分页查询，参数为:{}", movingTipsPageQueryDTO);
         PageResult pageResult = movingTipsService.pageQuery(movingTipsPageQueryDTO);
         return Result.success(pageResult);
     }
