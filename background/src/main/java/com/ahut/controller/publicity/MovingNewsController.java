@@ -1,32 +1,30 @@
-package com.ahut.controller.common;
+package com.ahut.controller.publicity;
 
-import com.ahut.dto.MovingTipsPageQueryDTO;
+import com.ahut.dto.MovingNewsPageQueryDTO;
 import com.ahut.result.PageResult;
 import com.ahut.result.Result;
-import com.ahut.service.MovingTipsService;
+import com.ahut.service.MovingNewsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * 员工管理
- */
+
 @RestController
-@RequestMapping("/public/moving-tips")
+@RequestMapping("/public/moving-news")
 @Slf4j
-public class MovingTipsController {
+public class MovingNewsController {
 
     @Autowired
-    private MovingTipsService movingTipsService;
+    private MovingNewsService movingNewsService;
 
 
     @GetMapping("/page")
-    public Result<PageResult> page(MovingTipsPageQueryDTO movingTipsPageQueryDTO) {
-        movingTipsPageQueryDTO.setIsPublished(true);
-        log.info("用户端搬家新闻分页查询，参数为:{}", movingTipsPageQueryDTO);
-        PageResult pageResult = movingTipsService.pageQuery(movingTipsPageQueryDTO);
+    public Result<PageResult> page(MovingNewsPageQueryDTO movingNewsPageQueryDTO) {
+        movingNewsPageQueryDTO.setIsPublished(true);
+        log.info("搬家新闻分页查询，参数为:{}", movingNewsPageQueryDTO);
+        PageResult pageResult = movingNewsService.pageQuery(movingNewsPageQueryDTO);
         return Result.success(pageResult);
     }
 
