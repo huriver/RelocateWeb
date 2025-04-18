@@ -1,6 +1,7 @@
 package com.***REMOVED***.service.impl;
 
 import com.***REMOVED***.constant.MessageConstant;
+import com.***REMOVED***.dto.CustomerDTO;
 import com.***REMOVED***.dto.UserLoginDTO;
 import com.***REMOVED***.dto.UserRegisterDTO;
 import com.***REMOVED***.entity.Customer;
@@ -62,5 +63,20 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setName(customer.getUsername());
         customerMapper.insert(customer);
     }
+
+    @Override
+    public Customer getById(long id) {
+        Customer customer = customerMapper.getById(id);
+        customer.setPassword("****");
+        return customer;
+    }
+
+    @Override
+    public void update(CustomerDTO customerDTO) {
+        Customer customer = new Customer();
+        BeanUtils.copyProperties(customerDTO, customer);
+        customerMapper.update(customer);
+    }
+
 
 }
