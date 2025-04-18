@@ -1,6 +1,7 @@
 package com.ahut.service.impl;
 
 import com.ahut.constant.MessageConstant;
+import com.ahut.dto.CustomerDTO;
 import com.ahut.dto.UserLoginDTO;
 import com.ahut.dto.UserRegisterDTO;
 import com.ahut.entity.Customer;
@@ -62,5 +63,20 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setName(customer.getUsername());
         customerMapper.insert(customer);
     }
+
+    @Override
+    public Customer getById(long id) {
+        Customer customer = customerMapper.getById(id);
+        customer.setPassword("****");
+        return customer;
+    }
+
+    @Override
+    public void update(CustomerDTO customerDTO) {
+        Customer customer = new Customer();
+        BeanUtils.copyProperties(customerDTO, customer);
+        customerMapper.update(customer);
+    }
+
 
 }

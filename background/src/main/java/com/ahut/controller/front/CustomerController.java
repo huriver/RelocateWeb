@@ -1,11 +1,12 @@
 package com.ahut.controller.front;
 
-import com.ahut.properties.JwtProperties;
+import com.ahut.dto.CustomerDTO;
+import com.ahut.entity.Customer;
+import com.ahut.result.Result;
 import com.ahut.service.CustomerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 员工管理
@@ -17,9 +18,32 @@ public class CustomerController {
 
     @Autowired
     private CustomerService customerService;
-    @Autowired
-    private JwtProperties jwtProperties;
 
+    /**
+     * 根据id查询消费者信息
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/{id}")
+    public Result<Customer> getById(@PathVariable long id) {
+        Customer customer = customerService.getById(id);
+        return Result.success(customer);
+    }
+
+
+    /**
+     * 编辑消费者信息
+     *
+     * @param customerDTO
+     * @return
+     */
+    @PutMapping
+    public Result update(@RequestBody CustomerDTO customerDTO) {
+        log.info("编辑消费者信息:{}", customerDTO);
+        customerService.update(customerDTO);
+        return Result.success();
+    }
 
     /**
      * 退出
@@ -89,18 +113,6 @@ public class CustomerController {
 //        return Result.success(employee);
 //    }
 //
-//    /**
-//     * 编辑员工信息
-//     *
-//     * @param employeeDTO
-//     * @return
-//     */
-//    @PutMapping
-//    @ApiOperation("编辑员工信息")
-//    public Result update(@RequestBody EmployeeDTO employeeDTO) {
-//        log.info("编辑员工信息:{}", employeeDTO);
-//        employeeService.update(employeeDTO);
-//        return Result.success();
-//    }
+
 
 }

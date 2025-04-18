@@ -11,13 +11,13 @@ import org.apache.ibatis.annotations.Select;
 public interface AdminMapper {
 
     // 根据用户名查询用户信息
-    @Select("select id, username, password, name, create_time, update_time, create_user, update_user " +
+    @Select("select id, username, password, name, photo_url, create_time, update_time, create_user, update_user " +
             "from admin where username = #{username};")
     Admin getByUsername(String username);
 
     // 新增管理员
-    @Insert("insert into admin (username, password, name, create_time, update_time, create_user, update_user) " +
-            "values (#{username}, #{password}, #{name}, #{createTime}, #{updateTime}, #{createUser}, #{updateUser})")
+    @Insert("insert into admin (username, password, name, photo_url, create_time, update_time, create_user, update_user) " +
+            "values (#{username}, #{password}, #{name}, #{photoUrl},#{createTime}, #{updateTime}, #{createUser}, #{updateUser})")
     @AutoFill(value = OperationType.INSERT)
     void insert(Admin admin);
 }
