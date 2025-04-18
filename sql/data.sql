@@ -258,6 +258,53 @@ CREATE TABLE `vehicle` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='车辆信息表';
 
 
+-- ----------------------------
+-- Table structure for moving_news
+-- ----------------------------
+DROP TABLE IF EXISTS `moving_news`;
+CREATE TABLE `moving_news` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键，自增',
+  `title` varchar(255) NOT NULL COMMENT '新闻标题',
+  `content` text NOT NULL COMMENT '新闻内容',
+  `publish_date` date NOT NULL COMMENT '发布日期',
+  `is_published` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否已发布：0-否，1-是',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_time` datetime DEFAULT NULL COMMENT '修改时间',
+  `create_user` bigint(20) DEFAULT NULL COMMENT '创建用户ID（可以关联管理员表）',
+  `update_user` bigint(20) DEFAULT NULL COMMENT '更新用户ID（可以关联管理员表）',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='搬家新闻表';
+
+-- ----------------------------
+-- Table structure for moving_tips
+-- ----------------------------
+DROP TABLE IF EXISTS `moving_tips`;
+CREATE TABLE `moving_tips` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键，自增',
+  `title` varchar(255) NOT NULL COMMENT '须知标题',
+  `content` text NOT NULL COMMENT '须知内容',
+  `category` varchar(100) DEFAULT NULL COMMENT '须知分类（例如：打包技巧、注意事项等）',
+  `is_published` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否已发布：0-否，1-是',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_time` datetime DEFAULT NULL COMMENT '修改时间',
+  `create_user` bigint(20) DEFAULT NULL COMMENT '创建用户ID（可以关联管理员表）',
+  `update_user` bigint(20) DEFAULT NULL COMMENT '更新用户ID（可以关联管理员表）',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='搬家须知表';
+
+INSERT INTO `moving_news` (`id`, `title`, `content`, `publish_date`, `is_published`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
+(1, 'XX搬家公司正式成立五周年！感恩回馈新老客户', '尊敬的客户，感谢您五年来的支持与信任！XX搬家公司今日迎来成立五周年纪念日。为回馈广大新老客户，我们特别推出一系列优惠活动，包括搬家费用折扣、免费包装材料赠送等。未来，我们将继续秉承“专业、高效、安全”的服务理念，为您提供更优质的搬家体验。', '2025-03-15', 1, '2025-03-15 09:00:00', '2025-03-15 09:00:00', 1, 1),
+(2, 'XX搬家公司荣获“年度最佳服务商”称号', '热烈祝贺！在近日举行的[行业名称]年度评选中，XX搬家公司凭借卓越的服务质量和良好的用户口碑，荣获“年度最佳服务商”称号。这是对我们团队辛勤付出的肯定，也是我们不断前进的动力。我们将以此为契机，继续提升服务水平，为客户创造更大的价值。', '2024-11-20', 1, '2024-11-20 10:30:00', '2024-11-20 11:00:00', 1, 1),
+(3, 'XX搬家公司推出全新“无忧打包”服务', '为了更好地满足客户的搬家需求，XX搬家公司正式推出全新“无忧打包”服务。该服务由我们专业的打包团队负责，提供从物品分类、包装、到运输的全程服务，让您无需为打包烦恼，轻松实现搬家。详情请咨询我们的客服人员。', '2025-01-10', 1, '2025-01-10 14:00:00', '2025-01-10 14:30:00', 1, 1),
+(4, 'XX搬家公司扩大服务范围，新增[新服务城市]线路', '好消息！XX搬家公司为了更好地服务更多客户，即日起正式开通[新服务城市]的搬家线路。无论您是个人搬家还是企业搬迁，我们都将以专业的服务和合理的价格，为您提供便捷高效的搬家解决方案。欢迎致电咨询或在线预约。', '2024-09-01', 1, '2024-09-01 16:00:00', '2024-09-02 08:00:00', 1, 1),
+(5, 'XX搬家公司积极响应环保号召，启用环保包装材料', 'XX搬家公司一直致力于可持续发展。为了减少搬家过程中对环境的影响，我们已全面启用环保、可回收的包装材料。我们希望通过自身的努力，为绿色环保贡献一份力量，同时也为客户提供更健康、更放心的搬家服务。', '2025-04-05', 1, '2025-04-05 11:30:00', '2025-04-05 12:00:00', 1, 1);
+
+INSERT INTO `moving_tips` (`id`, `title`, `content`, `category`, `is_published`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
+(1, '搬家前一周必备清单，让您有条不紊', '搬家前一周是准备工作的关键时期。建议您：\n1. 开始整理和打包非必需品。\n2. 联系物业或房东办理相关手续。\n3. 预约搬家公司并确认搬家时间。\n4. 清理冰箱，处理不需要的物品。\n5. 准备好搬家当天的必需品（如水、食物、常用药品等）。', '搬家准备', 1, '2025-03-20 10:00:00', '2025-03-20 10:00:00', 1, 1),
+(2, '打包技巧：易碎物品如何安全包装？', '打包易碎物品需要格外小心。以下是一些建议：\n1. 使用气泡膜或泡沫板将物品包裹严实。\n2. 在纸箱底部铺上一层缓冲材料（如旧报纸、泡沫颗粒）。\n3. 将包裹好的易碎物品放入纸箱，周围用填充物填满，防止晃动。\n4. 在纸箱外清楚标注“易碎品，小心轻放”。', '打包技巧', 1, '2025-03-22 14:30:00', '2025-03-22 14:30:00', 1, 1),
+(3, '搬家当天注意事项，确保顺利进行', '搬家当天需要注意以下事项：\n1. 提前到达搬家地点，与搬家师傅做好沟通。\n2. 清点搬运物品，确认数量和状态。\n3. 在新家指挥物品摆放，确保符合您的要求。\n4. 检查所有物品是否安全送达，如有遗失或损坏及时与搬家公司沟通。\n5. 支付搬家费用并索要发票。', '搬家当天', 1, '2025-03-25 09:30:00', '2025-03-25 09:30:00', 1, 1),
+(4, '如何选择合适的搬家公司？这几点很重要', '选择一家靠谱的搬家公司至关重要。建议您考虑以下几点：\n1. 查看搬家公司的资质和口碑。\n2. 比较不同公司的报价和服务内容。\n3. 确认是否有正规的搬家合同。\n4. 了解搬家公司的保险条款。\n5. 可以咨询身边的朋友或同事的推荐。', '选择搬家公司', 1, '2025-03-28 16:00:00', '2025-03-28 16:00:00', 1, 1),
+(5, '搬家后别忘了做这几件事，快速适应新家', '搬家完成后，还有一些事情需要您处理：\n1. 清理新家，进行全面的清洁。\n2. 检查水电煤气等是否正常。\n3. 整理 unpacked 的物品，将它们归位。\n4. 更换门锁（如果需要）。\n5. 熟悉新家的周边环境。', '搬家后', 1, '2025-04-01 11:00:00', '2025-04-01 11:00:00', 1, 1);
 
 -- 插入管理员数据
 INSERT INTO `admin` (`username`, `password`, `name`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
