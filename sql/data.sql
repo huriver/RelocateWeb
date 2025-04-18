@@ -15,6 +15,7 @@ CREATE TABLE `admin` (
   `username` varchar(100) NOT NULL COMMENT '用户名，唯一',
   `password` varchar(100) NOT NULL COMMENT '密码',
   `name` varchar(200) NOT NULL COMMENT '管理员姓名',
+  `photo_url` varchar(200) COMMENT '照片URL',
   `create_time` datetime COMMENT '创建时间',
   `update_time` datetime COMMENT '修改时间',
   `create_user` bigint(20) COMMENT '创建用户ID',
@@ -307,10 +308,15 @@ INSERT INTO `moving_tips` (`id`, `title`, `content`, `category`, `is_published`,
 (5, '搬家后别忘了做这几件事，快速适应新家', '搬家完成后，还有一些事情需要您处理：\n1. 清理新家，进行全面的清洁。\n2. 检查水电煤气等是否正常。\n3. 整理 unpacked 的物品，将它们归位。\n4. 更换门锁（如果需要）。\n5. 熟悉新家的周边环境。', '搬家后', 1, '2025-04-01 11:00:00', '2025-04-01 11:00:00', 1, 1);
 
 -- 插入管理员数据
-INSERT INTO `admin` (`username`, `password`, `name`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
-('admin1', '81dc9bdb52d04dc20036dbd8313ed055', '超级管理员', '2025-04-17 10:00:00', '2025-04-17 10:00:00', NULL, NULL),
-('manager2', '81dc9bdb52d04dc20036dbd8313ed055', '运营经理', '2025-04-17 10:05:00', '2025-04-17 10:05:00', 1, 1);
+-- 插入模拟数据
+INSERT INTO `admin` (`username`, `password`, `name`, `photo_url`, `create_time`, `update_time`, `create_user`, `update_user`)
+VALUES
+('superadmin', '81dc9bdb52d04dc20036dbd8313ed055', '超级管理员', '/uploads/admin/superadmin_avatar.jpg', NOW(), NOW(), 1, 1),
+('admin_zhang', '81dc9bdb52d04dc20036dbd8313ed055', '张伟', '/uploads/admin/zhangwei_photo.png', NOW(), NOW(), 1, 1),
+('admin_li', '81dc9bdb52d04dc20036dbd8313ed055', '李娜', '/uploads/admin/lina_pic.jpeg', NOW(), NOW(), 1, 1),
+('content_editor', '81dc9bdb52d04dc20036dbd8313ed055', '王编辑', '/uploads/admin/wangeditor_img.webp', NOW(), NOW(), 1, 1);
 
+-- 您可以根据需要添加更多数据
 -- 插入配置数据
 INSERT INTO `configuration` (`name`, `value`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
 ('website_name', '轻松搬家网', '2025-04-17 10:10:00', '2025-04-17 10:10:00', 1, 1),

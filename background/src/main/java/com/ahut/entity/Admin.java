@@ -16,6 +16,7 @@ public class Admin {
     private String username;
     private String password;
     private String name;
+    private String photoUrl;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private Long createUser;
