@@ -1,11 +1,14 @@
 package com.ahut.controller.back;
 
-import com.ahut.properties.JwtProperties;
+import com.ahut.context.BaseContext;
+import com.ahut.dto.AdminDTO;
+import com.ahut.dto.ChangePasswordDTO;
+import com.ahut.entity.Admin;
+import com.ahut.result.Result;
 import com.ahut.service.AdminService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 员工管理
@@ -17,8 +20,45 @@ public class AdminController {
 
     @Autowired
     private AdminService adminService;
-    @Autowired
-    private JwtProperties jwtProperties;
+
+    /**
+     * 根据id查询管理员信息
+     *
+     * @return
+     */
+    @GetMapping
+    public Result<Admin> getById() {
+        long id = BaseContext.getCurrentId();
+        Admin admin = adminService.getById(id);
+        return Result.success(admin);
+    }
+
+
+    /**
+     * 编辑管理员信息
+     *
+     * @param adminDTO
+     * @return
+     */
+    @PutMapping
+    public Result update(@RequestBody AdminDTO adminDTO) {
+        log.info("编辑管理员信息:{}", adminDTO);
+        adminService.update(adminDTO);
+        return Result.success();
+    }
+
+    /**
+     * 修改密码
+     *
+     * @param changePasswordDTO
+     * @return
+     */
+    @PutMapping("/editPassword")
+    public Result changePassword(@RequestBody ChangePasswordDTO changePasswordDTO) {
+        log.info("管理员修改密码：{}", changePasswordDTO);
+        adminService.changePassword(changePasswordDTO);
+        return Result.success();
+    }
 
     /**
      * 退出
