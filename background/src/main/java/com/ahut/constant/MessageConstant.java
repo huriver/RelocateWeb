@@ -26,4 +26,6 @@ public class MessageConstant {
     public static final String ORDER_NOT_FOUND = "订单不存在";
 
 
+    public static final String OLD_PASSWORD_ERROR = "旧密码错误";
+    public static final String PASSWORD_NOT_MATCH = "两次密码不一致";
 }

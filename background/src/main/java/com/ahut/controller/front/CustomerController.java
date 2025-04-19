@@ -1,5 +1,6 @@
 package com.***REMOVED***.controller.front;
 
+import com.***REMOVED***.dto.ChangePasswordDTO;
 import com.***REMOVED***.dto.CustomerDTO;
 import com.***REMOVED***.entity.Customer;
 import com.***REMOVED***.result.Result;
@@ -29,6 +30,13 @@ public class CustomerController {
     public Result<Customer> getById(@PathVariable long id) {
         Customer customer = customerService.getById(id);
         return Result.success(customer);
+    }
+
+    @PutMapping("/editPassword")
+    public Result changePassword(@RequestBody ChangePasswordDTO changePasswordDTO) {
+        log.info("消费者修改密码：{}", changePasswordDTO);
+        customerService.changePassword(changePasswordDTO);
+        return Result.success();
     }
 
 
