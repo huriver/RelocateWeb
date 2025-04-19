@@ -24,4 +24,9 @@ public interface DriverMapper {
 
     @AutoFill(value = OperationType.UPDATE)
     void update(Driver driver);
+
+    @Select("select id, username, password, name, gender, phone, id_card, driving_years, photo_url, is_banned, " +
+            "create_time, update_time " +
+            "from driver where id = #{id};")
+    Driver getById(long id);
 }

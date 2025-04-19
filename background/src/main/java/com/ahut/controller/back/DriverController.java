@@ -1,15 +1,16 @@
 package com.ahut.controller.back;
 
-import com.ahut.properties.JwtProperties;
+import com.ahut.context.BaseContext;
+import com.ahut.dto.ChangePasswordDTO;
+import com.ahut.dto.DriverDTO;
+import com.ahut.entity.Driver;
+import com.ahut.result.Result;
 import com.ahut.service.DriverService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-/**
- * 员工管理
- */
+
 @RestController
 @RequestMapping("/back/driver")
 @Slf4j
@@ -17,8 +18,47 @@ public class DriverController {
 
     @Autowired
     private DriverService driverService;
-    @Autowired
-    private JwtProperties jwtProperties;
+
+
+    /**
+     * 根据id查询司机信息
+     *
+     * @return
+     */
+    @GetMapping
+    public Result<Driver> getById() {
+        long id = BaseContext.getCurrentId();
+        log.info("根据id查询司机信息:{}", id);
+        Driver driver = driverService.getById(id);
+        return Result.success(driver);
+    }
+
+
+    /**
+     * 编辑司机信息
+     *
+     * @param driverDTO
+     * @return
+     */
+    @PutMapping
+    public Result update(@RequestBody DriverDTO driverDTO) {
+        log.info("编辑司机信息:{}", driverDTO);
+        driverService.update(driverDTO);
+        return Result.success();
+    }
+
+    /**
+     * 修改密码
+     *
+     * @param changePasswordDTO
+     * @return
+     */
+    @PutMapping("/editPassword")
+    public Result changePassword(@RequestBody ChangePasswordDTO changePasswordDTO) {
+        log.info("司机修改密码：{}", changePasswordDTO);
+        driverService.changePassword(changePasswordDTO);
+        return Result.success();
+    }
 
 
     /**

@@ -1,6 +1,9 @@
 package com.ahut.service.impl;
 
 import com.ahut.constant.MessageConstant;
+import com.ahut.context.BaseContext;
+import com.ahut.dto.ChangePasswordDTO;
+import com.ahut.dto.DriverDTO;
 import com.ahut.dto.UserLoginDTO;
 import com.ahut.dto.UserRegisterDTO;
 import com.ahut.entity.Driver;
@@ -63,6 +66,67 @@ public class DriverServiceImpl implements DriverService {
         driver.setPassword(DigestUtils.md5DigestAsHex(userRegisterDTO.getPassword().getBytes()));
         driver.setName(driver.getUsername());
         driverMapper.insert(driver);
+    }
+
+    /**
+     * 根据id查询司机
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public Driver getById(long id) {
+        Driver driver = driverMapper.getById(id);
+        driver.setPassword("****");
+        return driver;
+    }
+
+    /**
+     * 修改司机信息
+     *
+     * @param driverDTO
+     */
+    @Override
+    public void update(DriverDTO driverDTO) {
+        Driver driver = new Driver();
+        BeanUtils.copyProperties(driverDTO, driver);
+        driverMapper.update(driver);
+    }
+
+    /**
+     * 修改司机密码
+     *
+     * @param changePasswordDTO
+     */
+    @Override
+    public void changePassword(ChangePasswordDTO changePasswordDTO) {
+        // 1. 从 BaseContext 获取当前登录角色的 ID
+        Long currentDriverId = BaseContext.getCurrentId();
+
+        // 2. 从数据库中查询出当前登录角色的密码哈希值
+        String storedPasswordHash = driverMapper.getById(currentDriverId).getPassword();
+
+        // 3. 验证旧密码是否正确
+        String oldPasswordHashed = DigestUtils.md5DigestAsHex(changePasswordDTO.getOldPassword().getBytes());
+        if (!oldPasswordHashed.equals(storedPasswordHash)) {
+            throw new PasswordErrorException(MessageConstant.OLD_PASSWORD_ERROR);
+        }
+
+        // 4. 校验新密码和确认新密码是否一致
+        if (!changePasswordDTO.getNewPassword().equals(changePasswordDTO.getRePassword())) {
+            throw new PasswordErrorException(MessageConstant.PASSWORD_NOT_MATCH);
+        }
+
+        // 6. 加密新密码
+        String newPasswordHashed = DigestUtils.md5DigestAsHex(changePasswordDTO.getNewPassword().getBytes());
+
+        // 7. 更新数据库中的密码
+        Driver driver = Driver.builder()
+                .id(currentDriverId)
+                .password(newPasswordHashed)
+                .build();
+
+        driverMapper.update(driver);
     }
 
 }
