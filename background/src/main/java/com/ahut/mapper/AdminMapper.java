@@ -20,4 +20,13 @@ public interface AdminMapper {
             "values (#{username}, #{password}, #{name}, #{photoUrl},#{createTime}, #{updateTime}, #{createUser}, #{updateUser})")
     @AutoFill(value = OperationType.INSERT)
     void insert(Admin admin);
+
+    // 根据id查询管理员信息
+    @Select("select id, username, password, name, photo_url, create_time, update_time, create_user, update_user " +
+            "from admin where id = #{id};")
+    Admin getById(long id);
+
+    // 修改管理员信息
+    @AutoFill(value = OperationType.UPDATE)
+    void update(Admin admin);
 }
