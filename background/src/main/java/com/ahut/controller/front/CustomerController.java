@@ -1,5 +1,6 @@
 package com.ahut.controller.front;
 
+import com.ahut.context.BaseContext;
 import com.ahut.dto.ChangePasswordDTO;
 import com.ahut.dto.CustomerDTO;
 import com.ahut.entity.Customer;
@@ -23,20 +24,13 @@ public class CustomerController {
     /**
      * 根据id查询消费者信息
      *
-     * @param id
      * @return
      */
-    @GetMapping("/{id}")
-    public Result<Customer> getById(@PathVariable long id) {
+    @GetMapping
+    public Result<Customer> getById() {
+        long id = BaseContext.getCurrentId();
         Customer customer = customerService.getById(id);
         return Result.success(customer);
-    }
-
-    @PutMapping("/editPassword")
-    public Result changePassword(@RequestBody ChangePasswordDTO changePasswordDTO) {
-        log.info("消费者修改密码：{}", changePasswordDTO);
-        customerService.changePassword(changePasswordDTO);
-        return Result.success();
     }
 
 
@@ -50,6 +44,19 @@ public class CustomerController {
     public Result update(@RequestBody CustomerDTO customerDTO) {
         log.info("编辑消费者信息:{}", customerDTO);
         customerService.update(customerDTO);
+        return Result.success();
+    }
+
+    /**
+     * 修改密码
+     *
+     * @param changePasswordDTO
+     * @return
+     */
+    @PutMapping("/editPassword")
+    public Result changePassword(@RequestBody ChangePasswordDTO changePasswordDTO) {
+        log.info("消费者修改密码：{}", changePasswordDTO);
+        customerService.changePassword(changePasswordDTO);
         return Result.success();
     }
 
