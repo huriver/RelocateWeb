@@ -3,7 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.ahut.mapper.MovingNewsMapper">
 
-    <select id="pageQuery" resultType="com.ahut.entity.MovingNews">
+    <select id="pageQuery" resultType="MovingNews">
         select id, title, content, publish_date, is_published, create_time, update_time, create_user, update_user
         from moving_news
         <where>

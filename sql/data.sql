@@ -181,6 +181,8 @@ CREATE TABLE `service` (
   `short_description` text COMMENT '服务项简短描述',
   `loading_capacity_description` text COMMENT '装载能力详细说明',
   `default_price` decimal(10,2) NOT NULL COMMENT '起始价格（对应货车类型的5公里内价格）',
+  `average_rating` decimal(3,2) DEFAULT 0.00 COMMENT '平均评分值',
+  `rating_count` int(11) DEFAULT 0 COMMENT '评分数量',
   `create_time` datetime COMMENT '创建时间',
   `update_time` datetime COMMENT '修改时间',
   `create_user` bigint(20) COMMENT '创建用户ID',
@@ -293,97 +295,130 @@ CREATE TABLE `moving_tips` (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='搬家须知表';
 
+-- ----------------------------
+-- Data for table admin
+-- ----------------------------
+INSERT INTO `admin` (`id`, `username`, `password`, `name`, `photo_url`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
+(1, 'admin1', '81dc9bdb52d04dc20036dbd8313ed055', '超级管理员', '/uploads/admin/admin1_avatar.jpg', NOW(), NOW(), NULL, NULL),
+(2, 'manager2', '81dc9bdb52d04dc20036dbd8313ed055', '运营经理', '/uploads/admin/manager2_avatar.png', NOW(), NOW(), 1, 1);
+
+-- ----------------------------
+-- Data for table configuration
+-- ----------------------------
+INSERT INTO `configuration` (`id`, `name`, `value`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
+(1, 'website_name', '轻松搬家网', NOW(), NOW(), 1, 1),
+(2, 'default_currency', 'CNY', NOW(), NOW(), 1, 1);
+
+-- ----------------------------
+-- Data for table customer
+-- ----------------------------
+INSERT INTO `customer` (`id`, `username`, `password`, `name`, `gender`, `phone`, `email`, `id_card`, `family_phone`, `photo_url`, `is_banned`, `create_time`, `update_time`) VALUES
+(1, 'customer1', '81dc9bdb52d04dc20036dbd8313ed055', '张三', '男', '13812345678', 'zhangsan@example.com', '310101199001011234', '021-12345678', '/uploads/customer/customer1_photo.jpg', 0, NOW(), NOW()),
+(2, 'customer2', '81dc9bdb52d04dc20036dbd8313ed055', '李四', '女', '13987654321', 'lisi@example.com', '440301198505054321', '010-98765432', '/uploads/customer/customer2_photo.png', 0, NOW(), NOW());
+
+-- ----------------------------
+-- Data for table truck_type
+-- ----------------------------
+INSERT INTO `truck_type` (`id`, `type_name`, `capacity`, `description`, `base_fare`, `price_per_km_tier1`, `price_per_km_tier2`, `price_per_km_tier3`, `price_per_km_tier4`, `price_per_km_tier5`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
+(1, '小型面包车', '1.8*1.3*1.1m', '灵活便捷，适合小件搬运或城市短驳', 80.00, 5.00, 4.50, 4.00, 3.50, 3.00, NOW(), NOW(), 1, 1),
+(2, '中型厢式货车', '2.5*1.8*1.6m', '空间适中，能满足普通家庭或一居室搬家需求', 120.00, 7.00, 6.50, 6.00, 5.50, 5.00, NOW(), NOW(), 1, 1),
+(3, '大型厢式货车', '4.2*2.0*2.0m', '载货量大，适合物品较多的家庭或小型企业搬迁', 200.00, 10.00, 9.00, 8.00, 7.00, 6.00, NOW(), NOW(), 1, 1);
+
+-- ----------------------------
+-- Data for table service_category
+-- ----------------------------
+INSERT INTO `service_category` (`id`, `type_name`, `description`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
+(1, '标准搬家', '提供基础的物品搬运和运输服务', NOW(), NOW(), 1, 1),
+(2, '精品搬家', '在标准搬家基础上，提供物品打包、还原等增值服务', NOW(), NOW(), 1, 1),
+(3, '单件快送', '针对少量物品或单件家具的快速搬运服务', NOW(), NOW(), 1, 1),
+(4, '企业搬迁', '专业的办公室、库房等企业单位搬迁服务', NOW(), NOW(), 1, 1);
+
+-- ----------------------------
+-- Data for table service
+-- ----------------------------
+INSERT INTO `service` (`id`, `category_id`, `truck_type_id`, `service_name`, `short_description`, `loading_capacity_description`, `default_price`, `average_rating`, `rating_count`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
+(1, 1, 1, '标准搬家 (小型面包车)', '经济型小型搬家服务', '约可装载10-15个大纸箱、一台洗衣机', 80.00, 4.80, 10, NOW(), NOW(), 1, 1),
+(2, 1, 2, '标准搬家 (中型厢式货车)', '适合普通家庭的标准搬家服务', '约可装载床、沙发、冰箱、洗衣机及20个纸箱', 120.00, 4.50, 25, NOW(), NOW(), 1, 1),
+(3, 2, 2, '精品搬家 (中型厢式货车)', '提供打包和基础还原服务的家庭搬家', '同中型厢式货车容量，含打包材料和人工', 120.00, 4.90, 15, NOW(), NOW(), 1, 1);
+
+-- ----------------------------
+-- Data for table driver
+-- ----------------------------
+INSERT INTO `driver` (`id`, `username`, `password`, `name`, `gender`, `phone`, `id_card`, `driving_years`, `photo_url`, `is_banned`, `create_time`, `update_time`) VALUES
+(1, 'driver1', '81dc9bdb52d04dc20036dbd8313ed055', '王五', '男', '13555556666', '320501198808087890', 5, '/uploads/driver/driver1_photo.jpg', 0, NOW(), NOW()),
+(2, 'driver2', '81dc9bdb52d04dc20036dbd8313ed055', '赵六', '男', '13666667777', '510701199209091234', 10, '/uploads/driver/driver2_photo.png', 0, NOW(), NOW());
+
+-- ----------------------------
+-- Data for table mover
+-- ----------------------------
+INSERT INTO `mover` (`id`, `username`, `password`, `name`, `gender`, `phone`, `id_card`, `photo_url`, `is_banned`, `create_time`, `update_time`) VALUES
+(1, 'mover1', '81dc9bdb52d04dc20036dbd8313ed055', '孙七', '男', '13777778888', '420101199510105678', '/uploads/mover/mover1_photo.jpg', 0, NOW(), NOW()),
+(2, 'mover2', '81dc9bdb52d04dc20036dbd8313ed055', '周八', '男', '13000009999', '610801199811112345', '/uploads/mover/mover2_photo.png', 0, NOW(), NOW());
+
+-- ----------------------------
+-- Data for table driver_truck_type
+-- ----------------------------
+INSERT INTO `driver_truck_type` (`driver_id`, `truck_type_id`, `create_time`, `update_time`) VALUES
+(1, 1, NOW(), NOW()),
+(1, 2, NOW(), NOW()), -- 司机1可以开小型和中型
+(2, 2, NOW(), NOW()),
+(2, 3, NOW(), NOW()); -- 司机2可以开中型和大型
+
+-- ----------------------------
+-- Data for table vehicle
+-- ----------------------------
+INSERT INTO `vehicle` (`id`, `driver_id`, `truck_type_id`, `license_plate_number`, `vehicle_brand`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
+(1, 1, 1, '沪A12345', '五菱宏光', NOW(), NOW(), 1, 1),
+(2, 2, 2, '京B98765', '福田时代', NOW(), NOW(), 1, 1);
+
+-- ----------------------------
+-- Data for table moving_order
+-- ----------------------------
+INSERT INTO `moving_order` (`id`, `customer_id`, `order_number`, `service_id`, `truck_type_id`, `driver_id`, `vehicle_id`, `order_status`, `reservation_time`, `moving_origin`, `moving_destination`, `moving_price`, `is_paid`, `payment_time`, `moving_start_time`, `moving_end_time`, `number_of_helpers`, `notes`, `create_time`, `update_time`) VALUES
+(1, 1, 'MO20250418001', 1, 1, 1, 1, 4, '2025-04-18 09:00:00', '上海市浦东新区', '上海市徐汇区', 180.00, 1, '2025-04-18 08:30:00', '2025-04-18 09:30:00', '2025-04-18 11:30:00', 1, '物品不多', NOW(), NOW()),
+(2, 2, 'MO20250418002', 2, 2, 2, 2, 4, '2025-04-18 14:00:00', '北京市朝阳区', '北京市海淀区', 320.00, 1, '2025-04-18 13:30:00', '2025-04-18 14:30:00', '2025-04-18 17:00:00', 2, '有钢琴', NOW(), NOW());
+
+-- ----------------------------
+-- Data for table order_mover
+-- ----------------------------
+INSERT INTO `order_mover` (`id`, `order_id`, `mover_id`) VALUES
+(1, 1, 1), -- 订单1由搬运工1协助
+(2, 2, 1), -- 订单2由搬运工1协助
+(3, 2, 2); -- 订单2由搬运工2协助
+
+-- ----------------------------
+-- Data for table rating
+-- ----------------------------
+-- 评价订单1 (服务1, 司机1)
+INSERT INTO `rating` (`id`, `order_id`, `customer_id`, `ratee_id`, `rating_type`, `rating_value`, `comment`) VALUES
+(1, 1, 1, 1, 'service', 5, '服务非常满意，师傅很准时！'), -- 评价服务项1
+(2, 1, 1, 1, 'driver', 5, '司机王师傅态度很好，开车稳当。'), -- 评价司机1
+(3, 1, 1, 1, 'mover', 4, '搬运工孙七很辛苦，动作麻利。'); -- 评价搬运工1
+
+-- 评价订单2 (服务2, 司机2)
+INSERT INTO `rating` (`id`, `order_id`, `customer_id`, `ratee_id`, `rating_type`, `rating_value`, `comment`) VALUES
+(4, 2, 2, 2, 'service', 4, '标准搬家服务符合预期，钢琴搬运也顺利。'), -- 评价服务项2
+(5, 2, 2, 2, 'driver', 4, '司机赵师傅路线熟悉，安全送达。'); -- 评价司机2
+-- 注意：这里只模拟了对服务和司机的评分，实际可能还会对多个搬运工进行评分
+
+-- ----------------------------
+-- Data for table system_log
+-- ----------------------------
+INSERT INTO `system_log` (`id`, `log_time`, `user_id`, `user_type`, `operation`, `details`, `ip_address`) VALUES
+(1, '2025-04-18 10:00:00', 1, 'customer', '创建订单', '用户张三创建订单 MO20250418001', '192.168.1.100'),
+(2, '2025-04-18 11:00:00', 1, 'driver', '接单', '司机王五接单 MO20250418001', '192.168.1.101'),
+(3, '2025-04-18 12:00:00', 1, 'admin', '修改配置', '管理员 admin1 修改网站名称为 轻松搬家网', '172.16.0.50');
+
+-- ----------------------------
+-- Data for table moving_news
+-- ----------------------------
 INSERT INTO `moving_news` (`id`, `title`, `content`, `publish_date`, `is_published`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
-(1, 'XX搬家公司正式成立五周年！感恩回馈新老客户', '尊敬的客户，感谢您五年来的支持与信任！XX搬家公司今日迎来成立五周年纪念日。为回馈广大新老客户，我们特别推出一系列优惠活动，包括搬家费用折扣、免费包装材料赠送等。未来，我们将继续秉承“专业、高效、安全”的服务理念，为您提供更优质的搬家体验。', '2025-03-15', 1, '2025-03-15 09:00:00', '2025-03-15 09:00:00', 1, 1),
-(2, 'XX搬家公司荣获“年度最佳服务商”称号', '热烈祝贺！在近日举行的[行业名称]年度评选中，XX搬家公司凭借卓越的服务质量和良好的用户口碑，荣获“年度最佳服务商”称号。这是对我们团队辛勤付出的肯定，也是我们不断前进的动力。我们将以此为契机，继续提升服务水平，为客户创造更大的价值。', '2024-11-20', 1, '2024-11-20 10:30:00', '2024-11-20 11:00:00', 1, 1),
-(3, 'XX搬家公司推出全新“无忧打包”服务', '为了更好地满足客户的搬家需求，XX搬家公司正式推出全新“无忧打包”服务。该服务由我们专业的打包团队负责，提供从物品分类、包装、到运输的全程服务，让您无需为打包烦恼，轻松实现搬家。详情请咨询我们的客服人员。', '2025-01-10', 1, '2025-01-10 14:00:00', '2025-01-10 14:30:00', 1, 1),
-(4, 'XX搬家公司扩大服务范围，新增[新服务城市]线路', '好消息！XX搬家公司为了更好地服务更多客户，即日起正式开通[新服务城市]的搬家线路。无论您是个人搬家还是企业搬迁，我们都将以专业的服务和合理的价格，为您提供便捷高效的搬家解决方案。欢迎致电咨询或在线预约。', '2024-09-01', 1, '2024-09-01 16:00:00', '2024-09-02 08:00:00', 1, 1),
-(5, 'XX搬家公司积极响应环保号召，启用环保包装材料', 'XX搬家公司一直致力于可持续发展。为了减少搬家过程中对环境的影响，我们已全面启用环保、可回收的包装材料。我们希望通过自身的努力，为绿色环保贡献一份力量，同时也为客户提供更健康、更放心的搬家服务。', '2025-04-05', 1, '2025-04-05 11:30:00', '2025-04-05 12:00:00', 1, 1);
+(1, '搬家小贴士：如何打包易碎物品', '详细讲解了玻璃、陶瓷等易碎品的打包技巧...', '2025-04-15', 1, NOW(), NOW(), 1, 1),
+(2, '平台服务升级公告', '我们更新了司机端App，提升接单效率...', '2025-04-16', 1, NOW(), NOW(), 1, 1);
 
+-- ----------------------------
+-- Data for table moving_tips
+-- ----------------------------
 INSERT INTO `moving_tips` (`id`, `title`, `content`, `category`, `is_published`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
-(1, '搬家前一周必备清单，让您有条不紊', '搬家前一周是准备工作的关键时期。建议您：\n1. 开始整理和打包非必需品。\n2. 联系物业或房东办理相关手续。\n3. 预约搬家公司并确认搬家时间。\n4. 清理冰箱，处理不需要的物品。\n5. 准备好搬家当天的必需品（如水、食物、常用药品等）。', '搬家准备', 1, '2025-03-20 10:00:00', '2025-03-20 10:00:00', 1, 1),
-(2, '打包技巧：易碎物品如何安全包装？', '打包易碎物品需要格外小心。以下是一些建议：\n1. 使用气泡膜或泡沫板将物品包裹严实。\n2. 在纸箱底部铺上一层缓冲材料（如旧报纸、泡沫颗粒）。\n3. 将包裹好的易碎物品放入纸箱，周围用填充物填满，防止晃动。\n4. 在纸箱外清楚标注“易碎品，小心轻放”。', '打包技巧', 1, '2025-03-22 14:30:00', '2025-03-22 14:30:00', 1, 1),
-(3, '搬家当天注意事项，确保顺利进行', '搬家当天需要注意以下事项：\n1. 提前到达搬家地点，与搬家师傅做好沟通。\n2. 清点搬运物品，确认数量和状态。\n3. 在新家指挥物品摆放，确保符合您的要求。\n4. 检查所有物品是否安全送达，如有遗失或损坏及时与搬家公司沟通。\n5. 支付搬家费用并索要发票。', '搬家当天', 1, '2025-03-25 09:30:00', '2025-03-25 09:30:00', 1, 1),
-(4, '如何选择合适的搬家公司？这几点很重要', '选择一家靠谱的搬家公司至关重要。建议您考虑以下几点：\n1. 查看搬家公司的资质和口碑。\n2. 比较不同公司的报价和服务内容。\n3. 确认是否有正规的搬家合同。\n4. 了解搬家公司的保险条款。\n5. 可以咨询身边的朋友或同事的推荐。', '选择搬家公司', 1, '2025-03-28 16:00:00', '2025-03-28 16:00:00', 1, 1),
-(5, '搬家后别忘了做这几件事，快速适应新家', '搬家完成后，还有一些事情需要您处理：\n1. 清理新家，进行全面的清洁。\n2. 检查水电煤气等是否正常。\n3. 整理 unpacked 的物品，将它们归位。\n4. 更换门锁（如果需要）。\n5. 熟悉新家的周边环境。', '搬家后', 1, '2025-04-01 11:00:00', '2025-04-01 11:00:00', 1, 1);
-
--- 插入管理员数据
--- 插入模拟数据
-INSERT INTO `admin` (`username`, `password`, `name`, `photo_url`, `create_time`, `update_time`, `create_user`, `update_user`)
-VALUES
-('superadmin', '81dc9bdb52d04dc20036dbd8313ed055', '超级管理员', '/uploads/admin/superadmin_avatar.jpg', NOW(), NOW(), 1, 1),
-('admin_zhang', '81dc9bdb52d04dc20036dbd8313ed055', '张伟', '/uploads/admin/zhangwei_photo.png', NOW(), NOW(), 1, 1),
-('admin_li', '81dc9bdb52d04dc20036dbd8313ed055', '李娜', '/uploads/admin/lina_pic.jpeg', NOW(), NOW(), 1, 1),
-('content_editor', '81dc9bdb52d04dc20036dbd8313ed055', '王编辑', '/uploads/admin/wangeditor_img.webp', NOW(), NOW(), 1, 1);
-
--- 您可以根据需要添加更多数据
--- 插入配置数据
-INSERT INTO `configuration` (`name`, `value`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
-('website_name', '轻松搬家网', '2025-04-17 10:10:00', '2025-04-17 10:10:00', 1, 1),
-('default_currency', 'CNY', '2025-04-17 10:12:00', '2025-04-17 10:12:00', 1, 1);
-
--- 插入消费者数据
-INSERT INTO `customer` (`username`, `password`, `name`, `gender`, `phone`, `email`, `id_card`, `family_phone`, `photo_url`, `is_banned`, `create_time`, `update_time`) VALUES
-('customer1', '81dc9bdb52d04dc20036dbd8313ed055', '张三', '男', '13812345678', 'zhangsan@example.com', '310101199001011234', '021-1234567', NULL, 0, '2025-04-17 10:15:00', '2025-04-17 10:15:00'),
-('customer2', '81dc9bdb52d04dc20036dbd8313ed055', '李四', '女', '13987654321', 'lisi@example.com', '440301198505054321', '010-9876543', NULL, 0, '2025-04-17 10:18:00', '2025-04-17 10:18:00');
-
--- 插入司机数据
-INSERT INTO `driver` (`username`, `password`, `name`, `gender`, `phone`, `id_card`, `driving_years`, `photo_url`, `is_banned`, `create_time`, `update_time`) VALUES
-('driver1', '81dc9bdb52d04dc20036dbd8313ed055', '王五', '男', '13555556666', '320501198808087890', 5, NULL, 0, '2025-04-17 10:22:00', '2025-04-17 10:22:00'),
-('driver2', '81dc9bdb52d04dc20036dbd8313ed055', '赵六', '男', '13666667777', '510701199209091234', 10, NULL, 0, '2025-04-17 10:25:00', '2025-04-17 10:25:00');
-
--- 插入搬运工人数据
-INSERT INTO `mover` (`username`, `password`, `name`, `gender`, `phone`, `id_card`, `photo_url`, `is_banned`, `create_time`, `update_time`) VALUES
-('mover1', '81dc9bdb52d04dc20036dbd8313ed055', '孙七', '男', '13777778888', '420101199510105678', NULL, 0, '2025-04-17 10:28:00', '2025-04-17 10:28:00'),
-('mover2', '81dc9bdb52d04dc20036dbd8313ed055', '周八', '男', '13000009999', '610801199811112345', NULL, 0, '2025-04-17 10:31:00', '2025-04-17 10:31:00');
-
--- 插入服务类型数据
-INSERT INTO `service_category` (`type_name`, `description`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
-('标准搬家', '适用于普通家庭或个人搬家', '2025-04-17 10:35:00', '2025-04-17 10:35:00', 1, 1),
-('长途搬家', '跨城市或地区的搬家服务', '2025-04-17 10:38:00', '2025-04-17 10:38:00', 1, 1);
-
--- 插入货车类型数据
-INSERT INTO `truck_type` (`type_name`, `capacity`, `description`, `base_fare`, `price_per_km_tier1`, `price_per_km_tier2`, `price_per_km_tier3`, `price_per_km_tier4`, `price_per_km_tier5`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
-('小型面包车', '1.8*1.3*1.1m', '适合少量物品搬运', 80.00, 5.00, 4.50, 4.00, 3.50, 3.00, '2025-04-17 10:42:00', '2025-04-17 10:42:00', 1, 1),
-('中型厢式货车', '2.5*1.8*1.6m', '适合普通家庭搬运', 120.00, 7.00, 6.50, 6.00, 5.50, 5.00, '2025-04-17 10:45:00', '2025-04-17 10:45:00', 1, 1);
-
--- 插入服务项数据
-INSERT INTO `service` (`category_id`, `truck_type_id`, `service_name`, `short_description`, `loading_capacity_description`, `default_price`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
-(1, 1, '小型搬家', '经济型小型搬家服务', '可装载少量家具和行李', 150.00, '2025-04-17 10:50:00', '2025-04-17 10:50:00', 1, 1),
-(1, 2, '标准搬家', '适合2-3人家庭的搬家服务', '可装载普通家庭的家具和电器', 250.00, '2025-04-17 10:53:00', '2025-04-17 10:53:00', 1, 1),
-(2, 2, '同城长途搬家', '同城市内的较远距离搬家', '根据实际距离和物品数量报价', 300.00, '2025-04-17 10:56:00', '2025-04-17 10:56:00', 1, 1);
-
--- 插入车辆信息数据
-INSERT INTO `vehicle` (`driver_id`, `truck_type_id`, `license_plate_number`, `vehicle_brand`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
-(1, 1, '沪A12345', '五菱宏光', '2025-04-17 11:00:00', '2025-04-17 11:00:00', 1, 1),
-(2, 2, '京B98765', '福田时代', '2025-04-17 11:03:00', '2025-04-17 11:03:00', 1, 1);
-
--- 插入搬家订单数据
-INSERT INTO `moving_order` (`customer_id`, `order_number`, `service_id`, `truck_type_id`, `driver_id`, `vehicle_id`, `order_status`, `reservation_time`, `moving_origin`, `moving_destination`, `moving_price`, `is_paid`, `payment_time`, `moving_start_time`, `moving_end_time`, `number_of_helpers`, `notes`, `create_time`, `update_time`) VALUES
-(1, 'MO20250417001', 1, 1, 1, 1, 4, '2025-04-18 09:00:00', '上海市浦东新区', '上海市徐汇区', 180.00, 1, '2025-04-17 16:00:00', '2025-04-18 09:30:00', '2025-04-18 11:30:00', 1, '无', '2025-04-17 11:10:00', '2025-04-17 11:10:00'),
-(2, 'MO20250417002', 2, 2, 2, 2, 3, '2025-04-19 14:00:00', '北京市朝阳区', '北京市海淀区', 320.00, 0, NULL, '2025-04-19 14:30:00', NULL, 2, '需要搬运钢琴', '2025-04-17 11:15:00', '2025-04-17 11:15:00');
-
--- 插入订单搬运工人关联数据
-INSERT INTO `order_mover` (`order_id`, `mover_id`) VALUES
-(1, 1),
-(2, 1),
-(2, 2);
-
--- 插入评分数据
-INSERT INTO `rating` (`order_id`, `customer_id`, `ratee_id`, `rating_type`, `rating_value`, `comment`) VALUES
-(1, 1, 1, '司机', 5, '司机师傅很专业，服务态度好'),
-(1, 1, 1, '搬运工人', 4, '搬运速度很快，物品保护得不错'),
-(2, 2, 2, '司机', 4, '司机准时到达，路线熟悉'),
-(2, 2, 1, '搬运工人', 5, '非常给力，很细心');
-
--- 插入司机货车类型关联数据
-INSERT INTO `driver_truck_type` (`driver_id`, `truck_type_id`) VALUES
-(1, 1),
-(2, 2),
-(2, 1);
-
--- 插入系统日志数据
-INSERT INTO `system_log` (`log_time`, `user_id`, `user_type`, `operation`, `details`, `ip_address`) VALUES
-('2025-04-17 11:20:00', 1, 'customer', '创建订单', '用户张三创建了一个从上海市浦东新区到上海市徐汇区的搬家订单，订单号：MO20250417001', '192.168.1.100'),
-('2025-04-17 11:25:00', 1, 'driver', '接单', '司机王五接了订单号为MO20250417001的搬家订单', '192.168.1.101'),
-('2025-04-17 11:30:00', 2, 'customer', '创建订单', '用户李四创建了一个从北京市朝阳区到北京市海淀区的搬家订单，订单号：MO20250417002', '10.0.1.50');
+(1, '家具拆装注意事项', '关于如何安全拆卸和安装常见家具的指南...', '打包技巧', 1, NOW(), NOW(), 1, 1),
+(2, '搬家当天准备清单', '搬家当天需要检查和携带的重要物品清单...', '注意事项', 1, NOW(), NOW(), 1, 1);

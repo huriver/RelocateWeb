@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ahut.mapper.ServiceMapper">
+
+    <select id="pageQuery" parameterType="com.ahut.dto.ServiceQueryDTO" resultType="com.ahut.vo.ServiceVO">
+        SELECT
+        s.id as id,
+        s.service_name as serviceName,
+        sc.type_name as categoryName,
+        s.short_description as shortDescription,
+        tt.type_name as truckTypeName,
+        tt.base_fare as basePrice,
+        s.average_rating as averageRating, s.rating_count as ratingCount FROM service s
+        JOIN service_category sc ON s.category_id = sc.id
+        JOIN truck_type tt ON s.truck_type_id = tt.id
+        <where>
+            <if test="categoryId != null">
+                and s.category_id = #{categoryId}
+            </if>
+        </where>
+        ORDER BY s.average_rating DESC, s.rating_count DESC
+    </select>
+
+</mapper>
