@@ -29,6 +29,7 @@ public class AdminController {
     @GetMapping
     public Result<Admin> getById() {
         long id = BaseContext.getCurrentId();
+        log.info("根据id查询管理员信息:{}", id);
         Admin admin = adminService.getById(id);
         return Result.success(admin);
     }

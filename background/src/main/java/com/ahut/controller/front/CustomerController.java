@@ -29,6 +29,7 @@ public class CustomerController {
     @GetMapping
     public Result<Customer> getById() {
         long id = BaseContext.getCurrentId();
+        log.info("根据id查询消费者信息:{}", id);
         Customer customer = customerService.getById(id);
         return Result.success(customer);
     }
