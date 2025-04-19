@@ -1,6 +1,8 @@
 package com.ahut.service.impl;
 
 import com.ahut.constant.MessageConstant;
+import com.ahut.context.BaseContext;
+import com.ahut.dto.ChangePasswordDTO;
 import com.ahut.dto.CustomerDTO;
 import com.ahut.dto.UserLoginDTO;
 import com.ahut.dto.UserRegisterDTO;
@@ -75,6 +77,37 @@ public class CustomerServiceImpl implements CustomerService {
     public void update(CustomerDTO customerDTO) {
         Customer customer = new Customer();
         BeanUtils.copyProperties(customerDTO, customer);
+        customerMapper.update(customer);
+    }
+
+    @Override
+    public void changePassword(ChangePasswordDTO changePasswordDTO) {
+        // 1. 从 BaseContext 获取当前登录用户的 ID
+        Long currentCustomerId = BaseContext.getCurrentId();
+
+        // 2. 从数据库中查询出当前登录用户的密码哈希值
+        String storedPasswordHash = customerMapper.getById(currentCustomerId).getPassword();
+
+        // 3. 验证旧密码是否正确
+        String oldPasswordHashed = DigestUtils.md5DigestAsHex(changePasswordDTO.getOldPassword().getBytes());
+        if (!oldPasswordHashed.equals(storedPasswordHash)) {
+            throw new PasswordErrorException(MessageConstant.OLD_PASSWORD_ERROR);
+        }
+
+        // 4. 校验新密码和确认新密码是否一致
+        if (!changePasswordDTO.getNewPassword().equals(changePasswordDTO.getRePassword())) {
+            throw new PasswordErrorException(MessageConstant.PASSWORD_NOT_MATCH);
+        }
+
+        // 6. 加密新密码
+        String newPasswordHashed = DigestUtils.md5DigestAsHex(changePasswordDTO.getNewPassword().getBytes());
+
+        // 7. 更新数据库中的密码
+        Customer customer = Customer.builder()
+                .id(currentCustomerId)
+                .password(newPasswordHashed)
+                .build();
+
         customerMapper.update(customer);
     }
 
