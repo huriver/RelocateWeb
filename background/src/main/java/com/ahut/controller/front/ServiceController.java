@@ -28,7 +28,7 @@ public class ServiceController {
      */
     @GetMapping("/page")
     public Result<PageResult> page(ServiceQueryDTO serviceQueryDTO) {
-        log.info("根据条件查询服务项列表：{}", serviceQueryDTO);
+        log.info("用户端根据条件查询服务项列表：{}", serviceQueryDTO);
         PageResult pageResult = serviceService.pageQuery(serviceQueryDTO);
         return Result.success(pageResult);
     }
@@ -41,7 +41,7 @@ public class ServiceController {
      */
     @GetMapping("/serviceDetail/{id}")
     public Result<ServiceDetailVO> getServiceDetails(@PathVariable Long id) {
-        log.info("查询服务项详情：{}", id);
+        log.info("用户端查询服务项详情：{}", id);
         ServiceDetailVO serviceDetailVO = serviceService.details(id);
         return Result.success(serviceDetailVO);
     }

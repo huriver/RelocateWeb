@@ -29,7 +29,7 @@ public class CustomerController {
     @GetMapping
     public Result<Customer> getById() {
         long id = BaseContext.getCurrentId();
-        log.info("根据id查询消费者信息:{}", id);
+        log.info("用户端根据id查询消费者信息:{}", id);
         Customer customer = customerService.getById(id);
         return Result.success(customer);
     }
@@ -43,7 +43,7 @@ public class CustomerController {
      */
     @PutMapping
     public Result update(@RequestBody CustomerDTO customerDTO) {
-        log.info("编辑消费者信息:{}", customerDTO);
+        log.info("用户端编辑消费者信息:{}", customerDTO);
         customerService.update(customerDTO);
         return Result.success();
     }
@@ -56,7 +56,7 @@ public class CustomerController {
      */
     @PutMapping("/editPassword")
     public Result changePassword(@RequestBody ChangePasswordDTO changePasswordDTO) {
-        log.info("消费者修改密码：{}", changePasswordDTO);
+        log.info("用户端消费者修改密码：{}", changePasswordDTO);
         customerService.changePassword(changePasswordDTO);
         return Result.success();
     }

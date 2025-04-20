@@ -5,18 +5,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ServiceCategory {
+public class Configuration {
     private Long id;
-    private String typeName;
-    private String description;
-    private BigDecimal priceMultiplier;
+    private String name; // 配置项名称，例如 'per_helper_cost'
+    private String value; // 配置项值，例如 '80.00'
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private Long createUser;

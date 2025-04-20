@@ -5,10 +5,14 @@ import com.***REMOVED***.entity.TruckType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.math.BigDecimal;
+
 
 @Data
 @EqualsAndHashCode(callSuper = true) // 继承 Service 后，需要包含父类字段来生成 equals 和 hashCode
 public class ServiceDetailVO extends Service {
     private String categoryName;
+    private BigDecimal categoryPriceMultiplier;
     private TruckType truckType;
+    private BigDecimal perHelperCost;
 }

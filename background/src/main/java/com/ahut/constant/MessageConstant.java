@@ -28,4 +28,9 @@ public class MessageConstant {
 
     public static final String OLD_PASSWORD_ERROR = "旧密码错误";
     public static final String PASSWORD_NOT_MATCH = "两次密码不一致";
+    public static final String SYSTEM_MOVER_FEE_CONFIG_MISSING = "系统搬运工人费用配置缺失";
+    public static final String SYSTEM_MOVER_FEE_CONFIG_INVALID_VALUE = "系统搬运工人费用配置值无效";
+
+    public static final String PER_HELPER_FEE_LABEL = "per_helper_cost";
+
 }

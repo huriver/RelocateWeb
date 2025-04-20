@@ -197,6 +197,7 @@ CREATE TABLE `service_category` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键，自增',
   `type_name` varchar(200) NOT NULL COMMENT '服务类型名称',
   `description` varchar(500) COMMENT '服务类型描述',
+  `price_multiplier` decimal(5,2) DEFAULT 1.00 COMMENT '该服务类型的价格乘数，应用于基础费用', -- DEFAULT 1.00 保留
   `create_time` datetime COMMENT '创建时间',
   `update_time` datetime COMMENT '修改时间',
   `create_user` bigint(20) COMMENT '创建用户ID',
@@ -326,11 +327,11 @@ INSERT INTO `truck_type` (`id`, `type_name`, `capacity`, `description`, `base_fa
 -- ----------------------------
 -- Data for table service_category
 -- ----------------------------
-INSERT INTO `service_category` (`id`, `type_name`, `description`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
-(1, '标准搬家', '提供基础的物品搬运和运输服务', NOW(), NOW(), 1, 1),
-(2, '精品搬家', '在标准搬家基础上，提供物品打包、还原等增值服务', NOW(), NOW(), 1, 1),
-(3, '单件快送', '针对少量物品或单件家具的快速搬运服务', NOW(), NOW(), 1, 1),
-(4, '企业搬迁', '专业的办公室、库房等企业单位搬迁服务', NOW(), NOW(), 1, 1);
+INSERT INTO `service_category` (`id`, `type_name`, `description`, `price_multiplier`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
+(1, '标准搬家', '提供基础的物品搬运和运输服务', 1.00, NOW(), NOW(), 1, 1), -- 标准搬家，乘数1.0
+(2, '精品搬家', '在标准搬家基础上，提供物品打包、还原等增值服务', 1.20, NOW(), NOW(), 1, 1), -- 精品搬家，乘数1.2 (贵20%)
+(3, '单件快送', '针对少量物品或单件家具的快速搬运服务', 1.10, NOW(), NOW(), 1, 1), -- 单件快送，乘数1.1 (略贵)
+(4, '企业搬迁', '专业的办公室、库房等企业单位搬迁服务', 1.50, NOW(), NOW(), 1, 1); -- 企业搬迁，乘数1.5 (专业服务更贵)
 
 -- ----------------------------
 -- Data for table service

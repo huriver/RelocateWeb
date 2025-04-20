@@ -27,7 +27,7 @@ public class ServiceCategoryController {
      */
     @GetMapping
     public Result<List<ServiceCategory>> listServiceCategories() {
-        log.info("正在查询所有服务类型");
+        log.info("用户端正在查询所有服务类型");
         List<ServiceCategory> serviceCategories = serviceCategoryService.listAll();
         return Result.success(serviceCategories);
     }

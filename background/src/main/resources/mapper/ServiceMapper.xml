@@ -16,7 +16,11 @@
         <result column="s_update_time" property="updateTime"/>
         <result column="s_create_user" property="createUser"/>
         <result column="s_update_user" property="updateUser"/>
+
+
+        <result column="sc_id" property="categoryId"/>
         <result column="sc_name" property="categoryName"/>
+        <result column="sc_price_multiplier" property="categoryPriceMultiplier"/>
         <association property="truckType" javaType="com.***REMOVED***.entity.TruckType">
             <id column="tt_id" property="id"/>
             <result column="tt_name" property="typeName"/>
@@ -68,7 +72,11 @@
                s.update_time                  as s_update_time,
                s.create_user                  as s_create_user,
                s.update_user                  as s_update_user,
+
+               sc.id                          as sc_id,
                sc.type_name                   as sc_name,
+               sc.price_multiplier            as sc_price_multiplier,
+
                tt.id                          as tt_id,
                tt.type_name                   as tt_name,
                tt.capacity                    as tt_capacity,
@@ -83,6 +91,7 @@
                tt.update_time                 as tt_update_time,
                tt.create_user                 as tt_create_user,
                tt.update_user                 as tt_update_user
+
         FROM service s
                  JOIN service_category sc ON s.category_id = sc.id
                  JOIN truck_type tt ON s.truck_type_id = tt.id
