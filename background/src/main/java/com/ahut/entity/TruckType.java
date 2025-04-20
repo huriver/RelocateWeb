@@ -12,15 +12,17 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Service {
+public class TruckType {
     private Long id;
-    private Long categoryId;
-    private Long truckTypeId;
-    private String serviceName;
-    private String shortDescription;
-    private String loadingCapacityDescription;
-    private BigDecimal averageRating;
-    private Integer ratingCount;
+    private String typeName;
+    private String capacity;
+    private String description;
+    private BigDecimal baseFare;
+    private BigDecimal pricePerKmTier1;
+    private BigDecimal pricePerKmTier2;
+    private BigDecimal pricePerKmTier3;
+    private BigDecimal pricePerKmTier4;
+    private BigDecimal pricePerKmTier5;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private Long createUser;

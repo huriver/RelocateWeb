@@ -180,7 +180,6 @@ CREATE TABLE `service` (
   `service_name` varchar(200) NOT NULL COMMENT '服务项名称',
   `short_description` text COMMENT '服务项简短描述',
   `loading_capacity_description` text COMMENT '装载能力详细说明',
-  `default_price` decimal(10,2) NOT NULL COMMENT '起始价格（对应货车类型的5公里内价格）',
   `average_rating` decimal(3,2) DEFAULT 0.00 COMMENT '平均评分值',
   `rating_count` int(11) DEFAULT 0 COMMENT '评分数量',
   `create_time` datetime COMMENT '创建时间',
@@ -336,11 +335,10 @@ INSERT INTO `service_category` (`id`, `type_name`, `description`, `create_time`,
 -- ----------------------------
 -- Data for table service
 -- ----------------------------
-INSERT INTO `service` (`id`, `category_id`, `truck_type_id`, `service_name`, `short_description`, `loading_capacity_description`, `default_price`, `average_rating`, `rating_count`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
-(1, 1, 1, '标准搬家 (小型面包车)', '经济型小型搬家服务', '约可装载10-15个大纸箱、一台洗衣机', 80.00, 4.80, 10, NOW(), NOW(), 1, 1),
-(2, 1, 2, '标准搬家 (中型厢式货车)', '适合普通家庭的标准搬家服务', '约可装载床、沙发、冰箱、洗衣机及20个纸箱', 120.00, 4.50, 25, NOW(), NOW(), 1, 1),
-(3, 2, 2, '精品搬家 (中型厢式货车)', '提供打包和基础还原服务的家庭搬家', '同中型厢式货车容量，含打包材料和人工', 120.00, 4.90, 15, NOW(), NOW(), 1, 1);
-
+INSERT INTO `service` (`id`, `category_id`, `truck_type_id`, `service_name`, `short_description`, `loading_capacity_description`, `average_rating`, `rating_count`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
+(1, 1, 1, '标准搬家 (小型面包车)', '经济型小型搬家服务', '约可装载10-15个大纸箱、一台洗衣机', 4.80, 10, NOW(), NOW(), 1, 1),
+(2, 1, 2, '标准搬家 (中型厢式货车)', '适合普通家庭的标准搬家服务', '约可装载床、沙发、冰箱、洗衣机及20个纸箱', 4.50, 25, NOW(), NOW(), 1, 1),
+(3, 2, 2, '精品搬家 (中型厢式货车)', '提供打包和基础还原服务的家庭搬家', '同中型厢式货车容量，含打包材料和人工', 4.90, 15, NOW(), NOW(), 1, 1);
 -- ----------------------------
 -- Data for table driver
 -- ----------------------------

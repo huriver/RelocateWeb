@@ -4,9 +4,11 @@ import com.***REMOVED***.dto.ServiceQueryDTO;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.ServiceService;
+import com.***REMOVED***.vo.ServiceDetailVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,6 +31,19 @@ public class ServiceController {
         log.info("根据条件查询服务项列表：{}", serviceQueryDTO);
         PageResult pageResult = serviceService.pageQuery(serviceQueryDTO);
         return Result.success(pageResult);
+    }
+
+    /**
+     * 根据服务项ID查询服务详情
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/serviceDetail/{id}")
+    public Result<ServiceDetailVO> getServiceDetails(@PathVariable Long id) {
+        log.info("查询服务项详情：{}", id);
+        ServiceDetailVO serviceDetailVO = serviceService.details(id);
+        return Result.success(serviceDetailVO);
     }
 
 }
