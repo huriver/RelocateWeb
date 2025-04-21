@@ -41,4 +41,7 @@ public class MessageConstant {
 
     public static final String UNKNOWN_ERROR_WHILE_CALCULATING_MOVING_DISTANCE = "计算搬家距离发生未知错误";
 
+    public static final String ORDER_INFO_INCOMPLETE = "订单信息不完整";
+    public static final String RESERVATION_TIME_INVALID = "预约时间无效";
+
 }

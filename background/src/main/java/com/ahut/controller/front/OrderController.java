@@ -1,7 +1,9 @@
 package com.***REMOVED***.controller.front;
 
+import com.***REMOVED***.dto.OrderSubmitDTO;
 import com.***REMOVED***.dto.PriceEstimationDTO;
 import com.***REMOVED***.result.Result;
+import com.***REMOVED***.vo.OrderSubmitVO;
 import com.***REMOVED***.vo.PriceEstimationResultVO;
 import com.***REMOVED***.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
@@ -34,13 +36,17 @@ public class OrderController {
         return Result.success(priceEstimationResultVO);
     }
 
-    // Future: 订单提交接口方法框架
-    /*
+    /**
+     * 用户提交订单
+     *
+     * @param submitDTO
+     * @return
+     */
     @PostMapping("/submit")
-    public Result<OrderSubmitVO> submitOrder(@RequestBody OrderSubmitDTO submitDTO) {
-         log.info("用户提交订单接口调用，参数：{}", submitDTO);
-         OrderSubmitVO submitResultVO = orderService.submitOrder(submitDTO);
-         return Result.success(submitResultVO);
+    public Result<OrderSubmitVO> submit(@RequestBody OrderSubmitDTO submitDTO) {
+        log.info("用户提交订单，参数：{}", submitDTO);
+        OrderSubmitVO submitResultVO = orderService.submitOrder(submitDTO);
+        return Result.success(submitResultVO);
     }
-    */
+
 }

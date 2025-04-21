@@ -2,36 +2,45 @@ package com.***REMOVED***.service.impl;
 
 
 import com.***REMOVED***.constant.MessageConstant;
+import com.***REMOVED***.constant.OrderStatusConstant;
+import com.***REMOVED***.constant.PaymentStatusConstant;
+import com.***REMOVED***.context.BaseContext;
+import com.***REMOVED***.dto.OrderSubmitDTO;
 import com.***REMOVED***.dto.PriceEstimationDTO;
 import com.***REMOVED***.entity.Configuration;
+import com.***REMOVED***.entity.MovingOrder;
 import com.***REMOVED***.entity.ServiceCategory;
 import com.***REMOVED***.entity.TruckType;
 import com.***REMOVED***.exception.*;
-import com.***REMOVED***.mapper.ConfigurationMapper;
-import com.***REMOVED***.mapper.ServiceCategoryMapper;
-import com.***REMOVED***.mapper.ServiceMapper;
-import com.***REMOVED***.mapper.TruckTypeMapper;
+import com.***REMOVED***.mapper.*;
 import com.***REMOVED***.result.PriceCalculationResult;
 import com.***REMOVED***.service.OrderService;
 import com.***REMOVED***.utils.HttpClientUtil;
+import com.***REMOVED***.vo.OrderSubmitVO;
 import com.***REMOVED***.vo.PriceEstimationResultVO;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 @Service
 @Slf4j
 public class OrderServiceImpl implements OrderService {
+
+    @Autowired
+    private OrderMapper orderMapper;
 
     @Autowired
     private ServiceMapper serviceMapper;
@@ -326,19 +335,115 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    // --- 未来订单提交 (Submit Order) 接口方法框架 (调用 calculatePrice) ---
-    /*
-    @Transactional
-    public OrderSubmitVO submitOrder(OrderSubmitDTO submitDTO) {
-         // ... (调用 calculatePrice 并在 Order 中设置价格)
-         // ...
-         return submitResultVO;
+
+    /**
+     * 用户提交订单
+     *
+     * @param orderSubmitDTO
+     * @return
+     */
+    @Override
+    @Transactional // 保证事务的原子性
+    public OrderSubmitVO submitOrder(OrderSubmitDTO orderSubmitDTO) {
+        log.info("用户提交订单，参数：{}", orderSubmitDTO);
+
+        // --- 1. 严格校验订单信息 DTO 的完整性和有效性 ---
+        if (orderSubmitDTO.getServiceId() == null ||
+                orderSubmitDTO.getReservationTime() == null ||
+                orderSubmitDTO.getMovingOrigin() == null || orderSubmitDTO.getMovingOrigin().isEmpty() ||
+                orderSubmitDTO.getMovingDestination() == null || orderSubmitDTO.getMovingDestination().isEmpty() ||
+                orderSubmitDTO.getNumberOfHelpers() == null || orderSubmitDTO.getNumberOfHelpers() < 0) {
+            // 抛出业务异常，告知前端缺少必要参数
+            throw new OrderBusinessException(MessageConstant.ORDER_INFO_INCOMPLETE);
+        }
+
+        // - 预约时间是否在有效范围内 (不能是过去的时间，不能是太遥远的未来) 有效预约时间是未来的2周内
+        if (orderSubmitDTO.getReservationTime().isBefore(LocalDateTime.now()) ||
+                orderSubmitDTO.getReservationTime().isAfter(LocalDateTime.now().plusWeeks(2))) {
+            throw new OrderBusinessException(MessageConstant.RESERVATION_TIME_INVALID);
+        }
+
+        // --- 2. 后端**再次计算**订单最终价格 ---
+        // 这是为了防止前端篡改价格，必须使用后端权威的计算逻辑和数据
+        PriceCalculationResult calculationResult = calculatePrice(
+                orderSubmitDTO.getServiceId(),
+                orderSubmitDTO.getMovingOrigin(),
+                orderSubmitDTO.getMovingDestination(),
+                orderSubmitDTO.getNumberOfHelpers()
+        );
+        BigDecimal finalOrderPrice = calculationResult.getTotalEstimatedPrice(); // 使用后端计算的最终总价
+        log.info("订单最终计算价格：{}", finalOrderPrice);
+
+        // --- 3. 构建 MovingOrder 实体对象 ---
+        MovingOrder order = new MovingOrder();
+        BeanUtils.copyProperties(orderSubmitDTO, order);
+
+        Long currentUserId = BaseContext.getCurrentId();
+        order.setCustomerId(currentUserId);
+
+        // 生成唯一订单号
+        order.setOrderNumber(generateUniqueOrderNumber());
+
+        // 设置服务项ID和关联的货车类型ID
+        com.***REMOVED***.entity.Service service = serviceMapper.getById(orderSubmitDTO.getServiceId());
+        order.setTruckTypeId(service.getTruckTypeId()); // 设置关联的货车类型ID
+
+        // 设置初始订单状态和支付状态
+        order.setOrderStatus(OrderStatusConstant.PENDING_ACCEPTANCE); // 初始状态：待接单
+        order.setIsPaid(PaymentStatusConstant.UN_PAID); // 初始支付状态：未支付
+
+        // 设置计算出的最终价格
+        order.setMovingPrice(finalOrderPrice);
+
+        // driver_id, vehicle_id, payment_time, moving_start_time, moving_end_time, pay_method, cancel_reason 初始为 NULL
+        // --- 4. 插入订单主表 ---
+        orderMapper.insert(order);
+
+        // --- 5. 封装返回结果 OrderSubmitVO ---
+        OrderSubmitVO submitResultVO = OrderSubmitVO.builder()
+                .id(order.getId())
+                .orderNumber(order.getOrderNumber())
+                .orderAmount(finalOrderPrice)
+                .orderTime(order.getCreateTime())
+                .build();
+
+        // --- 6. (可选) 发送 WebSocket 消息给商家/司机端，提示有新订单 ---
+        // if (webSocketServer != null) {
+        //     Map<String, Object> message = new HashMap<>();
+        //     message.put("type", 1); // 消息类型：新订单
+        //     message.put("orderId", order.getId());
+        //     message.put("content", "有新的搬家订单：" + order.getOrderNumber());
+        //     try {
+        //         webSocketServer.sendToAllClient(JSON.toJSONString(message));
+        //         log.info("已发送新订单WebSocket通知：{}", order.getOrderNumber());
+        //     } catch (Exception e) {
+        //         log.error("发送新订单WebSocket通知失败", e);
+        //         // 发送通知失败通常不应该影响订单创建成功，只记录日志即可
+        //     }
+        // }
+
+
+        log.info("订单创建成功，订单号：{}，ID：{}", order.getOrderNumber(), order.getId());
+        return submitResultVO;
     }
-    */
 
+    /**
+     * 生成唯一订单号
+     *
+     * @return
+     */
+    private String generateUniqueOrderNumber() {
+        String timestampPart = String.valueOf(System.currentTimeMillis());
+        String randomPart = String.valueOf((int) (Math.random() * 100000)); // 5位随机数
+        // 确保随机数是5位，不足前面补0
+        while (randomPart.length() < 5) {
+            randomPart = "0" + randomPart;
+        }
 
-    // --- 辅助方法 ---
-    // generateUniqueOrderNumber(), Constants, Mapper methods (getById, getTruckTypeById, getServiceCategoryById, insert, update etc.) 需要自行实现
-
+        // MO -- Moving Order
+        String orderNumber = "MO" + timestampPart + randomPart; // MO前缀 + 时间戳 + 随机数
+        log.debug("生成的订单号：{}", orderNumber);
+        return orderNumber;
+    }
 
 }
