@@ -31,6 +31,14 @@ public class MessageConstant {
     public static final String SYSTEM_MOVER_FEE_CONFIG_MISSING = "系统搬运工人费用配置缺失";
     public static final String SYSTEM_MOVER_FEE_CONFIG_INVALID_VALUE = "系统搬运工人费用配置值无效";
 
+    public static final String SERVICE_ITEM_OR_ADDRESS_EMPTY = "服务项、起止地址不能为空";
     public static final String PER_HELPER_FEE_LABEL = "per_helper_cost";
+    public static final String SYSTEM_MOVER_FEE_CONFIG_INVALID_VALUE_WHILE_ESTIMATING_PRICE = "系统搬运工人费用配置值无效，无法估算价格";
+
+    public static final String SERVICE_ITEM_NOT_EXIST = "服务项不存在，无法估算价格";
+    public static final String TRUCK_TYPE_NOT_EXIST = "货车类型不存在，无法估算价格";
+    public static final String SERVICE_CATEGORY_NOT_EXIST = "服务分类不存在，无法估算价格";
+
+    public static final String UNKNOWN_ERROR_WHILE_CALCULATING_MOVING_DISTANCE = "计算搬家距离发生未知错误";
 
 }

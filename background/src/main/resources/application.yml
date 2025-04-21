@@ -26,6 +26,9 @@ relocate:
     front-ttl: 72000000
     front-token-name: authentication
 
+  baidu:
+    ak: ***REMOVED*** # 替换为实际的AK
+
 #upload:
 #  image:
 #    base-path: D:\\Java\\code\\RelocateWeb\\background\\src\\main\\resources\\static\\images\\
