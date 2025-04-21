@@ -1,17 +1,16 @@
 package com.***REMOVED***.controller.front;
 
 import com.***REMOVED***.dto.OrderSubmitDTO;
+import com.***REMOVED***.dto.OrdersPaymentDTO;
 import com.***REMOVED***.dto.PriceEstimationDTO;
 import com.***REMOVED***.result.Result;
+import com.***REMOVED***.vo.OrderPaymentVO;
 import com.***REMOVED***.vo.OrderSubmitVO;
 import com.***REMOVED***.vo.PriceEstimationResultVO;
 import com.***REMOVED***.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -47,6 +46,19 @@ public class OrderController {
         log.info("用户提交订单，参数：{}", submitDTO);
         OrderSubmitVO submitResultVO = orderService.submitOrder(submitDTO);
         return Result.success(submitResultVO);
+    }
+
+    /**
+     * 用户发起订单支付 (模拟)
+     *
+     * @param ordersPaymentDTO
+     * @return
+     */
+    @PutMapping("/payment")
+    public Result<OrderPaymentVO> payment(@RequestBody OrdersPaymentDTO ordersPaymentDTO) {
+        log.info("用户发起订单支付接口调用，参数：{}", ordersPaymentDTO);
+        OrderPaymentVO orderPaymentVO = orderService.payment(ordersPaymentDTO);
+        return Result.success(orderPaymentVO);
     }
 
 }

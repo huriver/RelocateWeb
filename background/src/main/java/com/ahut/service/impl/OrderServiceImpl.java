@@ -6,6 +6,7 @@ import com.***REMOVED***.constant.OrderStatusConstant;
 import com.***REMOVED***.constant.PaymentStatusConstant;
 import com.***REMOVED***.context.BaseContext;
 import com.***REMOVED***.dto.OrderSubmitDTO;
+import com.***REMOVED***.dto.OrdersPaymentDTO;
 import com.***REMOVED***.dto.PriceEstimationDTO;
 import com.***REMOVED***.entity.Configuration;
 import com.***REMOVED***.entity.MovingOrder;
@@ -16,6 +17,7 @@ import com.***REMOVED***.mapper.*;
 import com.***REMOVED***.result.PriceCalculationResult;
 import com.***REMOVED***.service.OrderService;
 import com.***REMOVED***.utils.HttpClientUtil;
+import com.***REMOVED***.vo.OrderPaymentVO;
 import com.***REMOVED***.vo.OrderSubmitVO;
 import com.***REMOVED***.vo.PriceEstimationResultVO;
 import com.alibaba.fastjson.JSON;
@@ -444,6 +446,123 @@ public class OrderServiceImpl implements OrderService {
         String orderNumber = "MO" + timestampPart + randomPart; // MO前缀 + 时间戳 + 随机数
         log.debug("生成的订单号：{}", orderNumber);
         return orderNumber;
+    }
+
+    /**
+     * 订单支付 (模拟)
+     *
+     * @param ordersPaymentDTO
+     * @return
+     */
+    @Override
+    // @Transactional // 如果 paySuccess 内部有事务，这里可以不需要事务，否则加上
+    public OrderPaymentVO payment(OrdersPaymentDTO ordersPaymentDTO) {
+        log.info("用户发起订单支付，参数：{}", ordersPaymentDTO);
+
+        // 1. 参数校验
+        if (ordersPaymentDTO == null || ordersPaymentDTO.getOrderNumber() == null || ordersPaymentDTO.getOrderNumber().isEmpty() || ordersPaymentDTO.getPayMethod() == null) {
+            throw new OrderBusinessException(MessageConstant.PAYMENT_INFO_INCOMPLETE);
+        }
+
+        // 2. 查找订单
+        MovingOrder order = orderMapper.getByNumber(ordersPaymentDTO.getOrderNumber());
+        if (order == null) {
+            log.error("支付失败，订单不存在：{}", ordersPaymentDTO.getOrderNumber());
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        // 3. 校验订单状态
+        // 订单必须是待支付状态 (PENDING_PAYMENT)
+        if (!order.getOrderStatus().equals(OrderStatusConstant.PENDING_ACCEPTANCE) || !order.getIsPaid().equals(PaymentStatusConstant.UN_PAID)) {
+            log.error("支付失败，订单状态错误或已支付：订单号 {}，订单状态 {}，支付状态 {}", ordersPaymentDTO.getOrderNumber(), order.getOrderStatus(), order.getIsPaid());
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        // 4. 模拟支付过程和支付成功通知
+        log.info("模拟支付，订单号：{}，支付方式：{}", ordersPaymentDTO.getOrderNumber(), ordersPaymentDTO.getPayMethod());
+
+        // 在模拟场景下，我们直接调用支付成功处理逻辑
+        // 这模拟了支付平台**立即**回调通知支付成功
+        try {
+            paySuccess(ordersPaymentDTO.getOrderNumber(), ordersPaymentDTO.getPayMethod()); // 调用支付成功处理方法
+            log.info("模拟支付成功处理完成，订单号：{}", ordersPaymentDTO.getOrderNumber());
+        } catch (Exception e) {
+            // 捕获其他意外异常
+            log.error("模拟支付成功处理发生未知错误", e);
+            throw new OrderBusinessException(MessageConstant.UNKNOWN_ERROR_WHILE_MOCK_PAYMENT);
+        }
+
+
+        // 5. 封装模拟的支付结果VO
+        // 在模拟场景下，返回一个表示支付成功的 VO
+
+        return OrderPaymentVO.builder()
+                .orderNumber(ordersPaymentDTO.getOrderNumber())
+                .payStatus(PaymentStatusConstant.PAID) // 直接返回已支付状态
+                .build();
+    }
+
+    /**
+     * 支付成功，修改订单状态
+     *
+     * @param orderNumber
+     */
+    @Transactional // 支付成功更新订单状态是核心事务
+    @Override
+    public void paySuccess(String orderNumber, Integer payMethod) {
+        log.info("处理订单支付成功，订单号：{}", orderNumber);
+
+        // 1. 根据订单号查询订单
+        MovingOrder order = orderMapper.getByNumber(orderNumber);
+        if (order == null) {
+            log.error("支付成功处理失败，订单不存在：{}", orderNumber);
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND_WHILE_PAY_SUCCESS);
+        }
+
+        // 2. 校验订单状态
+        // 只有未支付状态的订单才能被设置为已支付
+        if (!order.getIsPaid().equals(PaymentStatusConstant.UN_PAID)) {
+            log.warn("订单已处理支付成功或已退款，无需重复处理：订单号 {}", orderNumber);
+            return;
+        }
+
+        // 3. 更新支付方式、支付状态、支付时间等
+        MovingOrder updateOrder = MovingOrder.builder()
+                .id(order.getId())
+                .isPaid(PaymentStatusConstant.PAID)
+                .paymentTime(LocalDateTime.now())
+                .payMethod(payMethod)
+                .build();
+
+        // 4. 调用 Mapper 更新数据库
+        try {
+            orderMapper.update(updateOrder);
+            log.info("订单支付状态更新成功，订单号：{}，新状态：{}", orderNumber, updateOrder.getOrderStatus());
+        } catch (Exception e) {
+            log.error("更新订单支付状态数据库失败：订单号 {}", orderNumber, e);
+            // 支付已成功，但更新数据库失败是严重问题，需要报警和人工干预
+            throw new OrderBusinessException(MessageConstant.UPDATE_ORDER_PAY_STATUS_FAILED);
+        }
+
+        // 5. (可选) 通过WebSocket实现来单提醒，向客户端浏览器或司机端推送消息
+        // if (webSocketServer != null) {
+        //     Map<String, Object> message = new HashMap<>();
+        //     message.put("type", 1); // 消息类型：1表示来单提醒
+        //     message.put("orderId", order.getId()); // 通知中包含订单ID
+        //     message.put("orderNumber", order.getOrderNumber()); // 通知中包含订单号
+        //     // 可以根据业务需要添加更多信息，如服务类型，起止地址简要信息等
+        //     // message.put("content", "新的搬家订单：" + order.getOrderNumber()); // 消息内容示例
+        //
+        //     try {
+        //         webSocketServer.sendToAllClient(JSON.toJSONString(message));
+        //         log.info("已发送新订单WebSocket通知：{}", orderNumber);
+        //     } catch (Exception e) {
+        //         log.error("发送新订单WebSocket通知失败：{}", orderNumber, e);
+        //         // 发送通知失败不影响支付成功和订单状态，只记录日志
+        //     }
+        // }
+
+        log.info("订单支付成功处理完成，订单号：{}", orderNumber);
     }
 
 }

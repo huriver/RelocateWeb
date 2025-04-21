@@ -28,40 +28,17 @@ public interface OrderMapper {
 //    @Select("select * from moving_order where id = #{id}")
 //    MovingOrder getById(Long id);
 
-//    /**
-//     * 根据订单号查询订单详情
-//     * 用于支付回调等场景
-//     *
-//     * @param orderNumber 订单号
-//     * @return MovingOrder 实体
-//     */
-//    @Select("select * from moving_order where order_number = #{orderNumber}")
-//    MovingOrder getByNumber(String orderNumber);
+    // 根据订单号查询订单详情
+    @Select("select id, customer_id, order_number, service_id, truck_type_id, driver_id, vehicle_id, " +
+            "order_status, reservation_time, moving_origin, moving_destination, moving_price, is_paid, " +
+            "payment_time, pay_method, cancel_reason, moving_start_time, moving_end_time, number_of_helpers, " +
+            "notes, create_time, update_time " +
+            "from moving_order where order_number = #{orderNumber}")
+    MovingOrder getByNumber(String orderNumber);
 
 
-    /**
-     * 更新订单信息 (通用更新方法)
-     *
-     * @param order 包含要更新字段的 MovingOrder 实体对象 (非null字段会被更新)
-     */
-    // 示例：使用动态SQL更新部分字段
-//    @Update("<script>" +
-//            "update moving_order " +
-//            "<set>" +
-//            " <if test='orderStatus != null'> order_status = #{orderStatus}, </if>" +
-//            " <if test='isPaid != null'> is_paid = #{isPaid}, </if>" +
-//            " <if test='paymentTime != null'> payment_time = #{paymentTime}, </if>" +
-//            " <if test='payMethod != null'> pay_method = #{payMethod}, </if>" +
-//            " <if test='cancelReason != null'> cancel_reason = #{cancelReason}, </if>" +
-//            " <if test='movingStartTime != null'> moving_start_time = #{movingStartTime}, </if>" +
-//            " <if test='movingEndTime != null'> moving_end_time = #{movingEndTime}, </if>" +
-//            " <if test='driverId != null'> driver_id = #{driverId}, </if>" +
-//            " <if test='vehicleId != null'> vehicle_id = #{vehicleId}, </if>" +
-//            " update_time = now() " + // 总是更新 update_time
-//            "</set>" +
-//            "where id = #{id}" +
-//            "</script>")
-//    void update(MovingOrder order);
+    // 更新订单
+    void update(MovingOrder order);
 
 
     // Future: 分页查询订单列表的方法 (需要根据 OrdersPageQueryDTO 进行过滤和分页)

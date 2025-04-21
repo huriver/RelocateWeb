@@ -44,4 +44,8 @@ public class MessageConstant {
     public static final String ORDER_INFO_INCOMPLETE = "订单信息不完整";
     public static final String RESERVATION_TIME_INVALID = "预约时间无效";
 
+    public static final String PAYMENT_INFO_INCOMPLETE = "支付信息不完整";
+    public static final String ORDER_NOT_FOUND_WHILE_PAY_SUCCESS = "支付成功，订单不存在";
+    public static final String UNKNOWN_ERROR_WHILE_MOCK_PAYMENT = "模拟支付发生未知错误";
+    public static final String UPDATE_ORDER_PAY_STATUS_FAILED = "更新订单支付状态失败";
 }
