@@ -49,6 +49,9 @@ public interface OrderMapper {
             "from moving_order where id = #{id}")
     MovingOrder getMovingOrderById(Long id);
 
+    // 订单取消时，清除订单关联的司机和车辆信息
+    @Update("UPDATE moving_order SET driver_id = NULL, vehicle_id = NULL WHERE id = #{orderId}")
+    void clearOrderDriverVehicle(Long orderId);
 
     // Future: 分页查询订单列表的方法 (需要根据 OrdersPageQueryDTO 进行过滤和分页)
     /*

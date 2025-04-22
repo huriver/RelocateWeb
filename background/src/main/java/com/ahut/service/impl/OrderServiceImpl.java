@@ -48,6 +48,9 @@ public class OrderServiceImpl implements OrderService {
     private OrderMapper orderMapper;
 
     @Autowired
+    private OrderMoverMapper orderMoverMapper;
+
+    @Autowired
     private ServiceMapper serviceMapper;
 
     @Autowired
@@ -701,12 +704,30 @@ public class OrderServiceImpl implements OrderService {
             log.info("订单已支付，模拟标记为已退款：订单ID {}", id);
         }
 
-        // --- 7. 调用 Mapper 更新数据库 ---
+        // --- 7. 处理司机和搬运工人分配：如果订单已分配，解除分配 ---
+        // 只有在状态 1 或 2 时才需要解除分配
+        if (currentOrderStatus.equals(OrderStatusConstant.DRIVER_ACCEPTED_WAITING_MOVERS) ||
+                currentOrderStatus.equals(OrderStatusConstant.ACCEPTED)) {
+            log.info("订单已分配，解除司机和搬运工人关联：订单ID {}", id);
+
+            // 7.1 删除 order_mover 表中关联该订单的记录
+            orderMoverMapper.deleteByOrderId(id);
+            log.info("已删除订单 {} 的搬运工人关联记录", id);
+
+            // 7.2 清空 moving_order 表中的 driver_id 和 vehicle_id (调用新的方法)
+            orderMapper.clearOrderDriverVehicle(id);
+            log.info("已清除订单 {} 的司机和车辆关联", id);
+
+            // (可选) 通知司机和搬运工人订单已取消
+            // WebSocket 通知逻辑可以在这里触发，告知相关的司机和搬运工人
+        }
+
+        // --- 8. 调用 Mapper 更新数据库 ---
         orderMapper.update(updateOrder);
         log.info("订单取消成功，订单ID：{}，新状态：{}", id, updateOrder.getOrderStatus());
 
 
-        // --- 8. (可选) 发送 WebSocket 消息给司机/商家，提示订单已取消 ---
+        // --- (可选) 发送 WebSocket 消息给司机/商家，提示订单已取消 ---
         // if (webSocketServer != null) {
         //     Map<String, Object> message = new HashMap<>();
         //     message.put("type", 2); // 消息类型：2表示订单取消
