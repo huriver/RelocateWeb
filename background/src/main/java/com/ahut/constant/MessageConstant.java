@@ -50,4 +50,5 @@ public class MessageConstant {
     public static final String UPDATE_ORDER_PAY_STATUS_FAILED = "更新订单支付状态失败";
 
     public static final String ORDER_NOT_BELONG_TO_CURRENT_USER = "订单不属于当前用户";
+    public static final String ORDER_STATUS_NOT_ALLOW_CANCEL = "订单状态不允许取消";
 }

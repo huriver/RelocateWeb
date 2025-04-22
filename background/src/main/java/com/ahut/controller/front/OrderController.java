@@ -1,9 +1,6 @@
 package com.***REMOVED***.controller.front;
 
-import com.***REMOVED***.dto.OrdersPageQueryDTO;
-import com.***REMOVED***.dto.OrderSubmitDTO;
-import com.***REMOVED***.dto.OrdersPaymentDTO;
-import com.***REMOVED***.dto.PriceEstimationDTO;
+import com.***REMOVED***.dto.*;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.vo.OrderPaymentVO;
@@ -88,6 +85,20 @@ public class OrderController {
         log.info("用户端查询订单详情，订单ID：{}", id);
         OrderVO orderVO = orderService.getOrderDetail(id);
         return Result.success(orderVO);
+    }
+
+    /**
+     * 用户端取消订单
+     *
+     * @param id
+     * @param cancelDTO
+     * @return
+     */
+    @PutMapping("/cancel/{id}")
+    public Result<String> cancel(@PathVariable Long id, @RequestBody OrderCancelDTO cancelDTO) {
+        log.info("用户端取消订单接口调用，订单ID：{}，参数：{}", id, cancelDTO);
+        orderService.cancelOrder(id, cancelDTO);
+        return Result.success("订单取消成功");
     }
 
 }

@@ -28,9 +28,9 @@ public interface OrderMapper {
 
     // 根据订单号查询订单详情
     @Select("select id, customer_id, order_number, service_id, truck_type_id, driver_id, vehicle_id, " +
-            "order_status, reservation_time, moving_origin, moving_destination, moving_price, is_paid, " +
-            "payment_time, pay_method, cancel_reason, moving_start_time, moving_end_time, number_of_helpers, " +
-            "notes, create_time, update_time " +
+            "order_status, reservation_time, moving_origin, moving_destination, moving_price, mileage_cost, " +
+            "helper_cost, category_price_multiplier, is_paid, payment_time, pay_method, cancel_reason, " +
+            "cancel_time, moving_start_time, moving_end_time, number_of_helpers, notes, create_time, update_time " +
             "from moving_order where order_number = #{orderNumber}")
     MovingOrder getByNumber(String orderNumber);
 
@@ -40,6 +40,14 @@ public interface OrderMapper {
 
     // 用户端历史订单分页查询
     Page<OrderVO> pageQuery(OrdersPageQueryDTO queryDTO);
+
+    // 根据订单ID查询 MovingOrder 实体 (用于后端处理)
+    @Select("select id, customer_id, order_number, service_id, truck_type_id, driver_id, vehicle_id, " +
+            "order_status, reservation_time, moving_origin, moving_destination, moving_price, mileage_cost, " +
+            "helper_cost, category_price_multiplier, is_paid, payment_time, pay_method, cancel_reason, " +
+            "cancel_time, moving_start_time, moving_end_time, number_of_helpers, notes, create_time, update_time " +
+            "from moving_order where id = #{id}")
+    MovingOrder getMovingOrderById(Long id);
 
 
     // Future: 分页查询订单列表的方法 (需要根据 OrdersPageQueryDTO 进行过滤和分页)

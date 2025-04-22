@@ -1,9 +1,6 @@
 package com.***REMOVED***.service;
 
-import com.***REMOVED***.dto.OrdersPageQueryDTO;
-import com.***REMOVED***.dto.OrderSubmitDTO;
-import com.***REMOVED***.dto.OrdersPaymentDTO;
-import com.***REMOVED***.dto.PriceEstimationDTO;
+import com.***REMOVED***.dto.*;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.vo.OrderPaymentVO;
 import com.***REMOVED***.vo.OrderSubmitVO;
@@ -30,5 +27,8 @@ public interface OrderService {
 
     // 用户端根据订单id查询订单详情
     OrderVO getOrderDetail(Long id);
+
+    // 用户取消订单
+    void cancelOrder(Long id, OrderCancelDTO orderCancelDTO);
 
 }

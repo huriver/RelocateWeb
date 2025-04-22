@@ -6,10 +6,7 @@ import com.***REMOVED***.constant.OrderStatusConstant;
 import com.***REMOVED***.constant.PayMethodConstant;
 import com.***REMOVED***.constant.PaymentStatusConstant;
 import com.***REMOVED***.context.BaseContext;
-import com.***REMOVED***.dto.OrdersPageQueryDTO;
-import com.***REMOVED***.dto.OrderSubmitDTO;
-import com.***REMOVED***.dto.OrdersPaymentDTO;
-import com.***REMOVED***.dto.PriceEstimationDTO;
+import com.***REMOVED***.dto.*;
 import com.***REMOVED***.entity.Configuration;
 import com.***REMOVED***.entity.MovingOrder;
 import com.***REMOVED***.entity.ServiceCategory;
@@ -647,6 +644,85 @@ public class OrderServiceImpl implements OrderService {
 
         log.info("订单详情查询成功，订单ID：{}", id);
         return orderVO;
+    }
+
+    /**
+     * 用户端取消订单
+     *
+     * @param id
+     * @param cancelDTO
+     */
+    @Override
+    @Transactional
+    public void cancelOrder(Long id, OrderCancelDTO cancelDTO) {
+        log.info("用户端取消订单，订单ID：{}，原因：{}", id, cancelDTO != null ? cancelDTO.getCancelReason() : "无原因");
+
+        // 1. 查找订单 (获取 MovingOrder 实体，以便更新)
+        // 需要一个方法根据 ID 查询 MovingOrder 实体，而不是 OrderVO (OrderVO 是为了展示更多关联信息)
+        MovingOrder order = orderMapper.getMovingOrderById(id);
+
+        // 2. 校验订单是否存在
+        if (order == null) {
+            log.error("取消订单失败，订单不存在：ID {}", id);
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        // 3. 校验订单是否属于当前用户
+        Long currentUserId = BaseContext.getCurrentId();
+        if (!order.getCustomerId().equals(currentUserId)) {
+            log.error("取消订单失败，订单 {} 不属于当前用户 {}", id, currentUserId);
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_BELONG_TO_CURRENT_USER);
+        }
+
+        // 4. 校验订单状态是否允许取消
+        // 假设只有在待接单 (0)、司机已接单等待搬运工人 (1)、已接单 (2) 状态下用户可以自主取消
+        // 一旦进入进行中 (3) 或已完成 (4) 状态，通常不允许用户自主取消
+        Integer currentOrderStatus = order.getOrderStatus();
+        if (currentOrderStatus.equals(OrderStatusConstant.IN_PROGRESS) ||
+                currentOrderStatus.equals(OrderStatusConstant.COMPLETED) ||
+                currentOrderStatus.equals(OrderStatusConstant.CANCELLED)) {
+            log.error("取消订单失败，订单状态 {} 不允许取消：订单ID {}", currentOrderStatus, id);
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_NOT_ALLOW_CANCEL);
+        }
+
+        // --- 5. 更新订单状态为已取消 ---
+        MovingOrder updateOrder = MovingOrder.builder()
+                .id(id)
+                .orderStatus(OrderStatusConstant.CANCELLED)
+                .cancelReason(cancelDTO != null ? cancelDTO.getCancelReason() : null)
+                .cancelTime(LocalDateTime.now())
+                .build();
+
+        // --- 6. 处理支付状态：如果订单已支付，标记为已退款 ---
+        if (order.getIsPaid().equals(PaymentStatusConstant.PAID)) {
+            updateOrder.setIsPaid(PaymentStatusConstant.REFUNDED);
+            // 实际应用中，这里需要调用第三方支付平台的退款接口
+            // 模拟场景下，直接更新状态即可
+            log.info("订单已支付，模拟标记为已退款：订单ID {}", id);
+        }
+
+        // --- 7. 调用 Mapper 更新数据库 ---
+        orderMapper.update(updateOrder);
+        log.info("订单取消成功，订单ID：{}，新状态：{}", id, updateOrder.getOrderStatus());
+
+
+        // --- 8. (可选) 发送 WebSocket 消息给司机/商家，提示订单已取消 ---
+        // if (webSocketServer != null) {
+        //     Map<String, Object> message = new HashMap<>();
+        //     message.put("type", 2); // 消息类型：2表示订单取消
+        //     message.put("orderId", id);
+        //     message.put("orderNumber", order.getOrderNumber()); // 通知中包含订单号
+        //     // 可以根据业务需要添加更多信息，如取消原因
+        //     try {
+        //         webSocketServer.sendToAllClient(JSON.toJSONString(message));
+        //         log.info("已发送订单取消WebSocket通知：{}", order.getOrderNumber());
+        //     } catch (Exception e) {
+        //         log.error("发送订单取消WebSocket通知失败", e);
+        //         // 发送通知失败不影响订单取消成功，只记录日志
+        //     }
+        // }
+
+        log.info("订单取消处理完成，订单ID：{}", id);
     }
 
 

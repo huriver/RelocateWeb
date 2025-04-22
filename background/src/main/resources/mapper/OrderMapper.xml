@@ -21,6 +21,9 @@
             <if test="cancelReason != null">
                 cancel_reason = #{cancelReason},
             </if>
+            <if test="cancelTime != null">
+                cancel_time = #{cancelTime},
+            </if>
             <if test="movingStartTime != null">
                 moving_start_time = #{movingStartTime},
             </if>
@@ -63,6 +66,7 @@
         <result column="payment_time" property="paymentTime"/>
         <result column="pay_method" property="payMethod"/>
         <result column="cancel_reason" property="cancelReason"/>
+        <result column="cancel_time" property="cancelTime"/>
         <result column="moving_start_time" property="movingStartTime"/>
         <result column="moving_end_time" property="movingEndTime"/>
         <result column="number_of_helpers" property="numberOfHelpers"/>
@@ -109,6 +113,7 @@
         mo.payment_time,
         mo.pay_method,
         mo.cancel_reason,
+        mo.cancel_time,
         mo.moving_start_time,
         mo.moving_end_time,
         mo.number_of_helpers,
@@ -148,6 +153,7 @@
                mo.payment_time,
                mo.pay_method,
                mo.cancel_reason,
+               mo.cancel_time,
                mo.moving_start_time,
                mo.moving_end_time,
                mo.number_of_helpers,

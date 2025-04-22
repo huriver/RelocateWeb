@@ -138,6 +138,7 @@ CREATE TABLE `moving_order` (
   `payment_time` datetime COMMENT '支付时间',
   `pay_method` int(11) COMMENT '支付方式：1微信, 2支付宝, 3云闪付。支付成功后记录',
   `cancel_reason` varchar(255) COMMENT '取消原因',
+  `cancel_time` datetime COMMENT '订单取消时间',
   `moving_start_time` datetime COMMENT '搬家开始时间',
   `moving_end_time` datetime COMMENT '搬家结束时间',
   `number_of_helpers` int(11) COMMENT '用户选择的搬运工人数量',
