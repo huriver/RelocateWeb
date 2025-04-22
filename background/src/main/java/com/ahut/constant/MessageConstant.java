@@ -48,4 +48,6 @@ public class MessageConstant {
     public static final String ORDER_NOT_FOUND_WHILE_PAY_SUCCESS = "支付成功，订单不存在";
     public static final String UNKNOWN_ERROR_WHILE_MOCK_PAYMENT = "模拟支付发生未知错误";
     public static final String UPDATE_ORDER_PAY_STATUS_FAILED = "更新订单支付状态失败";
+
+    public static final String ORDER_NOT_BELONG_TO_CURRENT_USER = "订单不属于当前用户";
 }

@@ -1,11 +1,14 @@
 package com.***REMOVED***.controller.front;
 
+import com.***REMOVED***.dto.OrdersPageQueryDTO;
 import com.***REMOVED***.dto.OrderSubmitDTO;
 import com.***REMOVED***.dto.OrdersPaymentDTO;
 import com.***REMOVED***.dto.PriceEstimationDTO;
+import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.vo.OrderPaymentVO;
 import com.***REMOVED***.vo.OrderSubmitVO;
+import com.***REMOVED***.vo.OrderVO;
 import com.***REMOVED***.vo.PriceEstimationResultVO;
 import com.***REMOVED***.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +62,32 @@ public class OrderController {
         log.info("用户发起订单支付接口调用，参数：{}", ordersPaymentDTO);
         OrderPaymentVO orderPaymentVO = orderService.payment(ordersPaymentDTO);
         return Result.success(orderPaymentVO);
+    }
+
+    /**
+     * 用户端历史订单分页查询
+     *
+     * @param ordersPageQueryDTO
+     * @return
+     */
+    @GetMapping("/historyOrders")
+    public Result<PageResult> page(OrdersPageQueryDTO ordersPageQueryDTO) {
+        log.info("用户端历史订单查询，参数：{}", ordersPageQueryDTO);
+        PageResult pageResult = orderService.pageQuery(ordersPageQueryDTO);
+        return Result.success(pageResult);
+    }
+
+    /**
+     * 用户端查询订单详情
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/orderDetail/{id}")
+    public Result<OrderVO> getOrderDetail(@PathVariable Long id) {
+        log.info("用户端查询订单详情，订单ID：{}", id);
+        OrderVO orderVO = orderService.getOrderDetail(id);
+        return Result.success(orderVO);
     }
 
 }

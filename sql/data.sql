@@ -131,8 +131,13 @@ CREATE TABLE `moving_order` (
   `moving_origin` varchar(200) NOT NULL COMMENT '搬家起点',
   `moving_destination` varchar(200) NOT NULL COMMENT '搬家目的地',
   `moving_price` decimal(10,2) COMMENT '搬家价格',
+  `mileage_cost` decimal(10,2) COMMENT '路程费用明细',
+  `helper_cost` decimal(10,2)  COMMENT '搬运工人费用明细',
+  `category_price_multiplier` decimal(5,2)  COMMENT '服务类型的价格乘数',
   `is_paid` int(11) DEFAULT '0' COMMENT '是否支付：0-未支付，1-已支付，2-已退款',
   `payment_time` datetime COMMENT '支付时间',
+  `pay_method` int(11) COMMENT '支付方式：1微信, 2支付宝, 3云闪付。支付成功后记录',
+  `cancel_reason` varchar(255) COMMENT '取消原因',
   `moving_start_time` datetime COMMENT '搬家开始时间',
   `moving_end_time` datetime COMMENT '搬家结束时间',
   `number_of_helpers` int(11) COMMENT '用户选择的搬运工人数量',
@@ -373,9 +378,14 @@ INSERT INTO `vehicle` (`id`, `driver_id`, `truck_type_id`, `license_plate_number
 -- ----------------------------
 -- Data for table moving_order
 -- ----------------------------
-INSERT INTO `moving_order` (`id`, `customer_id`, `order_number`, `service_id`, `truck_type_id`, `driver_id`, `vehicle_id`, `order_status`, `reservation_time`, `moving_origin`, `moving_destination`, `moving_price`, `is_paid`, `payment_time`, `moving_start_time`, `moving_end_time`, `number_of_helpers`, `notes`, `create_time`, `update_time`) VALUES
-(1, 1, 'MO20250418001', 1, 1, 1, 1, 4, '2025-04-18 09:00:00', '上海市浦东新区', '上海市徐汇区', 180.00, 1, '2025-04-18 08:30:00', '2025-04-18 09:30:00', '2025-04-18 11:30:00', 1, '物品不多', NOW(), NOW()),
-(2, 2, 'MO20250418002', 2, 2, 2, 2, 4, '2025-04-18 14:00:00', '北京市朝阳区', '北京市海淀区', 320.00, 1, '2025-04-18 13:30:00', '2025-04-18 14:30:00', '2025-04-18 17:00:00', 2, '有钢琴', NOW(), NOW());
+INSERT INTO `moving_order` (`id`, `customer_id`, `order_number`, `service_id`, `truck_type_id`, `driver_id`, `vehicle_id`, `order_status`, `reservation_time`, `moving_origin`, `moving_destination`, `moving_price`, `mileage_cost`, `helper_cost`, `category_price_multiplier`, `is_paid`, `payment_time`, `pay_method`, `cancel_reason`, `moving_start_time`, `moving_end_time`, `number_of_helpers`, `notes`, `create_time`, `update_time`)
+VALUES
+(1, 1, 'MO20250418001', 1, 1, 1, 1, 4, '2025-04-18 09:00:00', '上海市浦东新区', '上海市徐汇区', 180.00,
+ 130.00, 50.00, 1.00, -- 示例费用明细值 (假设 路程 130 + 工人 50 = 180, 乘数 1.00)
+ 1, '2025-04-18 08:30:00', 1, NULL, '2025-04-18 09:30:00', '2025-04-18 11:30:00', 1, '物品不多', '2025-04-21 17:39:04', '2025-04-21 17:39:04'),
+(2, 2, 'MO20250418002', 2, 2, 2, 2, 4, '2025-04-18 14:00:00', '北京市朝阳区', '北京市海淀区', 320.00,
+ 220.00, 100.00, 1.00, -- 示例费用明细值 (假设 路程 220 + 工人 100 = 320, 乘数 1.00)
+ 1, '2025-04-18 13:30:00', 2, NULL, '2025-04-18 14:30:00', '2025-04-18 17:00:00', 2, '有钢琴', '2025-04-21 17:39:04', '2025-04-21 17:39:04');
 
 -- ----------------------------
 -- Data for table order_mover

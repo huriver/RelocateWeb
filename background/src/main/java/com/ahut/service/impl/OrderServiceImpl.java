@@ -3,8 +3,10 @@ package com.***REMOVED***.service.impl;
 
 import com.***REMOVED***.constant.MessageConstant;
 import com.***REMOVED***.constant.OrderStatusConstant;
+import com.***REMOVED***.constant.PayMethodConstant;
 import com.***REMOVED***.constant.PaymentStatusConstant;
 import com.***REMOVED***.context.BaseContext;
+import com.***REMOVED***.dto.OrdersPageQueryDTO;
 import com.***REMOVED***.dto.OrderSubmitDTO;
 import com.***REMOVED***.dto.OrdersPaymentDTO;
 import com.***REMOVED***.dto.PriceEstimationDTO;
@@ -14,15 +16,19 @@ import com.***REMOVED***.entity.ServiceCategory;
 import com.***REMOVED***.entity.TruckType;
 import com.***REMOVED***.exception.*;
 import com.***REMOVED***.mapper.*;
+import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.PriceCalculationResult;
 import com.***REMOVED***.service.OrderService;
 import com.***REMOVED***.utils.HttpClientUtil;
 import com.***REMOVED***.vo.OrderPaymentVO;
 import com.***REMOVED***.vo.OrderSubmitVO;
+import com.***REMOVED***.vo.OrderVO;
 import com.***REMOVED***.vo.PriceEstimationResultVO;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -195,8 +201,13 @@ public class OrderServiceImpl implements OrderService {
 
         // --- 4. 计算搬运工人费用 ---
         BigDecimal helperCost = BigDecimal.ZERO;
-        // 如果搬运工人数量大于0且提供了有效值
-        helperCost = perHelperCost.multiply(new BigDecimal(numberOfHelpers));
+        // 必须检查 numberOfHelpers 是否为 null 且是否大于 0
+        if (numberOfHelpers != null && numberOfHelpers > 0) {
+            helperCost = perHelperCost.multiply(new BigDecimal(numberOfHelpers));
+        } else {
+            // 如果 numberOfHelpers 是 null 或 0，搬运工人费用就是 0，这是正常情况
+            log.debug("搬运工人数量为 {}，helperCost 计算为 0", numberOfHelpers); // 可选日志
+        }
 
         // --- 5. 计算基础总费用 (路程费用 + 搬运工人费用) ---
         BigDecimal baseTotalBeforeMultiplier = mileageCost.add(helperCost);
@@ -380,8 +391,7 @@ public class OrderServiceImpl implements OrderService {
         MovingOrder order = new MovingOrder();
         BeanUtils.copyProperties(orderSubmitDTO, order);
 
-        Long currentUserId = BaseContext.getCurrentId();
-        order.setCustomerId(currentUserId);
+        order.setCustomerId(BaseContext.getCurrentId());
 
         // 生成唯一订单号
         order.setOrderNumber(generateUniqueOrderNumber());
@@ -394,10 +404,12 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderStatus(OrderStatusConstant.PENDING_ACCEPTANCE); // 初始状态：待接单
         order.setIsPaid(PaymentStatusConstant.UN_PAID); // 初始支付状态：未支付
 
-        // 设置计算出的最终价格
+        // 设置计算出的最终价格和费用明细
         order.setMovingPrice(finalOrderPrice);
+        order.setMileageCost(calculationResult.getMileageCost()); // 设置路程费用明细
+        order.setHelperCost(calculationResult.getHelperCost()); // 设置搬运工人费用明细
+        order.setCategoryPriceMultiplier(calculationResult.getCategoryPriceMultiplier()); // 设置服务类型乘数
 
-        // driver_id, vehicle_id, payment_time, moving_start_time, moving_end_time, pay_method, cancel_reason 初始为 NULL
         // --- 4. 插入订单主表 ---
         orderMapper.insert(order);
 
@@ -510,7 +522,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional // 支付成功更新订单状态是核心事务
     @Override
     public void paySuccess(String orderNumber, Integer payMethod) {
-        log.info("处理订单支付成功，订单号：{}", orderNumber);
+        log.info("处理订单支付成功，订单号：{}，支付方式：{}", orderNumber, payMethod);
 
         // 1. 根据订单号查询订单
         MovingOrder order = orderMapper.getByNumber(orderNumber);
@@ -537,7 +549,7 @@ public class OrderServiceImpl implements OrderService {
         // 4. 调用 Mapper 更新数据库
         try {
             orderMapper.update(updateOrder);
-            log.info("订单支付状态更新成功，订单号：{}，新状态：{}", orderNumber, updateOrder.getOrderStatus());
+            log.info("订单支付状态更新成功，订单号：{}", orderNumber);
         } catch (Exception e) {
             log.error("更新订单支付状态数据库失败：订单号 {}", orderNumber, e);
             // 支付已成功，但更新数据库失败是严重问题，需要报警和人工干预
@@ -564,5 +576,78 @@ public class OrderServiceImpl implements OrderService {
 
         log.info("订单支付成功处理完成，订单号：{}", orderNumber);
     }
+
+    /**
+     * 用户端历史订单分页查询
+     *
+     * @param ordersPageQueryDTO
+     * @return
+     */
+    @Override
+    public PageResult pageQuery(OrdersPageQueryDTO ordersPageQueryDTO) {
+        log.info("用户端历史订单查询，参数：{}", ordersPageQueryDTO);
+        ordersPageQueryDTO.setUserId(BaseContext.getCurrentId());
+
+        PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
+        Page<OrderVO> page = orderMapper.pageQuery(ordersPageQueryDTO);
+
+        // 对查询结果列表进行后处理：将状态码转换为文字描述
+        if (page != null && page.getResult() != null) {
+            for (OrderVO orderVO : page.getResult()) {
+                if (orderVO.getOrderStatus() != null) {
+                    orderVO.setOrderStatusDescription(OrderStatusConstant.getDescription(orderVO.getOrderStatus()));
+                }
+                if (orderVO.getIsPaid() != null) {
+                    orderVO.setIsPaidDescription(PaymentStatusConstant.getDescription(orderVO.getIsPaid()));
+                }
+                if (orderVO.getPayMethod() != null) {
+                    orderVO.setPayMethodDescription(PayMethodConstant.getDescription(orderVO.getPayMethod()));
+                }
+            }
+        }
+        return new PageResult(page.getTotal(), page.getResult());
+    }
+
+    /**
+     * 用户端根据订单id查询订单详情
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public OrderVO getOrderDetail(Long id) {
+        log.info("用户端查询订单详情，订单ID：{}", id);
+
+        // 1. 查找订单详情
+        OrderVO orderVO = orderMapper.getById(id);
+
+        // 2. 校验订单是否存在
+        if (orderVO == null) {
+            log.error("订单详情查询失败，订单不存在：ID {}", id);
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        // 3. 校验订单是否属于当前用户
+        Long currentUserId = BaseContext.getCurrentId();
+        if (!orderVO.getCustomerId().equals(currentUserId)) {
+            log.error("订单详情查询失败，订单 {} 不属于当前用户 {}", id, currentUserId);
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_BELONG_TO_CURRENT_USER);
+        }
+
+        // 4. 进行数据后处理和格式化：将状态码转换为文字描述
+        if (orderVO.getOrderStatus() != null) {
+            orderVO.setOrderStatusDescription(OrderStatusConstant.getDescription(orderVO.getOrderStatus()));
+        }
+        if (orderVO.getIsPaid() != null) {
+            orderVO.setIsPaidDescription(PaymentStatusConstant.getDescription(orderVO.getIsPaid()));
+        }
+        if (orderVO.getPayMethod() != null) {
+            orderVO.setPayMethodDescription(PayMethodConstant.getDescription(orderVO.getPayMethod()));
+        }
+
+        log.info("订单详情查询成功，订单ID：{}", id);
+        return orderVO;
+    }
+
 
 }

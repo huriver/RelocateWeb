@@ -40,4 +40,145 @@
         where id = #{id}
     </update>
 
+
+    <resultMap id="orderVOResultMap" type="com.***REMOVED***.vo.OrderVO">
+        <id column="order_id" property="id"/>
+        <result column="customer_id" property="customerId"/>
+        <result column="order_number" property="orderNumber"/>
+        <result column="service_id" property="serviceId"/>
+        <result column="truck_type_id" property="truckTypeId"/>
+        <result column="driver_id" property="driverId"/>
+        <result column="vehicle_id" property="vehicleId"/>
+        <result column="order_status" property="orderStatus"/>
+        <result column="reservation_time" property="reservationTime"/>
+        <result column="moving_origin" property="movingOrigin"/>
+        <result column="moving_destination" property="movingDestination"/>
+        <result column="moving_price" property="movingPrice"/>
+
+        <result column="mileage_cost" property="mileageCost"/>
+        <result column="helper_cost" property="helperCost"/>
+        <result column="category_price_multiplier" property="categoryPriceMultiplier"/>
+
+        <result column="is_paid" property="isPaid"/>
+        <result column="payment_time" property="paymentTime"/>
+        <result column="pay_method" property="payMethod"/>
+        <result column="cancel_reason" property="cancelReason"/>
+        <result column="moving_start_time" property="movingStartTime"/>
+        <result column="moving_end_time" property="movingEndTime"/>
+        <result column="number_of_helpers" property="numberOfHelpers"/>
+        <result column="notes" property="notes"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+
+        <result column="service_name" property="serviceName"/>
+        <result column="truck_type_name" property="truckTypeName"/>
+        <result column="category_name" property="serviceCategoryName"/>
+
+        <result column="driver_name" property="driverName"/>
+        <result column="driver_phone" property="driverPhone"/>
+
+        <result column="vehicle_plate" property="vehiclePlateNumber"/>
+
+        <collection property="moverList" ofType="com.***REMOVED***.vo.MoverVO" column="order_id">
+            <id column="mover_id" property="id"/>
+            <result column="mover_name" property="name"/>
+            <result column="mover_phone" property="phone"/>
+        </collection>
+
+    </resultMap>
+
+
+    <select id="pageQuery" resultMap="orderVOResultMap">
+        select
+        mo.id as order_id,
+        mo.customer_id,
+        mo.order_number,
+        mo.service_id,
+        mo.truck_type_id,
+        mo.driver_id,
+        mo.vehicle_id,
+        mo.order_status,
+        mo.reservation_time,
+        mo.moving_origin,
+        mo.moving_destination,
+        mo.moving_price,
+        mo.mileage_cost,
+        mo.helper_cost,
+        mo.category_price_multiplier,
+        mo.is_paid,
+        mo.payment_time,
+        mo.pay_method,
+        mo.cancel_reason,
+        mo.moving_start_time,
+        mo.moving_end_time,
+        mo.number_of_helpers,
+        mo.notes,
+        mo.create_time,
+        mo.update_time,
+        s.service_name,
+        tt.type_name as truck_type_name
+        from moving_order mo join service s on mo.service_id = s.id
+        join truck_type tt on mo.truck_type_id = tt.id
+        <where>
+            mo.customer_id = #{userId}
+            <if test="orderStatus != null">
+                and mo.order_status = #{orderStatus}
+            </if>
+        </where>
+        order by mo.create_time desc
+    </select>
+
+    <select id="getById" resultMap="orderVOResultMap">
+        select mo.id                  as order_id, -- 订单主键 (别名用于 ResultMap 的 id 和 collection 分组)
+               mo.customer_id,
+               mo.order_number,
+               mo.service_id,
+               mo.truck_type_id,
+               mo.driver_id,
+               mo.vehicle_id,
+               mo.order_status,
+               mo.reservation_time,
+               mo.moving_origin,
+               mo.moving_destination,
+               mo.moving_price,
+               mo.mileage_cost,
+               mo.helper_cost,
+               mo.category_price_multiplier,       -- 费用明细字段
+               mo.is_paid,
+               mo.payment_time,
+               mo.pay_method,
+               mo.cancel_reason,
+               mo.moving_start_time,
+               mo.moving_end_time,
+               mo.number_of_helpers,
+               mo.notes,
+               mo.create_time,
+               mo.update_time,
+
+               s.service_name,
+               tt.type_name           as truck_type_name,
+               sc.type_name           as category_name,
+
+               d.name                 as driver_name,
+               d.phone                as driver_phone,
+
+               v.license_plate_number as vehicle_plate,
+
+               m.id                   as mover_id,
+               m.name                 as mover_name,
+               m.phone                as mover_phone
+
+
+        from moving_order mo
+                 join service s on mo.service_id = s.id
+                 join truck_type tt on mo.truck_type_id = tt.id
+                 join service_category sc on s.category_id = sc.id
+                 left join driver d on mo.driver_id = d.id
+                 left join vehicle v on mo.vehicle_id = v.id
+                 left join order_mover om on mo.id = om.order_id
+                 left join mover m on om.mover_id = m.id
+        where mo.id = #{id}
+    </select>
+
+
 </mapper>

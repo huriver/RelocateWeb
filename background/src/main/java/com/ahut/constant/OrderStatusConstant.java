@@ -28,7 +28,7 @@ public class OrderStatusConstant {
             case 0:
                 return "待接单";
             case 1:
-                return "司机已接单";
+                return "司机已接单，等待搬运工人";
             case 2:
                 return "已接单";
             case 3:
@@ -37,7 +37,6 @@ public class OrderStatusConstant {
                 return "已完成";
             case 5:
                 return "已取消";
-            // case 6: return "已退款"; // 如果加了退款状态
             default:
                 return "未知状态";
         }
