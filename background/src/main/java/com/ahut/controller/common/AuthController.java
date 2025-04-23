@@ -9,10 +9,7 @@ import com.***REMOVED***.entity.Driver;
 import com.***REMOVED***.entity.Mover;
 import com.***REMOVED***.properties.JwtProperties;
 import com.***REMOVED***.result.Result;
-import com.***REMOVED***.service.AdminService;
-import com.***REMOVED***.service.CustomerService;
-import com.***REMOVED***.service.DriverService;
-import com.***REMOVED***.service.MoverService;
+import com.***REMOVED***.service.*;
 import com.***REMOVED***.utils.JwtUtil;
 import com.***REMOVED***.vo.UserLoginVO;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,14 +30,21 @@ public class AuthController {
 
     @Autowired
     private AdminService adminService;
+
     @Autowired
     private DriverService driverService;
+
     @Autowired
     private MoverService moverService;
+
     @Autowired
     private CustomerService customerService;
+
     @Autowired
     private JwtProperties jwtProperties;
+
+    @Autowired
+    private AuthService authService;
 
     /**
      * 角色登录
@@ -134,6 +139,32 @@ public class AuthController {
             default:
                 return Result.error("无效的用户角色");
         }
+    }
+
+    /**
+     * 用户端（消费者）注销接口
+     *
+     * @param request
+     * @return
+     */
+    @PostMapping("/front/logout")
+    public Result<String> logout(HttpServletRequest request) {
+        log.info("用户端注销");
+        authService.customerLogout(request);
+        return Result.success();
+    }
+
+    /**
+     * 后端用户（管理员、司机、搬运工人）注销接口
+     *
+     * @param request
+     * @return
+     */
+    @PostMapping("/back/logout")
+    public Result<String> backendLogout(HttpServletRequest request) {
+        log.info("后端用户注销");
+        authService.backendLogout(request);
+        return Result.success();
     }
 
 

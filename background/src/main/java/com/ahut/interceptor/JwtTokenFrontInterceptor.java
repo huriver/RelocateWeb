@@ -4,6 +4,7 @@ import com.***REMOVED***.constant.JwtClaimsConstant;
 import com.***REMOVED***.context.BaseContext;
 import com.***REMOVED***.properties.JwtProperties;
 import com.***REMOVED***.utils.JwtUtil;
+import com.***REMOVED***.utils.RedisUtil;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
 
 /**
  * jwt令牌校验的拦截器
@@ -23,6 +25,9 @@ public class JwtTokenFrontInterceptor implements HandlerInterceptor {
 
     @Autowired
     private JwtProperties jwtProperties;
+
+    @Autowired
+    private RedisUtil redisUtil;
 
     /**
      * 校验jwt
@@ -49,11 +54,21 @@ public class JwtTokenFrontInterceptor implements HandlerInterceptor {
             Claims claims = JwtUtil.parseJWT(jwtProperties.getFrontSecretKey(), token);
             Long userId = Long.valueOf(claims.get(JwtClaimsConstant.ID).toString()); // 使用 ID
             String role = claims.get(JwtClaimsConstant.ROLE).toString(); // 获取角色
+            Date expiration = claims.getExpiration();
 
             log.info("当前前端用户id：{}, 角色：{}", userId, role);
 
+            // ====== 3. 检查 Token 是否在黑名单中 ======
+            String blacklisted = redisUtil.get("jwt_blacklist:" + token);
+            if (blacklisted != null) {
+                log.warn("前端 Token {} 已在黑名单中，拒绝访问", token);
+                response.setStatus(401); // 响应 401 未授权
+                return false; // 拒绝访问
+            }
+
             BaseContext.setCurrentId(userId);
             BaseContext.setCurrentUserRole(role); // 存储角色
+            BaseContext.setTokenExpiration(expiration);
 
             //3、通过，放行
             return true;
