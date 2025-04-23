@@ -1,6 +1,7 @@
 package com.***REMOVED***.mapper;
 
 import com.***REMOVED***.entity.Rating;
+import com.***REMOVED***.vo.CustomerRatingVO;
 import com.***REMOVED***.vo.ServiceRatingVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -34,6 +35,9 @@ public interface RatingMapper {
 
     // 根据服务项ID获取用户评价列表，包含评价人姓名
     List<ServiceRatingVO> getServiceRatingsByServiceId(Long serviceId);
+
+    // 根据用户ID查询该用户提交的历史评价记录，包含关联信息
+    List<CustomerRatingVO> getCustomerRatingByCustomerId(Long customerId);
 
 
     // 其他可能的查询方法，例如根据客户ID查询评价列表，查询某个司机/搬运工人的平均评分等

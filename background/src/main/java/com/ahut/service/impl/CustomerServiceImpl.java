@@ -11,17 +11,24 @@ import com.***REMOVED***.exception.AccountLockedException;
 import com.***REMOVED***.exception.AccountNotFoundException;
 import com.***REMOVED***.exception.PasswordErrorException;
 import com.***REMOVED***.mapper.CustomerMapper;
+import com.***REMOVED***.mapper.RatingMapper;
 import com.***REMOVED***.service.CustomerService;
+import com.***REMOVED***.vo.CustomerRatingVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
+
+import java.util.List;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private CustomerMapper customerMapper;
+
+    @Autowired
+    private RatingMapper ratingMapper;
 
 
     @Override
@@ -109,6 +116,16 @@ public class CustomerServiceImpl implements CustomerService {
                 .build();
 
         customerMapper.update(customer);
+    }
+
+    /**
+     * 获取当前用户提交的历史评价记录列表
+     *
+     * @return
+     */
+    @Override
+    public List<CustomerRatingVO> getCustomerRatingHistory() {
+        return ratingMapper.getCustomerRatingByCustomerId(BaseContext.getCurrentId());
     }
 
 

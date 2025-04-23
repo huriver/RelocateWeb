@@ -26,4 +26,27 @@
         ORDER BY r.rating_time DESC
     </select>
 
+    <select id="getCustomerRatingByCustomerId" resultType="CustomerRatingVO">
+        SELECT mo.order_number      AS orderNumber,
+               s_order.service_name AS orderServiceName,
+               r.rating_type        AS ratedEntityType,
+               CASE
+                   WHEN r.rating_type = 'DRIVER' THEN d.name
+                   WHEN r.rating_type = 'MOVER' THEN m.name
+                   WHEN r.rating_type = 'SERVICE' THEN s_ratee.service_name
+                   ELSE '未知对象'
+                   END              AS ratedEntityName,
+               r.rating_value       AS ratingValue,
+               r.comment            AS comment,
+               r.rating_time        AS ratingTime
+        FROM rating r
+                 JOIN moving_order mo ON r.order_id = mo.id
+                 JOIN service s_order ON mo.service_id = s_order.id
+                 LEFT JOIN driver d ON r.rating_type = 'DRIVER' AND r.ratee_id = d.id
+                 LEFT JOIN mover m ON r.rating_type = 'MOVER' AND r.ratee_id = m.id
+                 LEFT JOIN service s_ratee ON r.rating_type = 'SERVICE' AND r.ratee_id = s_ratee.id
+        WHERE r.customer_id = #{customerId}
+        ORDER BY r.rating_time DESC
+    </select>
+
 </mapper>

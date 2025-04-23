@@ -5,6 +5,9 @@ import com.***REMOVED***.dto.CustomerDTO;
 import com.***REMOVED***.dto.UserLoginDTO;
 import com.***REMOVED***.dto.UserRegisterDTO;
 import com.***REMOVED***.entity.Customer;
+import com.***REMOVED***.vo.CustomerRatingVO;
+
+import java.util.List;
 
 public interface CustomerService {
     Customer login(UserLoginDTO userLoginDTO);
@@ -16,4 +19,8 @@ public interface CustomerService {
     void update(CustomerDTO customerDTO);
 
     void changePassword(ChangePasswordDTO changePasswordDTO);
+
+    // 获取当前用户提交的历史评价记录列表
+    List<CustomerRatingVO> getCustomerRatingHistory();
+
 }
