@@ -3,7 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.***REMOVED***.mapper.ServiceMapper">
 
-    <resultMap id="serviceDetailVOResultMap" type="com.***REMOVED***.vo.ServiceDetailVO">
+    <resultMap id="serviceDetailVOResultMap" type="ServiceDetailVO">
         <id column="s_id" property="id"/>
         <result column="s_category_id" property="categoryId"/>
         <result column="s_truck_type_id" property="truckTypeId"/>
@@ -40,7 +40,7 @@
 
     </resultMap>
 
-    <select id="pageQuery" parameterType="com.***REMOVED***.dto.ServiceQueryDTO" resultType="com.***REMOVED***.vo.ServiceVO">
+    <select id="pageQuery" parameterType="ServiceQueryDTO" resultType="ServiceVO">
         SELECT
         s.id as id,
         s.service_name as serviceName,
@@ -77,25 +77,43 @@
                sc.type_name                   as sc_name,
                sc.price_multiplier            as sc_price_multiplier,
 
-               tt.id                          as tt_id,
-               tt.type_name                   as tt_name,
-               tt.capacity                    as tt_capacity,
-               tt.description                 as tt_description,
-               tt.base_fare                   as tt_base_fare,
-               tt.price_per_km_tier1          as tt_price_tier1,
-               tt.price_per_km_tier2          as tt_price_tier2,
-               tt.price_per_km_tier3          as tt_price_tier3,
-               tt.price_per_km_tier4          as tt_price_tier4,
-               tt.price_per_km_tier5          as tt_price_tier5,
-               tt.create_time                 as tt_create_time,
-               tt.update_time                 as tt_update_time,
-               tt.create_user                 as tt_create_user,
-               tt.update_user                 as tt_update_user
+               tt.id                 as tt_id,
+               tt.type_name          as tt_name,
+               tt.capacity           as tt_capacity,
+               tt.description        as tt_description,
+               tt.base_fare          as tt_base_fare,
+               tt.price_per_km_tier1 as tt_price_tier1,
+               tt.price_per_km_tier2 as tt_price_tier2,
+               tt.price_per_km_tier3 as tt_price_tier3,
+               tt.price_per_km_tier4 as tt_price_tier4,
+               tt.price_per_km_tier5 as tt_price_tier5,
+               tt.create_time        as tt_create_time,
+               tt.update_time        as tt_update_time,
+               tt.create_user        as tt_create_user,
+               tt.update_user        as tt_update_user
 
         FROM service s
                  JOIN service_category sc ON s.category_id = sc.id
                  JOIN truck_type tt ON s.truck_type_id = tt.id
         WHERE s.id = #{id}
     </select>
+
+    <update id="update" parameterType="com.***REMOVED***.entity.Service">
+        update service
+        <set>
+            <if test="categoryId != null">category_id = #{categoryId},</if>
+            <if test="truckTypeId != null">truck_type_id = #{truckTypeId},</if>
+            <if test="serviceName != null">service_name = #{serviceName},</if>
+            <if test="shortDescription != null">short_description = #{shortDescription},</if>
+            <if test="loadingCapacityDescription != null">loading_capacity_description =
+                #{loadingCapacityDescription},
+            </if>
+            <if test="averageRating != null">average_rating = #{averageRating},</if>
+            <if test="ratingCount != null">rating_count = #{ratingCount},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="updateUser != null">update_user = #{updateUser},</if>
+        </set>
+        where id = #{id}
+    </update>
 
 </mapper>

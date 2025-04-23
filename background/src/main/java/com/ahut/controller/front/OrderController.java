@@ -3,11 +3,11 @@ package com.***REMOVED***.controller.front;
 import com.***REMOVED***.dto.*;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.Result;
+import com.***REMOVED***.service.OrderService;
 import com.***REMOVED***.vo.OrderPaymentVO;
 import com.***REMOVED***.vo.OrderSubmitVO;
 import com.***REMOVED***.vo.OrderVO;
 import com.***REMOVED***.vo.PriceEstimationResultVO;
-import com.***REMOVED***.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -96,9 +96,22 @@ public class OrderController {
      */
     @PutMapping("/cancel/{id}")
     public Result<String> cancel(@PathVariable Long id, @RequestBody OrderCancelDTO cancelDTO) {
-        log.info("用户端取消订单接口调用，订单ID：{}，参数：{}", id, cancelDTO);
+        log.info("用户端取消订单，订单ID：{}，参数：{}", id, cancelDTO);
         orderService.cancelOrder(id, cancelDTO);
-        return Result.success("订单取消成功");
+        return Result.success();
+    }
+
+    /**
+     * 用户提交订单评价 (多个评分项)
+     *
+     * @param overallRatingSubmitDTO
+     * @return
+     */
+    @PostMapping("/review")
+    public Result<String> submitRatings(@RequestBody OverallRatingSubmitDTO overallRatingSubmitDTO) {
+        log.info("用户端提交订单评价，参数：{}", overallRatingSubmitDTO);
+        orderService.submitRatings(overallRatingSubmitDTO);
+        return Result.success();
     }
 
 }

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.***REMOVED***.mapper.RatingMapper">
+
+    <insert id="insertBatch">
+        INSERT INTO rating (order_id, customer_id, ratee_id, rating_type, rating_value, comment, rating_time,
+        create_time, update_time)
+        VALUES
+        <foreach collection='ratings' item='rating' separator=','>
+            (#{rating.orderId}, #{rating.customerId}, #{rating.rateeId}, #{rating.ratingType},
+            #{rating.ratingValue}, #{rating.comment}, #{rating.ratingTime}, #{rating.createTime},
+            #{rating.updateTime})
+        </foreach>
+    </insert>
+
+</mapper>

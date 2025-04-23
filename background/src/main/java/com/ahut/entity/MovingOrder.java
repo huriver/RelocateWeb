@@ -37,6 +37,7 @@ public class MovingOrder {
     private LocalDateTime movingEndTime;         // 搬家结束时间 (实际)
     private Integer numberOfHelpers;             // 用户选择的搬运工人数量
     private String notes;                        // 备注
+    private Boolean isReviewed;                  // 是否已评价
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }

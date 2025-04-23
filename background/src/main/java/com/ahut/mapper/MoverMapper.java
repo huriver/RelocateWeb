@@ -7,12 +7,14 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.Map;
+
 @Mapper
 public interface MoverMapper {
 
     // 根据用户名查询用户信息
-    @Select("select id, username, password, name, gender, phone, id_card, photo_url, is_banned, " +
-            "create_time, update_time " +
+    @Select("select id, username, password, name, gender, phone, id_card, photo_url, is_banned, average_rating, " +
+            "rating_count, create_time, update_time " +
             "from mover where username = #{username};")
     Mover getByUsername(String username);
 
@@ -24,4 +26,9 @@ public interface MoverMapper {
 
     @AutoFill(value = OperationType.UPDATE)
     void update(Mover mover);
+
+    // 计算某个搬运工的平均评分和评分总数
+    @Select("SELECT IFNULL(AVG(rating_value), 0.00) as averageRating, COUNT(*) as ratingCount FROM rating WHERE rating_type = 'MOVER' AND ratee_id = #{moverId}")
+    Map<String, Object> getAverageRatingAndCount(Long moverId);
+
 }

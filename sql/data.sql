@@ -75,7 +75,9 @@ CREATE TABLE `driver` (
   `id_card` varchar(200) COMMENT '身份证号码',
   `driving_years` int(11) COMMENT '驾龄（年）',
   `photo_url` varchar(200) COMMENT '照片URL',
-  `is_banned` tinyint(1) DEFAULT 0 COMMENT '是否被封禁：0-否，1-是',
+  `is_banned` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否被封禁：0-否，1-是',
+  `average_rating` decimal(3,2) NOT NULL DEFAULT 0.00 COMMENT '平均评分值',
+  `rating_count` int(11) NOT NULL DEFAULT 0 COMMENT '评分数量',
   `create_time` datetime COMMENT '创建时间',
   `update_time` datetime COMMENT '修改时间',
   PRIMARY KEY (`id`) USING BTREE,
@@ -107,7 +109,9 @@ CREATE TABLE `mover` (
   `phone` varchar(200) COMMENT '手机号码',
   `id_card` varchar(200) COMMENT '身份证号码',
   `photo_url` varchar(200) COMMENT '照片URL',
-  `is_banned` tinyint(1) DEFAULT 0 COMMENT '是否被封禁：0-否，1-是',
+  `is_banned` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否被封禁：0-否，1-是',
+  `average_rating` decimal(3,2) NOT NULL DEFAULT 0.00 COMMENT '平均评分值',
+  `rating_count` int(11) NOT NULL DEFAULT 0 COMMENT '评分数量',
   `create_time` datetime COMMENT '创建时间',
   `update_time` datetime COMMENT '修改时间',
   PRIMARY KEY (`id`) USING BTREE,
@@ -143,6 +147,7 @@ CREATE TABLE `moving_order` (
   `moving_end_time` datetime COMMENT '搬家结束时间',
   `number_of_helpers` int(11) COMMENT '用户选择的搬运工人数量',
   `notes` text COMMENT '备注',
+  `is_reviewed` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否已评价：0-否，1-是',
   `create_time` datetime COMMENT '创建时间',
   `update_time` datetime COMMENT '修改时间',
   PRIMARY KEY (`id`) USING BTREE,
@@ -172,7 +177,11 @@ CREATE TABLE `rating` (
   `rating_type` varchar(50) NOT NULL COMMENT '评分类型（例如：司机，搬运工人，服务）',
   `rating_value` int(11) NOT NULL COMMENT '评分值（例如：1-5星）',
   `comment` text COMMENT '评价内容',
+  `rating_time` datetime NOT NULL COMMENT '评分时间', -- 新增：记录评分发生的时间
+  `create_time` datetime COMMENT '创建时间', -- 新增：记录创建时间
+  `update_time` datetime COMMENT '修改时间', -- 新增：记录更新时间
   PRIMARY KEY (`id`) USING BTREE
+  UNIQUE KEY `uk_order_rating_type_ratee` (`order_id`, `rating_type`, `ratee_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='评分表';
 
 -- ----------------------------
@@ -186,8 +195,8 @@ CREATE TABLE `service` (
   `service_name` varchar(200) NOT NULL COMMENT '服务项名称',
   `short_description` text COMMENT '服务项简短描述',
   `loading_capacity_description` text COMMENT '装载能力详细说明',
-  `average_rating` decimal(3,2) DEFAULT 0.00 COMMENT '平均评分值',
-  `rating_count` int(11) DEFAULT 0 COMMENT '评分数量',
+  `average_rating` decimal(3,2) NOT NULL DEFAULT 0.00 COMMENT '平均评分值',
+  `rating_count` int(11) NOT NULL DEFAULT 0 COMMENT '评分数量',
   `create_time` datetime COMMENT '创建时间',
   `update_time` datetime COMMENT '修改时间',
   `create_user` bigint(20) COMMENT '创建用户ID',
@@ -346,19 +355,34 @@ INSERT INTO `service` (`id`, `category_id`, `truck_type_id`, `service_name`, `sh
 (1, 1, 1, '标准搬家 (小型面包车)', '经济型小型搬家服务', '约可装载10-15个大纸箱、一台洗衣机', 4.80, 10, NOW(), NOW(), 1, 1),
 (2, 1, 2, '标准搬家 (中型厢式货车)', '适合普通家庭的标准搬家服务', '约可装载床、沙发、冰箱、洗衣机及20个纸箱', 4.50, 25, NOW(), NOW(), 1, 1),
 (3, 2, 2, '精品搬家 (中型厢式货车)', '提供打包和基础还原服务的家庭搬家', '同中型厢式货车容量，含打包材料和人工', 4.90, 15, NOW(), NOW(), 1, 1);
+
 -- ----------------------------
 -- Data for table driver
 -- ----------------------------
-INSERT INTO `driver` (`id`, `username`, `password`, `name`, `gender`, `phone`, `id_card`, `driving_years`, `photo_url`, `is_banned`, `create_time`, `update_time`) VALUES
-(1, 'driver1', '81dc9bdb52d04dc20036dbd8313ed055', '王五', '男', '13555556666', '320501198808087890', 5, '/uploads/driver/driver1_photo.jpg', 0, NOW(), NOW()),
-(2, 'driver2', '81dc9bdb52d04dc20036dbd8313ed055', '赵六', '男', '13666667777', '51070119920909***REMOVED***', 10, '/uploads/driver/driver2_photo.png', 0, NOW(), NOW());
+INSERT INTO `driver` (`id`, `username`, `password`, `name`, `gender`, `phone`, `id_card`, `driving_years`, `photo_url`, `is_banned`,
+                      `average_rating`, `rating_count`,
+                      `create_time`, `update_time`)
+VALUES
+(1, 'driver1', '81dc9bdb52d04dc20036dbd8313ed055', '王五', '男', '13555556666', '320501198808087890', 5, '/uploads/driver/driver1_photo.jpg', 0,
+ 0.00, 0,
+ NOW(), NOW()),
+(2, 'driver2', '81dc9bdb52d04dc20036dbd8313ed055', '赵六', '男', '13666667777', '51070119920909***REMOVED***', 10, '/uploads/driver/driver2_photo.png', 0,
+ 0.00, 0,
+ NOW(), NOW());
 
 -- ----------------------------
 -- Data for table mover
 -- ----------------------------
-INSERT INTO `mover` (`id`, `username`, `password`, `name`, `gender`, `phone`, `id_card`, `photo_url`, `is_banned`, `create_time`, `update_time`) VALUES
-(1, 'mover1', '81dc9bdb52d04dc20036dbd8313ed055', '孙七', '男', '13777778888', '420101199510105678', '/uploads/mover/mover1_photo.jpg', 0, NOW(), NOW()),
-(2, 'mover2', '81dc9bdb52d04dc20036dbd8313ed055', '周八', '男', '13000009999', '6108011998111***REMOVED***5', '/uploads/mover/mover2_photo.png', 0, NOW(), NOW());
+INSERT INTO `mover` (`id`, `username`, `password`, `name`, `gender`, `phone`, `id_card`, `photo_url`, `is_banned`,
+                     `average_rating`, `rating_count`,
+                     `create_time`, `update_time`)
+VALUES
+(1, 'mover1', '81dc9bdb52d04dc20036dbd8313ed055', '孙七', '男', '13777778888', '420101199510105678', '/uploads/mover/mover1_photo.jpg', 0,
+ 0.00, 0,
+ NOW(), NOW()),
+(2, 'mover2', '81dc9bdb52d00dc20036dbd8313ed055', '周八', '男', '13000009999', '6108011998111***REMOVED***5', '/uploads/mover/mover2_photo.png', 0,
+ 0.00, 0,
+ NOW(), NOW());
 
 -- ----------------------------
 -- Data for table driver_truck_type
@@ -379,14 +403,24 @@ INSERT INTO `vehicle` (`id`, `driver_id`, `truck_type_id`, `license_plate_number
 -- ----------------------------
 -- Data for table moving_order
 -- ----------------------------
-INSERT INTO `moving_order` (`id`, `customer_id`, `order_number`, `service_id`, `truck_type_id`, `driver_id`, `vehicle_id`, `order_status`, `reservation_time`, `moving_origin`, `moving_destination`, `moving_price`, `mileage_cost`, `helper_cost`, `category_price_multiplier`, `is_paid`, `payment_time`, `pay_method`, `cancel_reason`, `moving_start_time`, `moving_end_time`, `number_of_helpers`, `notes`, `create_time`, `update_time`)
+INSERT INTO `moving_order` (`id`, `customer_id`, `order_number`, `service_id`, `truck_type_id`, `driver_id`, `vehicle_id`, `order_status`, `reservation_time`, `moving_origin`, `moving_destination`, `moving_price`,
+                            `mileage_cost`, `helper_cost`, `category_price_multiplier`,
+                            `is_paid`, `payment_time`, `pay_method`, `cancel_reason`, `cancel_time`,
+                            `moving_start_time`, `moving_end_time`, `number_of_helpers`, `notes`, `is_reviewed`, -- 新增的 is_reviewed 字段
+                            `create_time`, `update_time`)
 VALUES
+-- 订单1
 (1, 1, 'MO20250418001', 1, 1, 1, 1, 4, '2025-04-18 09:00:00', '上海市浦东新区', '上海市徐汇区', 180.00,
- 130.00, 50.00, 1.00, -- 示例费用明细值 (假设 路程 130 + 工人 50 = 180, 乘数 1.00)
- 1, '2025-04-18 08:30:00', 1, NULL, '2025-04-18 09:30:00', '2025-04-18 11:30:00', 1, '物品不多', '2025-04-21 17:39:04', '2025-04-21 17:39:04'),
+ 130.00, 50.00, 1.00,
+ 1, '2025-04-18 08:30:00', 1, NULL, NULL,
+ '2025-04-18 09:30:00', '2025-04-18 11:30:00', 1, '物品不多', 1,
+ '2025-04-21 17:39:04', '2025-04-21 17:39:04'),
+-- 订单2
 (2, 2, 'MO20250418002', 2, 2, 2, 2, 4, '2025-04-18 14:00:00', '北京市朝阳区', '北京市海淀区', 320.00,
- 220.00, 100.00, 1.00, -- 示例费用明细值 (假设 路程 220 + 工人 100 = 320, 乘数 1.00)
- 1, '2025-04-18 13:30:00', 2, NULL, '2025-04-18 14:30:00', '2025-04-18 17:00:00', 2, '有钢琴', '2025-04-21 17:39:04', '2025-04-21 17:39:04');
+ 220.00, 100.00, 1.00,
+ 1, '2025-04-18 13:30:00', 2, NULL, NULL,
+ '2025-04-18 14:30:00', '2025-04-18 17:00:00', 2, '有钢琴', 1,
+ '2025-04-21 17:39:04', '2025-04-21 17:39:04');
 
 -- ----------------------------
 -- Data for table order_mover
@@ -399,17 +433,16 @@ INSERT INTO `order_mover` (`id`, `order_id`, `mover_id`) VALUES
 -- ----------------------------
 -- Data for table rating
 -- ----------------------------
--- 评价订单1 (服务1, 司机1)
-INSERT INTO `rating` (`id`, `order_id`, `customer_id`, `ratee_id`, `rating_type`, `rating_value`, `comment`) VALUES
-(1, 1, 1, 1, 'service', 5, '服务非常满意，师傅很准时！'), -- 评价服务项1
-(2, 1, 1, 1, 'driver', 5, '司机王师傅态度很好，开车稳当。'), -- 评价司机1
-(3, 1, 1, 1, 'mover', 4, '搬运工孙七很辛苦，动作麻利。'); -- 评价搬运工1
+INSERT INTO `rating` (`id`, `order_id`, `customer_id`, `ratee_id`, `rating_type`, `rating_value`, `comment`, `rating_time`, `create_time`, `update_time`)
+VALUES
+-- 评价订单1 (服务1, 司机1, 搬运工1)
+(1, 1, 1, 1, 'SERVICE', 5, '服务非常满意，师傅很准时！', '2025-04-18 14:00:00', '2025-04-18 14:00:00', '2025-04-18 14:00:00'),
+(2, 1, 1, 1, 'DRIVER', 5, '司机王师傅态度很好，开车稳当。', '2025-04-18 14:00:00', '2025-04-18 14:00:00', '2025-04-18 14:00:00'),
+(3, 1, 1, 1, 'MOVER', 4, '搬运工孙七很辛苦，动作麻利。', '2025-04-18 14:00:00', '2025-04-18 14:00:00', '2025-04-18 14:00:00'),
 
 -- 评价订单2 (服务2, 司机2)
-INSERT INTO `rating` (`id`, `order_id`, `customer_id`, `ratee_id`, `rating_type`, `rating_value`, `comment`) VALUES
-(4, 2, 2, 2, 'service', 4, '标准搬家服务符合预期，钢琴搬运也顺利。'), -- 评价服务项2
-(5, 2, 2, 2, 'driver', 4, '司机赵师傅路线熟悉，安全送达。'); -- 评价司机2
--- 注意：这里只模拟了对服务和司机的评分，实际可能还会对多个搬运工进行评分
+(4, 2, 2, 2, 'SERVICE', 4, '标准搬家服务符合预期，钢琴搬运也顺利。', '2025-04-18 19:30:00', '2025-04-18 19:30:00', '2025-04-18 19:30:00'),
+(5, 2, 2, 2, 'DRIVER', 4, '司机赵师傅路线熟悉，安全送达。', '2025-04-18 19:30:00', '2025-04-18 19:30:00', '2025-04-18 19:30:00');
 
 -- ----------------------------
 -- Data for table system_log

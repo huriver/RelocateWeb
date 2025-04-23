@@ -14,6 +14,8 @@
             <if test="idCard != null and idCard != ''">id_card = #{idCard},</if>
             <if test="photoUrl != null and photoUrl != ''">photo_url = #{photoUrl},</if>
             <if test="isBanned != null">is_banned = #{isBanned},</if>
+            <if test="averageRating != null">average_rating = #{averageRating},</if>
+            <if test="ratingCount != null">rating_count = #{ratingCount},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
         </set>
         where id = #{id}

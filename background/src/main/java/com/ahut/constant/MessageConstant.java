@@ -51,4 +51,11 @@ public class MessageConstant {
 
     public static final String ORDER_NOT_BELONG_TO_CURRENT_USER = "订单不属于当前用户";
     public static final String ORDER_STATUS_NOT_ALLOW_CANCEL = "订单状态不允许取消";
+
+    public static final String REVIEW_INFO_INCOMPLETE = "评价信息不完整";
+    public static final String ORDER_STATUS_NOT_ALLOW_REVIEW = "订单状态不允许评价";
+    public static final String INVALID_REVIEW_SCORE = "无效的评分";
+    public static final String ORDER_ALREADY_REVIEWED = "订单已评价";
+    public static final String INVALID_RATING_TARGET = "无效的评分对象";
+    public static final String INVALID_RATING_TYPE = "无效的评分类型";
 }

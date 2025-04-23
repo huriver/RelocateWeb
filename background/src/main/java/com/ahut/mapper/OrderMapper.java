@@ -14,10 +14,10 @@ public interface OrderMapper {
     // 插入订单
     @Insert("INSERT INTO moving_order (customer_id, order_number, service_id, truck_type_id, order_status, " +
             "reservation_time, moving_origin, moving_destination, moving_price, mileage_cost, helper_cost, " +
-            "category_price_multiplier, is_paid, number_of_helpers, notes, create_time, update_time) " +
+            "category_price_multiplier, is_paid, number_of_helpers, notes, is_reviewed , create_time, update_time) " +
             "VALUES (#{customerId}, #{orderNumber}, #{serviceId}, #{truckTypeId}, #{orderStatus}, " +
             "#{reservationTime}, #{movingOrigin}, #{movingDestination}, #{movingPrice}, #{mileageCost}, " +
-            "#{helperCost}, #{categoryPriceMultiplier}, #{isPaid}, #{numberOfHelpers}, #{notes}, " +
+            "#{helperCost}, #{categoryPriceMultiplier}, #{isPaid}, #{numberOfHelpers}, #{notes}, #{isReviewed}, " +
             "#{createTime}, #{updateTime})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     @AutoFill(OperationType.INSERT)
@@ -27,10 +27,10 @@ public interface OrderMapper {
     OrderVO getById(Long id);
 
     // 根据订单号查询订单详情
-    @Select("select id, customer_id, order_number, service_id, truck_type_id, driver_id, vehicle_id, " +
-            "order_status, reservation_time, moving_origin, moving_destination, moving_price, mileage_cost, " +
-            "helper_cost, category_price_multiplier, is_paid, payment_time, pay_method, cancel_reason, " +
-            "cancel_time, moving_start_time, moving_end_time, number_of_helpers, notes, create_time, update_time " +
+    @Select("select id, customer_id, order_number, service_id, truck_type_id, driver_id, vehicle_id, order_status, " +
+            "reservation_time, moving_origin, moving_destination, moving_price, mileage_cost, helper_cost, " +
+            "category_price_multiplier, is_paid, payment_time, pay_method, cancel_reason, cancel_time, " +
+            "moving_start_time, moving_end_time, number_of_helpers, notes, is_reviewed, create_time, update_time " +
             "from moving_order where order_number = #{orderNumber}")
     MovingOrder getByNumber(String orderNumber);
 
@@ -42,10 +42,10 @@ public interface OrderMapper {
     Page<OrderVO> pageQuery(OrdersPageQueryDTO queryDTO);
 
     // 根据订单ID查询 MovingOrder 实体 (用于后端处理)
-    @Select("select id, customer_id, order_number, service_id, truck_type_id, driver_id, vehicle_id, " +
-            "order_status, reservation_time, moving_origin, moving_destination, moving_price, mileage_cost, " +
-            "helper_cost, category_price_multiplier, is_paid, payment_time, pay_method, cancel_reason, " +
-            "cancel_time, moving_start_time, moving_end_time, number_of_helpers, notes, create_time, update_time " +
+    @Select("select id, customer_id, order_number, service_id, truck_type_id, driver_id, vehicle_id, order_status, " +
+            "reservation_time, moving_origin, moving_destination, moving_price, mileage_cost, helper_cost, " +
+            "category_price_multiplier, is_paid, payment_time, pay_method, cancel_reason, cancel_time, " +
+            "moving_start_time, moving_end_time, number_of_helpers, notes, is_reviewed, create_time, update_time " +
             "from moving_order where id = #{id}")
     MovingOrder getMovingOrderById(Long id);
 

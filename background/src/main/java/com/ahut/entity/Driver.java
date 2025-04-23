@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -22,6 +23,8 @@ public class Driver {
     private Integer drivingYears;
     private String photoUrl;
     private Boolean isBanned;
+    private BigDecimal averageRating;
+    private Integer ratingCount;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }

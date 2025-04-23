@@ -36,6 +36,9 @@
             <if test="vehicleId != null">
                 vehicle_id = #{vehicleId},
             </if>
+            <if test="isReviewed != null">
+                is_reviewed = #{isReviewed},
+            </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
@@ -44,7 +47,7 @@
     </update>
 
 
-    <resultMap id="orderVOResultMap" type="com.***REMOVED***.vo.OrderVO">
+    <resultMap id="orderVOResultMap" type="OrderVO">
         <id column="order_id" property="id"/>
         <result column="customer_id" property="customerId"/>
         <result column="order_number" property="orderNumber"/>
@@ -71,6 +74,8 @@
         <result column="moving_end_time" property="movingEndTime"/>
         <result column="number_of_helpers" property="numberOfHelpers"/>
         <result column="notes" property="notes"/>
+        <result column="is_reviewed" property="isReviewed"/>
+
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
 
@@ -118,6 +123,7 @@
         mo.moving_end_time,
         mo.number_of_helpers,
         mo.notes,
+        mo.is_reviewed,
         mo.create_time,
         mo.update_time,
         s.service_name,
@@ -158,6 +164,7 @@
                mo.moving_end_time,
                mo.number_of_helpers,
                mo.notes,
+               mo.is_reviewed,
                mo.create_time,
                mo.update_time,
 

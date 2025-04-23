@@ -1,12 +1,16 @@
 package com.***REMOVED***.mapper;
 
+import com.***REMOVED***.annotation.AutoFill;
 import com.***REMOVED***.dto.ServiceQueryDTO;
 import com.***REMOVED***.entity.Service;
+import com.***REMOVED***.enumeration.OperationType;
 import com.***REMOVED***.vo.ServiceDetailVO;
 import com.***REMOVED***.vo.ServiceVO;
 import com.github.pagehelper.Page;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+
+import java.util.Map;
 
 @Mapper
 public interface ServiceMapper {
@@ -22,4 +26,13 @@ public interface ServiceMapper {
 
     // 根据 ID 查询服务项详情
     ServiceDetailVO getDetailsById(Long id);
+
+    // 更新 Service 信息
+    @AutoFill(OperationType.UPDATE)
+    int update(Service service);
+
+    // 计算某个服务项的平均评分和评分总数
+    @Select("SELECT IFNULL(AVG(rating_value), 0.00) as averageRating, COUNT(*) as ratingCount FROM rating WHERE rating_type = 'SERVICE' AND ratee_id = #{serviceId}")
+    Map<String, Object> getAverageRatingAndCount(Long serviceId);
+
 }
