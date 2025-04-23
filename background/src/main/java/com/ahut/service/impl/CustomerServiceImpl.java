@@ -2,18 +2,18 @@ package com.***REMOVED***.service.impl;
 
 import com.***REMOVED***.constant.MessageConstant;
 import com.***REMOVED***.context.BaseContext;
-import com.***REMOVED***.dto.ChangePasswordDTO;
-import com.***REMOVED***.dto.CustomerDTO;
-import com.***REMOVED***.dto.UserLoginDTO;
-import com.***REMOVED***.dto.UserRegisterDTO;
+import com.***REMOVED***.dto.*;
 import com.***REMOVED***.entity.Customer;
 import com.***REMOVED***.exception.AccountLockedException;
 import com.***REMOVED***.exception.AccountNotFoundException;
 import com.***REMOVED***.exception.PasswordErrorException;
 import com.***REMOVED***.mapper.CustomerMapper;
 import com.***REMOVED***.mapper.RatingMapper;
+import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.service.CustomerService;
 import com.***REMOVED***.vo.CustomerRatingVO;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -126,6 +126,19 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public List<CustomerRatingVO> getCustomerRatingHistory() {
         return ratingMapper.getCustomerRatingByCustomerId(BaseContext.getCurrentId());
+    }
+
+    /**
+     * 消费者分页查询
+     *
+     * @param pageQueryDTO
+     * @return
+     */
+    @Override
+    public PageResult pageQuery(CustomerPageQueryDTO pageQueryDTO) {
+        PageHelper.startPage(pageQueryDTO.getPage(), pageQueryDTO.getPageSize());
+        Page<Customer> page = customerMapper.pageQuery(pageQueryDTO);
+        return new PageResult(page.getTotal(), page.getResult());
     }
 
 

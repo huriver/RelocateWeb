@@ -1,8 +1,10 @@
 package com.***REMOVED***.mapper;
 
 import com.***REMOVED***.annotation.AutoFill;
+import com.***REMOVED***.dto.CustomerPageQueryDTO;
 import com.***REMOVED***.entity.Customer;
 import com.***REMOVED***.enumeration.OperationType;
+import com.github.pagehelper.Page;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -34,4 +36,8 @@ public interface CustomerMapper {
      */
     @AutoFill(value = OperationType.UPDATE)
     void update(Customer customer);
+
+    // 管理员分页查询消费者列表 (带条件查询，并查询所有字段)
+    Page<Customer> pageQuery(CustomerPageQueryDTO pageQueryDTO);
+
 }

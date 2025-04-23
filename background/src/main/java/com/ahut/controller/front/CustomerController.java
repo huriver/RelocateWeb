@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * 员工管理
  */
-@RestController
+@RestController("frontCustomerController")
 @RequestMapping("/front/customer")
 @Slf4j
 public class CustomerController {
