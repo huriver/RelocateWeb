@@ -14,4 +14,16 @@
         </foreach>
     </insert>
 
+    <select id="getServiceRatingsByServiceId" resultType="ServiceRatingVO">
+        SELECT c.name         AS customerName,
+               r.rating_value AS ratingValue,
+               r.comment      AS comment,
+               r.rating_time  AS ratingTime
+        FROM rating r
+                 JOIN customer c ON r.customer_id = c.id
+        WHERE r.rating_type = 'SERVICE'
+          AND r.ratee_id = #{serviceId}
+        ORDER BY r.rating_time DESC
+    </select>
+
 </mapper>

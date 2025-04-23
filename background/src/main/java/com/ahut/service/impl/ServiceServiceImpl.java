@@ -5,10 +5,12 @@ import com.***REMOVED***.dto.ServiceQueryDTO;
 import com.***REMOVED***.entity.Configuration;
 import com.***REMOVED***.exception.ConfigurationNotFoundException;
 import com.***REMOVED***.mapper.ConfigurationMapper;
+import com.***REMOVED***.mapper.RatingMapper;
 import com.***REMOVED***.mapper.ServiceMapper;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.service.ServiceService;
 import com.***REMOVED***.vo.ServiceDetailVO;
+import com.***REMOVED***.vo.ServiceRatingVO;
 import com.***REMOVED***.vo.ServiceVO;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -16,11 +18,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 public class ServiceServiceImpl implements ServiceService {
     @Autowired
     private ServiceMapper serviceMapper;
+
+    @Autowired
+    private RatingMapper ratingMapper;
+
     @Autowired
     private ConfigurationMapper configurationMapper;
 
@@ -70,4 +77,16 @@ public class ServiceServiceImpl implements ServiceService {
         // 返回组装好的 ServiceDetailVO
         return serviceDetailVO;
     }
+
+    /**
+     * 根据服务项ID获取用户评价列表，包含评价人姓名
+     *
+     * @param serviceId
+     * @return
+     */
+    @Override
+    public List<ServiceRatingVO> getServiceRatings(Long serviceId) {
+        return ratingMapper.getServiceRatingsByServiceId(serviceId);
+    }
+
 }

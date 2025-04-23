@@ -1,6 +1,7 @@
 package com.***REMOVED***.mapper;
 
 import com.***REMOVED***.entity.Rating;
+import com.***REMOVED***.vo.ServiceRatingVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
@@ -29,6 +30,10 @@ public interface RatingMapper {
             "create_time, update_time " +
             "FROM rating WHERE order_id = #{orderId} AND rating_type = #{ratingType} AND ratee_id = #{rateeId}")
     Rating getByOrderIdAndTypeAndRateeId(Long orderId, String ratingType, Long rateeId);
+
+
+    // 根据服务项ID获取用户评价列表，包含评价人姓名
+    List<ServiceRatingVO> getServiceRatingsByServiceId(Long serviceId);
 
 
     // 其他可能的查询方法，例如根据客户ID查询评价列表，查询某个司机/搬运工人的平均评分等

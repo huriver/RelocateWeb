@@ -5,12 +5,15 @@ import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.ServiceService;
 import com.***REMOVED***.vo.ServiceDetailVO;
+import com.***REMOVED***.vo.ServiceRatingVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/front/service")
@@ -45,5 +48,19 @@ public class ServiceController {
         ServiceDetailVO serviceDetailVO = serviceService.details(id);
         return Result.success(serviceDetailVO);
     }
+
+    /**
+     * 根据服务项ID获取服务评价列表
+     *
+     * @param serviceId
+     * @return
+     */
+    @GetMapping("/ratings/{serviceId}")
+    public Result<List<ServiceRatingVO>> getServiceRatings(@PathVariable Long serviceId) {
+        log.info("用户端获取服务项 {} 的评价列表", serviceId);
+        List<ServiceRatingVO> ratingList = serviceService.getServiceRatings(serviceId);
+        return Result.success(ratingList);
+    }
+
 
 }
