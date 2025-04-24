@@ -1,6 +1,7 @@
 package com.***REMOVED***.service.impl;
 
 import com.***REMOVED***.constant.MessageConstant;
+import com.***REMOVED***.dto.MoverPageQueryDTO;
 import com.***REMOVED***.dto.UserLoginDTO;
 import com.***REMOVED***.dto.UserRegisterDTO;
 import com.***REMOVED***.entity.Mover;
@@ -8,7 +9,10 @@ import com.***REMOVED***.exception.AccountLockedException;
 import com.***REMOVED***.exception.AccountNotFoundException;
 import com.***REMOVED***.exception.PasswordErrorException;
 import com.***REMOVED***.mapper.MoverMapper;
+import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.service.MoverService;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -62,5 +66,18 @@ public class MoverServiceImpl implements MoverService {
         mover.setPassword(DigestUtils.md5DigestAsHex(userRegisterDTO.getPassword().getBytes()));
         mover.setName(mover.getUsername());
         moverMapper.insert(mover);
+    }
+
+    /**
+     * 分页查询搬家工人
+     *
+     * @param moverPageQueryDTO
+     * @return
+     */
+    @Override
+    public PageResult pageQuery(MoverPageQueryDTO moverPageQueryDTO) {
+        PageHelper.startPage(moverPageQueryDTO.getPage(), moverPageQueryDTO.getPageSize());
+        Page<Mover> page = moverMapper.pageQuery(moverPageQueryDTO);
+        return new PageResult(page.getTotal(), page.getResult());
     }
 }

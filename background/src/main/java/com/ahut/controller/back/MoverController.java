@@ -1,9 +1,13 @@
 package com.***REMOVED***.controller.back;
 
+import com.***REMOVED***.dto.MoverPageQueryDTO;
 import com.***REMOVED***.properties.JwtProperties;
+import com.***REMOVED***.result.PageResult;
+import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.MoverService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,32 +24,19 @@ public class MoverController {
     @Autowired
     private JwtProperties jwtProperties;
 
-
     /**
-     * 退出
+     * 搬家工人分页查询
      *
+     * @param moverPageQueryDTO
      * @return
      */
-//    @PostMapping("/logout")
-//    @ApiOperation("员工退出")
-//    public Result<String> logout() {
-//        return Result.success();
-//    }
+    @GetMapping("/page")
+    public Result<PageResult> page(MoverPageQueryDTO moverPageQueryDTO) {
+        log.info("搬家工人分页查询，参数为:{}", moverPageQueryDTO);
+        PageResult pageResult = moverService.pageQuery(moverPageQueryDTO);
+        return Result.success(pageResult);
+    }
 
-//
-//    /**
-//     * 员工分页查询
-//     *
-//     * @param employeePageQueryDTO
-//     * @return
-//     */
-//    @GetMapping("/page")
-//    @ApiOperation("员工分页查询")
-//    public Result<PageResult> page(EmployeePageQueryDTO employeePageQueryDTO) {
-//        log.info("员工分页查询，参数为:{}", employeePageQueryDTO);
-//        PageResult pageResult = employeeService.pageQuery(employeePageQueryDTO);
-//        return Result.success(pageResult);
-//    }
 //
 //    /**
 //     * 启用禁用员工账号

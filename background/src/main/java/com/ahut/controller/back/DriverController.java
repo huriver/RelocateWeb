@@ -3,7 +3,9 @@ package com.***REMOVED***.controller.back;
 import com.***REMOVED***.context.BaseContext;
 import com.***REMOVED***.dto.ChangePasswordDTO;
 import com.***REMOVED***.dto.DriverDTO;
+import com.***REMOVED***.dto.DriverPageQueryDTO;
 import com.***REMOVED***.entity.Driver;
+import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.DriverService;
 import lombok.extern.slf4j.Slf4j;
@@ -62,31 +64,18 @@ public class DriverController {
 
 
     /**
-     * 退出
+     * 司机分页查询
      *
+     * @param driverPageQueryDTO
      * @return
      */
-//    @PostMapping("/logout")
-//    @ApiOperation("员工退出")
-//    public Result<String> logout() {
-//        return Result.success();
-//    }
-//
+    @GetMapping("/page")
+    public Result<PageResult> page(DriverPageQueryDTO driverPageQueryDTO) {
+        log.info("司机分页查询，参数为:{}", driverPageQueryDTO);
+        PageResult pageResult = driverService.pageQuery(driverPageQueryDTO);
+        return Result.success(pageResult);
+    }
 
-//
-//    /**
-//     * 员工分页查询
-//     *
-//     * @param employeePageQueryDTO
-//     * @return
-//     */
-//    @GetMapping("/page")
-//    @ApiOperation("员工分页查询")
-//    public Result<PageResult> page(EmployeePageQueryDTO employeePageQueryDTO) {
-//        log.info("员工分页查询，参数为:{}", employeePageQueryDTO);
-//        PageResult pageResult = employeeService.pageQuery(employeePageQueryDTO);
-//        return Result.success(pageResult);
-//    }
 //
 //    /**
 //     * 启用禁用员工账号
@@ -103,31 +92,6 @@ public class DriverController {
 //        return Result.success();
 //    }
 //
-//    /**
-//     * 根据id查询员工信息
-//     *
-//     * @param id
-//     * @return
-//     */
-//    @GetMapping("/{id}")
-//    @ApiOperation("根据id查询员工信息")
-//    public Result<Employee> getById(@PathVariable long id) {
-//        Employee employee = employeeService.getById(id);
-//        return Result.success(employee);
-//    }
-//
-//    /**
-//     * 编辑员工信息
-//     *
-//     * @param employeeDTO
-//     * @return
-//     */
-//    @PutMapping
-//    @ApiOperation("编辑员工信息")
-//    public Result update(@RequestBody EmployeeDTO employeeDTO) {
-//        log.info("编辑员工信息:{}", employeeDTO);
-//        employeeService.update(employeeDTO);
-//        return Result.success();
-//    }
+
 
 }

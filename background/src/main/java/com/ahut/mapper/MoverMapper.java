@@ -1,8 +1,10 @@
 package com.***REMOVED***.mapper;
 
 import com.***REMOVED***.annotation.AutoFill;
+import com.***REMOVED***.dto.MoverPageQueryDTO;
 import com.***REMOVED***.entity.Mover;
 import com.***REMOVED***.enumeration.OperationType;
+import com.github.pagehelper.Page;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -31,4 +33,6 @@ public interface MoverMapper {
     @Select("SELECT IFNULL(AVG(rating_value), 0.00) as averageRating, COUNT(*) as ratingCount FROM rating WHERE rating_type = 'MOVER' AND ratee_id = #{moverId}")
     Map<String, Object> getAverageRatingAndCount(Long moverId);
 
+    // 分页查询搬家工人
+    Page<Mover> pageQuery(MoverPageQueryDTO moverPageQueryDTO);
 }

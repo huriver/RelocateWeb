@@ -2,16 +2,16 @@ package com.***REMOVED***.service.impl;
 
 import com.***REMOVED***.constant.MessageConstant;
 import com.***REMOVED***.context.BaseContext;
-import com.***REMOVED***.dto.ChangePasswordDTO;
-import com.***REMOVED***.dto.DriverDTO;
-import com.***REMOVED***.dto.UserLoginDTO;
-import com.***REMOVED***.dto.UserRegisterDTO;
+import com.***REMOVED***.dto.*;
 import com.***REMOVED***.entity.Driver;
 import com.***REMOVED***.exception.AccountLockedException;
 import com.***REMOVED***.exception.AccountNotFoundException;
 import com.***REMOVED***.exception.PasswordErrorException;
 import com.***REMOVED***.mapper.DriverMapper;
+import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.service.DriverService;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -127,6 +127,19 @@ public class DriverServiceImpl implements DriverService {
                 .build();
 
         driverMapper.update(driver);
+    }
+
+    /**
+     * 司机分页查询
+     *
+     * @param driverPageQueryDTO
+     * @return
+     */
+    @Override
+    public PageResult pageQuery(DriverPageQueryDTO driverPageQueryDTO) {
+        PageHelper.startPage(driverPageQueryDTO.getPage(), driverPageQueryDTO.getPageSize());
+        Page<Driver> page = driverMapper.pageQuery(driverPageQueryDTO);
+        return new PageResult(page.getTotal(), page.getResult());
     }
 
 }

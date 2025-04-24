@@ -1,8 +1,10 @@
 package com.***REMOVED***.mapper;
 
 import com.***REMOVED***.annotation.AutoFill;
+import com.***REMOVED***.dto.DriverPageQueryDTO;
 import com.***REMOVED***.entity.Driver;
 import com.***REMOVED***.enumeration.OperationType;
+import com.github.pagehelper.Page;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -36,4 +38,6 @@ public interface DriverMapper {
     @Select("SELECT IFNULL(AVG(rating_value), 0.00) as averageRating, COUNT(*) as ratingCount FROM rating WHERE rating_type = 'DRIVER' AND ratee_id = #{driverId}")
     Map<String, Object> getAverageRatingAndCount(Long driverId);
 
+    // 分页查询司机列表 (带条件查询，并查询所有字段)
+    Page<Driver> pageQuery(DriverPageQueryDTO driverPageQueryDTO);
 }

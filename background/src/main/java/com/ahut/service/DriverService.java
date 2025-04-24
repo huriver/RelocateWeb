@@ -1,10 +1,8 @@
 package com.***REMOVED***.service;
 
-import com.***REMOVED***.dto.ChangePasswordDTO;
-import com.***REMOVED***.dto.DriverDTO;
-import com.***REMOVED***.dto.UserLoginDTO;
-import com.***REMOVED***.dto.UserRegisterDTO;
+import com.***REMOVED***.dto.*;
 import com.***REMOVED***.entity.Driver;
+import com.***REMOVED***.result.PageResult;
 
 public interface DriverService {
     Driver login(UserLoginDTO userLoginDTO);
@@ -19,4 +17,7 @@ public interface DriverService {
 
     // 修改司机密码
     void changePassword(ChangePasswordDTO changePasswordDTO);
+
+    // 分页查询司机
+    PageResult pageQuery(DriverPageQueryDTO driverPageQueryDTO);
 }

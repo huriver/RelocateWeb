@@ -21,4 +21,45 @@
         where id = #{id}
     </update>
 
+    <select id="pageQuery" resultType="Mover">
+        SELECT
+        id, username, name, gender, phone, id_card, photo_url, is_banned, average_rating, rating_count,
+        create_time, update_time
+        FROM
+        mover
+        <where>
+            <if test="username != null and username != ''">
+                AND username LIKE CONCAT('%', #{username}, '%')
+            </if>
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone LIKE CONCAT('%', #{phone}, '%')
+            </if>
+            <if test="isBanned != null">
+                AND is_banned = #{isBanned}
+            </if>
+            <if test="createTimeStart != null">
+                AND create_time &gt;= #{createTimeStart}
+            </if>
+            <if test="createTimeEnd != null">
+                AND create_time &lt;= #{createTimeEnd}
+            </if>
+            <if test="minAverageRating != null">
+                AND average_rating &gt;= #{minAverageRating}
+            </if>
+            <if test="maxAverageRating != null">
+                AND average_rating &lt;= #{maxAverageRating}
+            </if>
+            <if test="minRatingCount != null">
+                AND rating_count &gt;= #{minRatingCount}
+            </if>
+            <if test="maxRatingCount != null">
+                AND rating_count &lt;= #{maxRatingCount}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
 </mapper>
