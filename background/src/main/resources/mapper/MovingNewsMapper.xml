@@ -20,5 +20,36 @@
         order by update_time desc
     </select>
 
+    <select id="pageQueryByAdmin" resultType="MovingNewsVO">
+        SELECT
+        mn.id, mn.title, mn.content, mn.publish_date, mn.is_published,
+        mn.create_time, mn.update_time, mn.create_user, mn.update_user,
+        ca.name AS createUserName,
+        ua.name AS updateUserName
+        FROM
+        moving_news mn
+        LEFT JOIN
+        admin ca ON mn.create_user = ca.id
+        LEFT JOIN
+        admin ua ON mn.update_user = ua.id
+        <where>
+            <if test="title != null and title != ''">
+                AND mn.title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="content != null and content != ''">
+                AND mn.content LIKE CONCAT('%', #{content}, '%')
+            </if>
+            <if test="isPublished != null">
+                AND mn.is_published = #{isPublished}
+            </if>
+            <if test="publishDateStart != null">
+                AND mn.publish_date &gt;= #{publishDateStart}
+            </if>
+            <if test="publishDateEnd != null">
+                AND mn.publish_date &lt;= #{publishDateEnd}
+            </if>
+        </where>
+        ORDER BY mn.publish_date DESC
+    </select>
 
 </mapper>

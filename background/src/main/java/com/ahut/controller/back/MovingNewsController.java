@@ -1,4 +1,4 @@
-package com.***REMOVED***.controller.publicity;
+package com.***REMOVED***.controller.back;
 
 import com.***REMOVED***.dto.MovingNewsPageQueryDTO;
 import com.***REMOVED***.result.PageResult;
@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 
-@RestController("publicMovingNewsController")
-@RequestMapping("/public/moving-news")
+@RestController("backMovingNewsController")
+@RequestMapping("/back/moving-news")
 @Slf4j
 public class MovingNewsController {
 
@@ -20,12 +20,17 @@ public class MovingNewsController {
     private MovingNewsService movingNewsService;
 
 
+    /**
+     * 分页查询搬家新闻列表 (带条件查询)
+     *
+     * @param pageQueryDTO
+     * @return
+     */
     @GetMapping("/page")
-    public Result<PageResult> page(MovingNewsPageQueryDTO movingNewsPageQueryDTO) {
-        movingNewsPageQueryDTO.setIsPublished(true);
-        log.info("搬家新闻分页查询，参数为:{}", movingNewsPageQueryDTO);
-        PageResult pageResult = movingNewsService.pageQuery(movingNewsPageQueryDTO);
-        return Result.success(pageResult);
+    public Result<PageResult> page(MovingNewsPageQueryDTO pageQueryDTO) {
+        log.info("后台端搬家新闻分页查询: {}", pageQueryDTO);
+        PageResult pageResult = movingNewsService.pageQueryByAdmin(pageQueryDTO);
+        return Result.success(pageResult); // 返回包含所有字段+关联管理员姓名的分页结果
     }
 
     /**
