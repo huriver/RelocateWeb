@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -16,6 +17,7 @@ public class MovingTips {
     private String title;
     private String content;
     private String category;
+    private LocalDate publishDate; // 发布日期
     private Boolean isPublished;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;

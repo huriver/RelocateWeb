@@ -303,6 +303,7 @@ CREATE TABLE `moving_tips` (
   `title` varchar(255) NOT NULL COMMENT '须知标题',
   `content` text NOT NULL COMMENT '须知内容',
   `category` varchar(100) DEFAULT NULL COMMENT '须知分类（例如：打包技巧、注意事项等）',
+  `publish_date` date NOT NULL COMMENT '发布日期',
   `is_published` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否已发布：0-否，1-是',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   `update_time` datetime DEFAULT NULL COMMENT '修改时间',
@@ -463,6 +464,6 @@ INSERT INTO `moving_news` (`id`, `title`, `content`, `publish_date`, `is_publish
 -- ----------------------------
 -- Data for table moving_tips
 -- ----------------------------
-INSERT INTO `moving_tips` (`id`, `title`, `content`, `category`, `is_published`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
-(1, '家具拆装注意事项', '关于如何安全拆卸和安装常见家具的指南...', '打包技巧', 1, NOW(), NOW(), 1, 1),
-(2, '搬家当天准备清单', '搬家当天需要检查和携带的重要物品清单...', '注意事项', 1, NOW(), NOW(), 1, 1);
+INSERT INTO `moving_tips` (`id`, `title`, `content`, `category`, `publish_date`, `is_published`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
+(1, '家具拆装注意事项', '关于如何安全拆卸和安装常见家具的指南...', '打包技巧', CURDATE(), 1, NOW(), NOW(), 1, 1), -- 添加 publish_date 字段和值
+(2, '搬家当天准备清单', '搬家当天需要检查和携带的重要物品清单...', '注意事项', CURDATE(), 1, NOW(), NOW(), 1, 1); -- 添加 publish_date 字段和值
