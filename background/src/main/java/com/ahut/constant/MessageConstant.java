@@ -58,4 +58,6 @@ public class MessageConstant {
     public static final String ORDER_ALREADY_REVIEWED = "订单已评价";
     public static final String INVALID_RATING_TARGET = "无效的评分对象";
     public static final String INVALID_RATING_TYPE = "无效的评分类型";
+
+    public static final String SERVICE_CATEGORY_BE_RELATED_BY_SERVICE = "当前服务分类关联了服务,不能删除";
 }

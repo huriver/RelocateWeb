@@ -39,4 +39,7 @@ public interface ServiceMapper {
     @Select("SELECT IFNULL(AVG(rating_value), 0.00) as averageRating, COUNT(*) as ratingCount FROM rating WHERE rating_type = 'SERVICE' AND ratee_id = #{serviceId}")
     Map<String, Object> getAverageRatingAndCount(Long serviceId);
 
+    // 根据服务类型ID查询关联的服务项数量
+    @Select("SELECT COUNT(id) FROM service WHERE category_id = #{categoryId}")
+    Integer countByCategoryId(Long categoryId);
 }

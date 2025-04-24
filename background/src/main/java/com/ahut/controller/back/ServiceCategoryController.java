@@ -1,15 +1,15 @@
 package com.***REMOVED***.controller.back;
 
+import com.***REMOVED***.dto.ServiceCategoryDTO;
 import com.***REMOVED***.dto.ServiceCategoryPageQueryDTO;
 import com.***REMOVED***.entity.ServiceCategory;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.ServiceCategoryService;
+import com.***REMOVED***.vo.ServiceCategoryVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -45,6 +45,58 @@ public class ServiceCategoryController {
         log.info("后台端正在查询所有服务类型");
         List<ServiceCategory> serviceCategories = serviceCategoryService.listAll();
         return Result.success(serviceCategories);
+    }
+
+    /**
+     * 新增服务类型
+     *
+     * @param serviceCategoryDTO
+     * @return
+     */
+    @PostMapping
+    public Result save(@RequestBody ServiceCategoryDTO serviceCategoryDTO) {
+        log.info("后台端新增服务类型: {}", serviceCategoryDTO);
+        serviceCategoryService.save(serviceCategoryDTO);
+        return Result.success();
+    }
+
+    /**
+     * 根据ID查询服务类型详情 (用于回显)
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/{id}")
+    public Result<ServiceCategoryVO> getById(@PathVariable Long id) {
+        log.info("后台端根据ID查询服务类型详情: {}", id);
+        ServiceCategoryVO serviceCategoryVO = serviceCategoryService.getByIdByAdmin(id);
+        return Result.success(serviceCategoryVO);
+    }
+
+    /**
+     * 修改服务类型
+     *
+     * @param serviceCategoryDTO
+     * @return
+     */
+    @PutMapping
+    public Result update(@RequestBody ServiceCategoryDTO serviceCategoryDTO) {
+        log.info("后台端修改服务类型: {}", serviceCategoryDTO);
+        serviceCategoryService.update(serviceCategoryDTO);
+        return Result.success();
+    }
+
+    /**
+     * 根据ID删除服务类型
+     *
+     * @param id
+     * @return
+     */
+    @DeleteMapping
+    public Result<String> deleteById(Long id) {
+        log.info("后台端根据ID删除服务类型：{}", id);
+        serviceCategoryService.deleteById(id);
+        return Result.success();
     }
 
 
