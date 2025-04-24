@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.***REMOVED***.mapper.VehicleMapper">
+
+    <select id="pageQuery" resultType="VehicleVO">
+        SELECT
+        v.id, v.driver_id, v.truck_type_id, v.license_plate_number, v.vehicle_brand,
+        v.create_time, v.update_time, v.create_user, v.update_user,
+        d.name AS driverName,
+        tt.type_name AS truckTypeName,
+        ca.name AS createUserName,
+        ua.name AS updateUserName
+        FROM
+        vehicle v
+        LEFT JOIN
+        driver d ON v.driver_id = d.id
+        LEFT JOIN
+        truck_type tt ON v.truck_type_id = tt.id
+        LEFT JOIN
+        admin ca ON v.create_user = ca.id
+        LEFT JOIN
+        admin ua ON v.update_user = ua.id
+        <where>
+            <if test="licensePlateNumber != null and licensePlateNumber != ''">
+                AND v.license_plate_number LIKE CONCAT('%', #{licensePlateNumber}, '%')
+            </if>
+            <if test="driverId != null">
+                AND v.driver_id = #{driverId}
+            </if>
+            <if test="truckTypeId != null">
+                AND v.truck_type_id = #{truckTypeId}
+            </if>
+            <if test="vehicleBrand != null and vehicleBrand != ''">
+                AND v.vehicle_brand LIKE CONCAT('%', #{vehicleBrand}, '%')
+            </if>
+            <if test="createTimeStart != null">
+                AND v.create_time &gt;= #{createTimeStart}
+            </if>
+            <if test="createTimeEnd != null">
+                AND v.create_time &lt;= #{createTimeEnd}
+            </if>
+        </where>
+        ORDER BY v.create_time DESC
+    </select>
+
+</mapper>

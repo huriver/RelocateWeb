@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/back/driver")
@@ -74,6 +76,19 @@ public class DriverController {
         log.info("司机分页查询，参数为:{}", driverPageQueryDTO);
         PageResult pageResult = driverService.pageQuery(driverPageQueryDTO);
         return Result.success(pageResult);
+    }
+
+    /**
+     * 查询司机列表 (用于前端下拉框等，可根据状态筛选)
+     *
+     * @param isBanned
+     * @return
+     */
+    @GetMapping("/list")
+    public Result<List<Driver>> list(Boolean isBanned) {
+        log.info("查询司机列表，状态筛选：{}", isBanned);
+        List<Driver> driverList = driverService.list(isBanned);
+        return Result.success(driverList);
     }
 
 //

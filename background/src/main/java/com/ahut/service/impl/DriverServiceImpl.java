@@ -18,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
+import java.util.List;
+
 @Service
 @Slf4j
 public class DriverServiceImpl implements DriverService {
@@ -140,6 +142,17 @@ public class DriverServiceImpl implements DriverService {
         PageHelper.startPage(driverPageQueryDTO.getPage(), driverPageQueryDTO.getPageSize());
         Page<Driver> page = driverMapper.pageQuery(driverPageQueryDTO);
         return new PageResult(page.getTotal(), page.getResult());
+    }
+
+    /**
+     * 查询司机列表 (用于前端下拉框等，可根据状态筛选)
+     *
+     * @param isBanned
+     * @return
+     */
+    @Override
+    public List<Driver> list(Boolean isBanned) {
+        return driverMapper.list(isBanned);
     }
 
 }

@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
 import java.util.Map;
 
 @Mapper
@@ -40,4 +41,8 @@ public interface DriverMapper {
 
     // 分页查询司机列表 (带条件查询，并查询所有字段)
     Page<Driver> pageQuery(DriverPageQueryDTO driverPageQueryDTO);
+
+    // 查询司机列表 (用于前端下拉框等，可根据状态筛选)
+    List<Driver> list(Boolean isBanned);
+
 }

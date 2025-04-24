@@ -1,6 +1,7 @@
 package com.***REMOVED***.controller.back;
 
 import com.***REMOVED***.dto.TruckTypePageQueryDTO;
+import com.***REMOVED***.entity.TruckType;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.TruckTypeService;
@@ -9,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 
 @RestController
@@ -31,6 +34,18 @@ public class TruckTypeController {
         log.info("货车类型分页查询: {}", truckTypePageQueryDTO);
         PageResult pageResult = truckTypeService.pageQuery(truckTypePageQueryDTO);
         return Result.success(pageResult);
+    }
+
+    /**
+     * 查询所有货车类型列表
+     *
+     * @return
+     */
+    @GetMapping("/list")
+    public Result<List<TruckType>> list() {
+        log.info("查询所有货车类型列表");
+        List<TruckType> truckTypeList = truckTypeService.list();
+        return Result.success(truckTypeList);
     }
 
 }

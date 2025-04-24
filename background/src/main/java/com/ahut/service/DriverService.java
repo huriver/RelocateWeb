@@ -4,6 +4,8 @@ import com.***REMOVED***.dto.*;
 import com.***REMOVED***.entity.Driver;
 import com.***REMOVED***.result.PageResult;
 
+import java.util.List;
+
 public interface DriverService {
     Driver login(UserLoginDTO userLoginDTO);
 
@@ -20,4 +22,8 @@ public interface DriverService {
 
     // 分页查询司机
     PageResult pageQuery(DriverPageQueryDTO driverPageQueryDTO);
+
+    // 查询司机列表 (用于前端下拉框等，可根据状态筛选)
+    List<Driver> list(Boolean isBanned);
+
 }
