@@ -1,10 +1,11 @@
 -- 创建数据库
-CREATE DATABASE `relocateWeb`
+CREATE DATABASE IF NOT EXISTS `relocateWeb`
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
 
 -- 使用数据库
 USE `relocateWeb`;
+
 
 -- ----------------------------
 -- Table structure for admin
@@ -180,7 +181,7 @@ CREATE TABLE `rating` (
   `rating_time` datetime NOT NULL COMMENT '评分时间', -- 新增：记录评分发生的时间
   `create_time` datetime COMMENT '创建时间', -- 新增：记录创建时间
   `update_time` datetime COMMENT '修改时间', -- 新增：记录更新时间
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `uk_order_rating_type_ratee` (`order_id`, `rating_type`, `ratee_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='评分表';
 
