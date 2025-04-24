@@ -23,5 +23,40 @@
         order by update_time desc
     </select>
 
+    <select id="pageQueryByAdmin" resultType="MovingTipsVO">
+        SELECT
+        mt.id, mt.title, mt.content, mt.category, mt.publish_date, mt.is_published,
+        mt.create_time, mt.update_time, mt.create_user, mt.update_user,
+        ca.name AS createUserName,
+        ua.name AS updateUserName
+        FROM
+        moving_tips mt
+        LEFT JOIN
+        admin ca ON mt.create_user = ca.id
+        LEFT JOIN
+        admin ua ON mt.update_user = ua.id
+        <where>
+            <if test="title != null and title != ''">
+                AND mt.title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="content != null and content != ''">
+                AND mt.content LIKE CONCAT('%', #{content}, '%')
+            </if>
+            <if test="category != null and category != ''">
+                AND mt.category LIKE CONCAT('%', #{category}, '%')
+            </if>
+            <if test="isPublished != null">
+                AND mt.is_published = #{isPublished}
+            </if>
+            <if test="publishDateStart != null">
+                AND mt.publish_date &gt;= #{publishDateStart}
+            </if>
+            <if test="publishDateEnd != null">
+                AND mt.publish_date &lt;= #{publishDateEnd}
+            </if>
+        </where>
+        ORDER BY mt.publish_date DESC
+    </select>
+
 
 </mapper>

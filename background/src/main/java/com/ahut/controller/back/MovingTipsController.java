@@ -1,4 +1,4 @@
-package com.***REMOVED***.controller.publicity;
+package com.***REMOVED***.controller.back;
 
 import com.***REMOVED***.dto.MovingTipsPageQueryDTO;
 import com.***REMOVED***.result.PageResult;
@@ -11,20 +11,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 
-@RestController("publicMovingTipsController")
-@RequestMapping("/public/moving-tips")
+@RestController("backMovingTipsController")
+@RequestMapping("/back/moving-tips")
 @Slf4j
 public class MovingTipsController {
 
     @Autowired
     private MovingTipsService movingTipsService;
 
-
+    /**
+     * 分页查询搬家须知列表 (带条件查询)
+     *
+     * @param movingTipsPageQueryDTO
+     * @return
+     */
     @GetMapping("/page")
     public Result<PageResult> page(MovingTipsPageQueryDTO movingTipsPageQueryDTO) {
-        movingTipsPageQueryDTO.setIsPublished(true);
-        log.info("用户端搬家须知分页查询，参数为:{}", movingTipsPageQueryDTO);
-        PageResult pageResult = movingTipsService.pageQuery(movingTipsPageQueryDTO);
+        log.info("后台端搬家须知分页查询，参数为:{}", movingTipsPageQueryDTO);
+        PageResult pageResult = movingTipsService.pageQueryByAdmin(movingTipsPageQueryDTO);
         return Result.success(pageResult);
     }
 
