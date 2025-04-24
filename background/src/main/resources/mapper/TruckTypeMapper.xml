@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.***REMOVED***.mapper.TruckTypeMapper">
+
+    <select id="pageQuery" resultType="TruckTypeVO">
+        SELECT
+        tt.id, tt.type_name, tt.capacity, tt.description, tt.base_fare, tt.price_per_km_tier1,
+        tt.price_per_km_tier2, tt.price_per_km_tier3, tt.price_per_km_tier4, tt.price_per_km_tier5,
+        tt.create_time, tt.update_time, tt.create_user, tt.update_user,
+        ca.name AS createUserName,
+        ua.name AS updateUserName
+        FROM
+        truck_type tt
+        LEFT JOIN
+        admin ca ON tt.create_user = ca.id
+        LEFT JOIN
+        admin ua ON tt.update_user = ua.id
+        <where>
+            <if test="typeName != null and typeName != ''">
+                AND tt.type_name LIKE CONCAT('%', #{typeName}, '%')
+            </if>
+            <if test="minBaseFare != null">
+                AND tt.base_fare &gt;= #{minBaseFare}
+            </if>
+            <if test="maxBaseFare != null">
+                AND tt.base_fare &lt;= #{maxBaseFare}
+            </if>
+            <if test="createTimeStart != null">
+                AND tt.create_time &gt;= #{createTimeStart}
+            </if>
+            <if test="createTimeEnd != null">
+                AND tt.create_time &lt;= #{createTimeEnd}
+            </if>
+        </where>
+        ORDER BY tt.create_time DESC
+    </select>
+
+
+</mapper>

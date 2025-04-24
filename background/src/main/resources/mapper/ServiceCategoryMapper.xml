@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.***REMOVED***.mapper.ServiceCategoryMapper">
+
+    <select id="pageQuery" resultType="serviceCategoryVO">
+        SELECT
+        sc.id, sc.type_name, sc.description, sc.price_multiplier, sc.create_time, sc.update_time, sc.create_user,
+        sc.update_user,
+        ca.name AS createUserName,
+        ua.name AS updateUserName
+        FROM
+        service_category sc
+        LEFT JOIN
+        admin ca ON sc.create_user = ca.id
+        LEFT JOIN
+        admin ua ON sc.update_user = ua.id
+        <where>
+            <if test="typeName != null and typeName != ''">
+                AND sc.type_name LIKE CONCAT('%', #{typeName}, '%')
+            </if>
+            <if test="minPriceMultiplier != null">
+                AND sc.price_multiplier &gt;= #{minPriceMultiplier}
+            </if>
+            <if test="maxPriceMultiplier != null">
+                AND sc.price_multiplier &lt;= #{maxPriceMultiplier}
+            </if>
+            <if test="createTimeStart != null">
+                AND sc.create_time &gt;= #{createTimeStart}
+            </if>
+            <if test="createTimeEnd != null">
+                AND sc.create_time &lt;= #{createTimeEnd}
+            </if>
+        </where>
+        ORDER BY sc.create_time DESC
+    </select>
+
+</mapper>

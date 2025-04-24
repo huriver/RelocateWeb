@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 
-@RestController
+@RestController("frontServiceCategoryController")
 @RequestMapping("/front/service-category")
 @Slf4j
 public class ServiceCategoryController {
