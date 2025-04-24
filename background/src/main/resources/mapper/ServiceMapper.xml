@@ -59,6 +59,56 @@
         ORDER BY s.average_rating DESC, s.rating_count DESC
     </select>
 
+    <select id="pageQueryByAdmin" resultType="ServiceItemVO">
+        SELECT
+        s.id, s.category_id, s.truck_type_id, s.service_name, s.short_description, s.loading_capacity_description,
+        s.average_rating, s.rating_count, s.create_time, s.update_time, s.create_user, s.update_user,
+        sc.type_name AS categoryName,
+        tt.type_name AS truckTypeName,
+        ca.name AS createUserName,
+        ua.name AS updateUserName
+        FROM
+        service s
+        LEFT JOIN
+        service_category sc ON s.category_id = sc.id
+        LEFT JOIN
+        truck_type tt ON s.truck_type_id = tt.id
+        LEFT JOIN
+        admin ca ON s.create_user = ca.id
+        LEFT JOIN
+        admin ua ON s.update_user = ua.id
+        <where>
+            <if test="serviceName != null and serviceName != ''">
+                AND s.service_name LIKE CONCAT('%', #{serviceName}, '%')
+            </if>
+            <if test="categoryId != null">
+                AND s.category_id = #{categoryId}
+            </if>
+            <if test="truckTypeId != null">
+                AND s.truck_type_id = #{truckTypeId}
+            </if>
+            <if test="minAverageRating != null">
+                AND s.average_rating &gt;= #{minAverageRating}
+            </if>
+            <if test="maxAverageRating != null">
+                AND s.average_rating &lt;= #{maxAverageRating}
+            </if>
+            <if test="minRatingCount != null">
+                AND s.rating_count &gt;= #{minRatingCount}
+            </if>
+            <if test="maxRatingCount != null">
+                AND s.rating_count &lt;= #{maxRatingCount}
+            </if>
+            <if test="createTimeStart != null">
+                AND s.create_time &gt;= #{createTimeStart}
+            </if>
+            <if test="createTimeEnd != null">
+                AND s.create_time &lt;= #{createTimeEnd}
+            </if>
+        </where>
+        ORDER BY s.create_time DESC
+    </select>
+
     <select id="getDetailsById" parameterType="long" resultMap="serviceDetailVOResultMap">
         SELECT s.id                           as s_id,
                s.category_id                  as s_category_id,

@@ -1,6 +1,7 @@
 package com.***REMOVED***.controller.back;
 
 import com.***REMOVED***.dto.ServiceCategoryPageQueryDTO;
+import com.***REMOVED***.entity.ServiceCategory;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.ServiceCategoryService;
@@ -9,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 
 @RestController("backServiceCategoryController")
@@ -27,9 +30,21 @@ public class ServiceCategoryController {
      */
     @GetMapping("/page")
     public Result<PageResult> page(ServiceCategoryPageQueryDTO serviceCategoryPageQueryDTO) {
-        log.info("服务类型分页查询: {}", serviceCategoryPageQueryDTO);
+        log.info("后台端服务类型分页查询: {}", serviceCategoryPageQueryDTO);
         PageResult pageResult = serviceCategoryService.pageQuery(serviceCategoryPageQueryDTO);
         return Result.success(pageResult);
+    }
+
+    /**
+     * 查询所有服务类型
+     *
+     * @return
+     */
+    @GetMapping("/list")
+    public Result<List<ServiceCategory>> listServiceCategories() {
+        log.info("后台端正在查询所有服务类型");
+        List<ServiceCategory> serviceCategories = serviceCategoryService.listAll();
+        return Result.success(serviceCategories);
     }
 
 

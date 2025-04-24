@@ -28,7 +28,7 @@ public class VehicleController {
      */
     @GetMapping("/page")
     public Result<PageResult> page(VehiclePageQueryDTO pageQueryDTO) {
-        log.info("车辆分页查询: {}", pageQueryDTO);
+        log.info("后台端车辆分页查询: {}", pageQueryDTO);
         PageResult pageResult = vehicleService.pageQuery(pageQueryDTO);
         return Result.success(pageResult);
     }

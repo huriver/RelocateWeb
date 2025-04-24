@@ -10,6 +10,7 @@ import com.***REMOVED***.mapper.ServiceMapper;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.service.ServiceService;
 import com.***REMOVED***.vo.ServiceDetailVO;
+import com.***REMOVED***.vo.ServiceItemVO;
 import com.***REMOVED***.vo.ServiceRatingVO;
 import com.***REMOVED***.vo.ServiceVO;
 import com.github.pagehelper.Page;
@@ -87,6 +88,19 @@ public class ServiceServiceImpl implements ServiceService {
     @Override
     public List<ServiceRatingVO> getServiceRatings(Long serviceId) {
         return ratingMapper.getServiceRatingsByServiceId(serviceId);
+    }
+
+    /**
+     * 管理员分页查询服务项列表
+     *
+     * @param serviceQueryDTO
+     * @return
+     */
+    @Override
+    public PageResult pageQueryByAdmin(ServiceQueryDTO serviceQueryDTO) {
+        PageHelper.startPage(serviceQueryDTO.getPage(), serviceQueryDTO.getPageSize());
+        Page<ServiceItemVO> page = serviceMapper.pageQueryByAdmin(serviceQueryDTO);
+        return new PageResult(page.getTotal(), page.getResult());
     }
 
 }

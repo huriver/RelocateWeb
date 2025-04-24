@@ -31,7 +31,7 @@ public class TruckTypeController {
      */
     @GetMapping("/page")
     public Result<PageResult> page(TruckTypePageQueryDTO truckTypePageQueryDTO) {
-        log.info("货车类型分页查询: {}", truckTypePageQueryDTO);
+        log.info("后台端货车类型分页查询: {}", truckTypePageQueryDTO);
         PageResult pageResult = truckTypeService.pageQuery(truckTypePageQueryDTO);
         return Result.success(pageResult);
     }
@@ -43,7 +43,7 @@ public class TruckTypeController {
      */
     @GetMapping("/list")
     public Result<List<TruckType>> list() {
-        log.info("查询所有货车类型列表");
+        log.info("后台端查询所有货车类型列表");
         List<TruckType> truckTypeList = truckTypeService.list();
         return Result.success(truckTypeList);
     }

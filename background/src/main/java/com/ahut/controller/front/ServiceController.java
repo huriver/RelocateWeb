@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@RestController
+@RestController("frontServiceController")
 @RequestMapping("/front/service")
 @Slf4j
 public class ServiceController {

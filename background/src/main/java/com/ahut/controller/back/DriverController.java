@@ -32,7 +32,7 @@ public class DriverController {
     @GetMapping
     public Result<Driver> getById() {
         long id = BaseContext.getCurrentId();
-        log.info("根据id查询司机信息:{}", id);
+        log.info("后台端根据id查询司机信息:{}", id);
         Driver driver = driverService.getById(id);
         return Result.success(driver);
     }
@@ -46,7 +46,7 @@ public class DriverController {
      */
     @PutMapping
     public Result update(@RequestBody DriverDTO driverDTO) {
-        log.info("编辑司机信息:{}", driverDTO);
+        log.info("后台端编辑司机信息:{}", driverDTO);
         driverService.update(driverDTO);
         return Result.success();
     }
@@ -59,7 +59,7 @@ public class DriverController {
      */
     @PutMapping("/editPassword")
     public Result changePassword(@RequestBody ChangePasswordDTO changePasswordDTO) {
-        log.info("司机修改密码：{}", changePasswordDTO);
+        log.info("后台端司机修改密码：{}", changePasswordDTO);
         driverService.changePassword(changePasswordDTO);
         return Result.success();
     }
@@ -73,7 +73,7 @@ public class DriverController {
      */
     @GetMapping("/page")
     public Result<PageResult> page(DriverPageQueryDTO driverPageQueryDTO) {
-        log.info("司机分页查询，参数为:{}", driverPageQueryDTO);
+        log.info("后台端司机分页查询，参数为:{}", driverPageQueryDTO);
         PageResult pageResult = driverService.pageQuery(driverPageQueryDTO);
         return Result.success(pageResult);
     }
@@ -86,7 +86,7 @@ public class DriverController {
      */
     @GetMapping("/list")
     public Result<List<Driver>> list(Boolean isBanned) {
-        log.info("查询司机列表，状态筛选：{}", isBanned);
+        log.info("后台端查询司机列表，状态筛选：{}", isBanned);
         List<Driver> driverList = driverService.list(isBanned);
         return Result.success(driverList);
     }

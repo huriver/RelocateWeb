@@ -5,6 +5,7 @@ import com.***REMOVED***.dto.ServiceQueryDTO;
 import com.***REMOVED***.entity.Service;
 import com.***REMOVED***.enumeration.OperationType;
 import com.***REMOVED***.vo.ServiceDetailVO;
+import com.***REMOVED***.vo.ServiceItemVO;
 import com.***REMOVED***.vo.ServiceVO;
 import com.github.pagehelper.Page;
 import org.apache.ibatis.annotations.Mapper;
@@ -23,6 +24,9 @@ public interface ServiceMapper {
 
     // 条件分页查询服务项列表
     Page<ServiceVO> pageQuery(ServiceQueryDTO serviceQueryDTO);
+
+    // 管理员分页查询服务项列表 (带条件查询，SELECT 所有字段+关联服务类型/货车/管理员姓名)
+    Page<ServiceItemVO> pageQueryByAdmin(ServiceQueryDTO serviceQueryDTO);
 
     // 根据 ID 查询服务项详情
     ServiceDetailVO getDetailsById(Long id);

@@ -32,7 +32,7 @@ public class MoverController {
      */
     @GetMapping("/page")
     public Result<PageResult> page(MoverPageQueryDTO moverPageQueryDTO) {
-        log.info("搬家工人分页查询，参数为:{}", moverPageQueryDTO);
+        log.info("后台端搬家工人分页查询，参数为:{}", moverPageQueryDTO);
         PageResult pageResult = moverService.pageQuery(moverPageQueryDTO);
         return Result.success(pageResult);
     }

@@ -29,7 +29,7 @@ public class CustomerController {
      */
     @GetMapping("/page")
     public Result<PageResult> page(CustomerPageQueryDTO pageQueryDTO) {
-        log.info("消费者分页查询: {}", pageQueryDTO);
+        log.info("后台端消费者分页查询: {}", pageQueryDTO);
         PageResult pageResult = customerService.pageQuery(pageQueryDTO);
         return Result.success(pageResult);
     }
