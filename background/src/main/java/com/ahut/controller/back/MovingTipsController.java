@@ -1,14 +1,14 @@
 package com.***REMOVED***.controller.back;
 
+import com.***REMOVED***.dto.MovingTipsDTO;
 import com.***REMOVED***.dto.MovingTipsPageQueryDTO;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.MovingTipsService;
+import com.***REMOVED***.vo.MovingTipsVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController("backMovingTipsController")
@@ -33,73 +33,69 @@ public class MovingTipsController {
     }
 
     /**
-     * 退出
+     * 新增搬家须知
      *
+     * @param movingTipsDTO
      * @return
      */
-//    @PostMapping("/logout")
-//    @ApiOperation("员工退出")
-//    public Result<String> logout() {
-//        return Result.success();
-//    }
-//
-//    /**
-//     * 新增员工
-//     *
-//     * @param employeeDTO
-//     * @return
-//     */
-//    @PostMapping
-//    @ApiOperation("新增员工")
-//    public Result save(@RequestBody EmployeeDTO employeeDTO) {
-//        log.info("新增员工:{}", employeeDTO);
-//        System.out.println("当前线程id：" + Thread.currentThread().getId());
-//        employeeService.save(employeeDTO);
-//        return Result.success();
-//    }
-//
+    @PostMapping
+    public Result save(@RequestBody MovingTipsDTO movingTipsDTO) {
+        log.info("后台端新增搬家须知: {}", movingTipsDTO);
+        movingTipsService.save(movingTipsDTO);
+        return Result.success();
+    }
 
-//
-//    /**
-//     * 启用禁用员工账号
-//     *
-//     * @param status
-//     * @param id
-//     * @return
-//     */
-//    @PostMapping("/status/{status}")
-//    @ApiOperation("启用禁用员工账号")
-//    public Result startOrStop(@PathVariable Integer status, long id) {
-//        log.info("启用禁用员工账号:{},{}", status, id);
-//        employeeService.startOrStop(status, id);
-//        return Result.success();
-//    }
-//
-//    /**
-//     * 根据id查询员工信息
-//     *
-//     * @param id
-//     * @return
-//     */
-//    @GetMapping("/{id}")
-//    @ApiOperation("根据id查询员工信息")
-//    public Result<Employee> getById(@PathVariable long id) {
-//        Employee employee = employeeService.getById(id);
-//        return Result.success(employee);
-//    }
-//
-//    /**
-//     * 编辑员工信息
-//     *
-//     * @param employeeDTO
-//     * @return
-//     */
-//    @PutMapping
-//    @ApiOperation("编辑员工信息")
-//    public Result update(@RequestBody EmployeeDTO employeeDTO) {
-//        log.info("编辑员工信息:{}", employeeDTO);
-//        employeeService.update(employeeDTO);
-//        return Result.success();
-//    }
+    /**
+     * 根据ID查询搬家须知详情 (用于回显)
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/{id}")
+    public Result<MovingTipsVO> getById(@PathVariable Long id) {
+        log.info("后台端根据ID查询搬家须知详情: {}", id);
+        MovingTipsVO movingTipsVO = movingTipsService.getByIdByAdmin(id);
+        return Result.success(movingTipsVO);
+    }
+
+    /**
+     * 修改搬家须知
+     *
+     * @param movingTipsDTO
+     * @return
+     */
+    @PutMapping
+    public Result update(@RequestBody MovingTipsDTO movingTipsDTO) {
+        log.info("后台端修改搬家须知: {}", movingTipsDTO);
+        movingTipsService.update(movingTipsDTO);
+        return Result.success();
+    }
+
+    /**
+     * 根据ID删除搬家须知
+     *
+     * @param id
+     * @return
+     */
+    @DeleteMapping
+    public Result deleteById(Long id) {
+        log.info("后台端删除搬家须知: {}", id);
+        movingTipsService.deleteById(id);
+        return Result.success();
+    }
+
+    /**
+     * 发布/取消发布 搬家须知
+     *
+     * @param isPublished
+     * @param id
+     * @return
+     */
+    @PostMapping("/status/{isPublished}")
+    public Result startOrStop(@PathVariable Integer isPublished, Long id) {
+        log.info("后台端发布/取消发布搬家须知：ID {}, 状态 {}", id, isPublished);
+        movingTipsService.startOrStop(id, isPublished);
+        return Result.success();
+    }
 
 }

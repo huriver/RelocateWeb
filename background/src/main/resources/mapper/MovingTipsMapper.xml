@@ -59,5 +59,50 @@
         ORDER BY mt.publish_date DESC
     </select>
 
+    <select id="getByIdByAdmin" resultType="MovingTipsVO">
+        SELECT mt.id,
+               mt.title,
+               mt.content,
+               mt.category,
+               mt.publish_date,
+               mt.is_published,
+               mt.create_time,
+               mt.update_time,
+               mt.create_user,
+               mt.update_user,
+               ca.name AS createUserName,
+               ua.name AS updateUserName
+        FROM moving_tips mt
+                 LEFT JOIN
+             admin ca ON mt.create_user = ca.id
+                 LEFT JOIN
+             admin ua ON mt.update_user = ua.id
+        WHERE mt.id = #{id}
+    </select>
+
+    <update id="update" parameterType="MovingTips">
+        UPDATE moving_tips
+        <set>
+            <if test="title != null and title != ''">
+                title = #{title},
+            </if>
+            <if test="content != null and content != ''">
+                content = #{content},
+            </if>
+            <if test="category != null and category != ''">
+                category = #{category},
+            </if>
+            <if test="publishDate != null">
+                publish_date = #{publishDate},
+            </if>
+            <if test="isPublished != null">
+                is_published = #{isPublished},
+            </if>
+            update_time = #{updateTime},
+            update_user = #{updateUser},
+        </set>
+        WHERE id = #{id}
+    </update>
+
 
 </mapper>

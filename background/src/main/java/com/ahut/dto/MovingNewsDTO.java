@@ -10,5 +10,4 @@ public class MovingNewsDTO {
     private String title; // 新闻标题
     private String content; // 新闻内容
     private LocalDate publishDate; // 发布日期
-    private Boolean isPublished; // 是否已发布 (可选)
 }

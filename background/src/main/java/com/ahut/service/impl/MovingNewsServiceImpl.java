@@ -1,5 +1,6 @@
 package com.***REMOVED***.service.impl;
 
+import com.***REMOVED***.constant.isPublishedConstant;
 import com.***REMOVED***.context.BaseContext;
 import com.***REMOVED***.dto.MovingNewsDTO;
 import com.***REMOVED***.dto.MovingNewsPageQueryDTO;
@@ -28,7 +29,12 @@ public class MovingNewsServiceImpl implements MovingNewsService {
         return new PageResult(page.getTotal(), page.getResult());
     }
 
-    // 公共-根据ID查询搬家新闻详情
+    /**
+     * 公共-根据ID查询搬家新闻详情
+     *
+     * @param id
+     * @return
+     */
     @Override
     public MovingNews getById(Long id) {
         return movingNewsMapper.getById(id);
@@ -58,6 +64,7 @@ public class MovingNewsServiceImpl implements MovingNewsService {
         MovingNews movingNews = new MovingNews();
         BeanUtils.copyProperties(movingNewsDTO, movingNews);
 
+        movingNews.setIsPublished(false);   // 默认为未发布
         movingNews.setCreateUser(BaseContext.getCurrentId());
         movingNews.setUpdateUser(BaseContext.getCurrentId());
         movingNewsMapper.insert(movingNews);
@@ -97,6 +104,23 @@ public class MovingNewsServiceImpl implements MovingNewsService {
     @Override
     public void deleteById(Long id) {
         movingNewsMapper.deleteById(id);
+    }
+
+    /**
+     * 发布/取消发布 搬家新闻
+     *
+     * @param id
+     * @param isPublished
+     */
+    @Override
+    public void startOrStop(Long id, Integer isPublished) {
+        MovingNews movingNews = MovingNews.builder()
+                .id(id)
+                .isPublished(isPublished == isPublishedConstant.ENABLE)
+                .updateUser(BaseContext.getCurrentId())
+                .build();
+
+        movingNewsMapper.update(movingNews);
     }
 
 }

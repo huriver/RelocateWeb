@@ -27,4 +27,7 @@ public interface MovingNewsService {
     // 根据ID删除搬家新闻
     void deleteById(Long id);
 
+    // 发布/取消发布 搬家新闻
+    void startOrStop(Long id, Integer isPublished);
+
 }
