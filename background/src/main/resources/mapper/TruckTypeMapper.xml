@@ -36,5 +36,65 @@
         ORDER BY tt.create_time DESC
     </select>
 
+    <select id="getByIdByAdmin" resultType="TruckTypeVO">
+        SELECT tt.id,
+               tt.type_name,
+               tt.capacity,
+               tt.description,
+               tt.base_fare,
+               tt.price_per_km_tier1,
+               tt.price_per_km_tier2,
+               tt.price_per_km_tier3,
+               tt.price_per_km_tier4,
+               tt.price_per_km_tier5,
+               tt.create_time,
+               tt.update_time,
+               tt.create_user,
+               tt.update_user,
+               ca.name AS createUserName,
+               ua.name AS updateUserName
+        FROM truck_type tt
+                 LEFT JOIN
+             admin ca ON tt.create_user = ca.id
+                 LEFT JOIN
+             admin ua ON tt.update_user = ua.id
+        WHERE tt.id = #{id}
+    </select>
+
+    <update id="update" parameterType="TruckType">
+        UPDATE truck_type
+        <set>
+            <if test="typeName != null and typeName != ''">
+                type_name = #{typeName},
+            </if>
+            <if test="capacity != null and capacity != ''">
+                capacity = #{capacity},
+            </if>
+            <if test="description != null and description != ''">
+                description = #{description},
+            </if>
+            <if test="baseFare != null">
+                base_fare = #{baseFare},
+            </if>
+            <if test="pricePerKmTier1 != null">
+                price_per_km_tier1 = #{pricePerKmTier1},
+            </if>
+            <if test="pricePerKmTier2 != null">
+                price_per_km_tier2 = #{pricePerKmTier2},
+            </if>
+            <if test="pricePerKmTier3 != null">
+                price_per_km_tier3 = #{pricePerKmTier3},
+            </if>
+            <if test="pricePerKmTier4 != null">
+                price_per_km_tier4 = #{pricePerKmTier4},
+            </if>
+            <if test="pricePerKmTier5 != null">
+                price_per_km_tier5 = #{pricePerKmTier5},
+            </if>
+            update_time = #{updateTime},
+            update_user = #{updateUser},
+        </set>
+        WHERE id = #{id}
+    </update>
 
 </mapper>

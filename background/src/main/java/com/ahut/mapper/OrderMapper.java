@@ -53,6 +53,10 @@ public interface OrderMapper {
     @Update("UPDATE moving_order SET driver_id = NULL, vehicle_id = NULL WHERE id = #{orderId}")
     void clearOrderDriverVehicle(Long orderId);
 
+    // 根据货车类型ID查询关联的未完成订单数量
+    @Select("SELECT COUNT(*) FROM moving_order WHERE truck_type_id = #{truckTypeId} AND order_status IN (0, 1, 2, 3)")
+    Integer countByTruckTypeId(Long truckTypeId);
+
     // Future: 分页查询订单列表的方法 (需要根据 OrdersPageQueryDTO 进行过滤和分页)
     /*
     Page<MovingOrder> pageQuery(OrdersPageQueryDTO queryDTO);

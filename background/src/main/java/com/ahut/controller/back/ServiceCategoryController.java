@@ -93,7 +93,7 @@ public class ServiceCategoryController {
      * @return
      */
     @DeleteMapping
-    public Result<String> deleteById(Long id) {
+    public Result deleteById(Long id) {
         log.info("后台端根据ID删除服务类型：{}", id);
         serviceCategoryService.deleteById(id);
         return Result.success();

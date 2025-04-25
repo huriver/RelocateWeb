@@ -60,4 +60,8 @@ public class MessageConstant {
     public static final String INVALID_RATING_TYPE = "无效的评分类型";
 
     public static final String SERVICE_CATEGORY_BE_RELATED_BY_SERVICE = "当前服务分类关联了服务,不能删除";
+    public static final String TRUCK_TYPE_BE_RELATED_BY_DRIVER = "当前货车类型关联了司机,不能删除";
+    public static final String TRUCK_TYPE_BE_RELATED_BY_VEHICLE = "当前货车类型关联了车辆,不能删除";
+    public static final String TRUCK_TYPE_BE_RELATED_BY_SERVICE = "当前货车类型关联了服务,不能删除";
+    public static final String TRUCK_TYPE_BE_RELATED_BY_ORDER = "当前货车类型关联了订单,不能删除";
 }

@@ -42,4 +42,8 @@ public interface ServiceMapper {
     // 根据服务类型ID查询关联的服务项数量
     @Select("SELECT COUNT(id) FROM service WHERE category_id = #{categoryId}")
     Integer countByCategoryId(Long categoryId);
+
+    // 根据货车类型ID查询关联的服务项数量
+    @Select("SELECT COUNT(*) FROM service WHERE truck_type_id = #{truckTypeId}")
+    Integer countByTruckTypeId(Long truckTypeId);
 }
