@@ -21,10 +21,11 @@ request.interceptors.request.use(
       background: "rgba(0, 0, 0, 0.7)",
     });
     // 获取token
-    const { token } = localStorage.getItem("token")
-      ? JSON.parse(localStorage.getItem("token"))
+    const { token } = localStorage.getItem("userInfo")
+      ? JSON.parse(localStorage.getItem("userInfo"))
       : "";
-    if (token) config.headers["token"] = token;
+    console.log(token);
+    if (token) config.headers["authentication"] = token;
     return config;
   },
   function (error) {

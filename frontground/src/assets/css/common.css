@@ -7,3 +7,7 @@ a {
   text-decoration: none;
   color: #409eff;
 }
+
+.home-container {
+  margin-top: 60px;
+}

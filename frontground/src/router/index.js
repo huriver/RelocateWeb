@@ -5,12 +5,50 @@ const router = createRouter({
   routes: [
     {
       path: "/",
-      redirect: "/userLogin",
+      redirect: "/userHome",
     },
     {
       path: "/userHome",
       name: "userHome",
+      redirect: "/userHome/front",
       component: () => import("@/views/home/UserHome.vue"),
+      children: [
+        {
+          path: "front",
+          name: "front",
+          component: () => import("@/components/user/page/Front.vue"),
+        },
+        {
+          path: "news",
+          name: "news",
+          component: () => import("@/components/user/page/News.vue"),
+        },
+        {
+          path: "news/:id",
+          name: "newsDetail",
+          component: () => import("@/components/user/page/NewsDetail.vue"),
+        },
+        {
+          path: "notic",
+          name: "notic",
+          component: () => import("@/components/user/page/Notic.vue"),
+        },
+        {
+          path: "notic/:id",
+          name: "noticDetail",
+          component: () => import("@/components/user/page/NoticDetail.vue"),
+        },
+        {
+          path: "service",
+          name: "service",
+          component: () => import("@/components/user/page/Service.vue"),
+        },
+        {
+          path: "my",
+          name: "my",
+          component: () => import("@/components/user/page/My.vue"),
+        },
+      ],
     },
     {
       path: "/backHome",
@@ -32,8 +70,14 @@ const router = createRouter({
 
 router.beforeEach((to, from) => {
   const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-  const path = ["/userLogin", "/userRegister"];
-  if (path.includes(to.path) || userInfo.token) {
+  const path = [
+    "/userLogin",
+    "/userRegister",
+    "/userHome/front",
+    "/userHome/news",
+    "/userHome/notic",
+  ];
+  if (path.includes(to.path) || (userInfo && userInfo.token)) {
     // 去的地方不需要校验，或者有token
     return true;
   }

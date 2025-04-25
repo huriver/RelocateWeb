@@ -1,5 +1,5 @@
 import axios from "@/utils/request.js";
 
 export const userLoginApi = (form) => {
-  return axios.post("/front/customer/login", form);
+  return axios.post("/auth/login", form);
 };
