@@ -1,12 +1,14 @@
 package com.***REMOVED***.controller.publicity;
 
 import com.***REMOVED***.dto.MovingNewsPageQueryDTO;
+import com.***REMOVED***.entity.MovingNews;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.MovingNewsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,13 +21,31 @@ public class MovingNewsController {
     @Autowired
     private MovingNewsService movingNewsService;
 
-
+    /**
+     * 搬家新闻分页查询
+     *
+     * @param movingNewsPageQueryDTO
+     * @return
+     */
     @GetMapping("/page")
     public Result<PageResult> page(MovingNewsPageQueryDTO movingNewsPageQueryDTO) {
         movingNewsPageQueryDTO.setIsPublished(true);
         log.info("搬家新闻分页查询，参数为:{}", movingNewsPageQueryDTO);
         PageResult pageResult = movingNewsService.pageQuery(movingNewsPageQueryDTO);
         return Result.success(pageResult);
+    }
+
+    /**
+     * 根据ID查询搬家新闻详情
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/{id}")
+    public Result<MovingNews> getById(@PathVariable Long id) {
+        log.info("用户端根据ID查询搬家新闻详情: {}", id);
+        MovingNews movingNews = movingNewsService.getById(id);
+        return Result.success(movingNews);
     }
 
     /**

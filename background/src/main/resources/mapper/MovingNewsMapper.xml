@@ -52,4 +52,46 @@
         ORDER BY mn.publish_date DESC
     </select>
 
+    <select id="getByIdByAdmin" resultType="MovingNewsVO">
+        SELECT mn.id,
+               mn.title,
+               mn.content,
+               mn.publish_date,
+               mn.is_published,
+               mn.create_time,
+               mn.update_time,
+               mn.create_user,
+               mn.update_user,
+               ca.name AS createUserName,
+               ua.name AS updateUserName
+        FROM moving_news mn
+                 LEFT JOIN
+             admin ca ON mn.create_user = ca.id
+                 LEFT JOIN
+             admin ua ON mn.update_user = ua.id
+        WHERE mn.id = #{id}
+    </select>
+
+    <update id="update" parameterType="MovingNews">
+        UPDATE moving_news
+        <set>
+            <if test="title != null and title != ''">
+                title = #{title},
+            </if>
+            <if test="content != null and content != ''">
+                content = #{content},
+            </if>
+            <if test="publishDate != null">
+                publish_date = #{publishDate},
+            </if>
+            <if test="isPublished != null">
+                is_published = #{isPublished},
+            </if>
+            update_time = #{updateTime},
+            update_user = #{updateUser},
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
 </mapper>
