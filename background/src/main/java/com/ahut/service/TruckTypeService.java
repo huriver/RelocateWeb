@@ -29,4 +29,8 @@ public interface TruckTypeService {
     // 根据ID删除货车类型
     void deleteById(Long id);
 
+    // 根据司机ID查询该司机可以驾驶的货车类型列表 (供下拉框使用)
+    List<TruckType> listByDriverId(Long driverId);
+
+
 }

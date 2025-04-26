@@ -133,5 +133,16 @@ public class TruckTypeServiceImpl implements TruckTypeService {
         truckTypeMapper.deleteById(id);
     }
 
+    /**
+     * 根据司机ID查询该司机可以驾驶的货车类型列表 (供下拉框使用)
+     *
+     * @param driverId
+     * @return
+     */
+    @Override
+    public List<TruckType> listByDriverId(Long driverId) {
+        return truckTypeMapper.listByDriverId(driverId);
+    }
+
 
 }

@@ -100,4 +100,18 @@ public class TruckTypeController {
         return Result.success();
     }
 
+    /**
+     * 根据司机ID查询可驾驶货车类型列表 (供前端下拉框使用)
+     *
+     * @param driverId
+     * @return
+     */
+    @GetMapping("/byDriver/{driverId}")
+    public Result<List<TruckType>> listByDriverId(@PathVariable Long driverId) {
+        log.info("后台端根据司机ID查询可驾驶货车类型列表: {}", driverId);
+        List<TruckType> truckTypeList = truckTypeService.listByDriverId(driverId);
+        return Result.success(truckTypeList);
+    }
+
+
 }

@@ -64,4 +64,11 @@ public class MessageConstant {
     public static final String TRUCK_TYPE_BE_RELATED_BY_VEHICLE = "当前货车类型关联了车辆,不能删除";
     public static final String TRUCK_TYPE_BE_RELATED_BY_SERVICE = "当前货车类型关联了服务,不能删除";
     public static final String TRUCK_TYPE_BE_RELATED_BY_ORDER = "当前货车类型关联了订单,不能删除";
+
+    public static final String DRIVER_NOT_FOUND = "司机不存在";
+    public static final String TRUCK_TYPE_NOT_FOUND = "货车类型不存在";
+    public static final String LICENSE_PLATE_NUMBER_EXIST = "车牌号已存在";
+    public static final String DRIVER_TRUCK_TYPE_VEHICLE_EXIST = "司机在对应货车类型下已有一辆车";
+    public static final String VEHICLE_BE_RELATED_BY_ORDER = "当前车辆关联了订单,不能删除";
+
 }

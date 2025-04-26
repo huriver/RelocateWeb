@@ -44,4 +44,65 @@
         ORDER BY v.create_time DESC
     </select>
 
+    <select id="countByLicensePlateNumberExcludeId" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM vehicle
+        WHERE license_plate_number = #{licensePlateNumber}
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+    </select>
+
+    <select id="countByDriverIdAndTruckTypeIdExcludeId" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM vehicle
+        WHERE driver_id = #{driverId} AND truck_type_id = #{truckTypeId}
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+    </select>
+
+    <select id="getByIdByAdmin" resultType="VehicleVO">
+        SELECT v.id,
+               v.driver_id            AS driverId,
+               d.name                 AS driverName,
+               v.truck_type_id        AS truckTypeId,
+               tt.type_name           AS truckTypeName,
+               v.license_plate_number AS licensePlateNumber,
+               v.vehicle_brand        AS vehicleBrand,
+               v.create_time          AS createTime,
+               v.update_time          AS updateTime,
+               v.create_user          AS createUser,
+               ca.name                AS createUserName,
+               v.update_user          AS updateUser,
+               ua.name                AS updateUserName
+        FROM vehicle v
+                 JOIN driver d ON v.driver_id = d.id
+                 JOIN truck_type tt ON v.truck_type_id = tt.id
+                 LEFT JOIN admin ca ON v.create_user = ca.id
+                 LEFT JOIN admin ua ON v.update_user = ua.id
+        WHERE v.id = #{id}
+    </select>
+
+    <update id="update" parameterType="Vehicle">
+        UPDATE vehicle
+        <set>
+            <if test="driverId != null">
+                driver_id = #{driverId},
+            </if>
+            <if test="truckTypeId != null">
+                truck_type_id = #{truckTypeId},
+            </if>
+            <if test="licensePlateNumber != null and licensePlateNumber != ''">
+                license_plate_number = #{licensePlateNumber},
+            </if>
+            <if test="vehicleBrand != null and vehicleBrand != ''">
+                vehicle_brand = #{vehicleBrand},
+            </if>
+            update_time = #{updateTime},
+            update_user = #{updateUser},
+        </set>
+        WHERE id = #{id}
+    </update>
+
 </mapper>

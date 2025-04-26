@@ -57,6 +57,12 @@ public interface OrderMapper {
     @Select("SELECT COUNT(*) FROM moving_order WHERE truck_type_id = #{truckTypeId} AND order_status IN (0, 1, 2, 3)")
     Integer countByTruckTypeId(Long truckTypeId);
 
+    // 根据指派车辆ID查询关联的未完成订单数量
+    // (订单状态 in (1, 2, 3) - 司机已接单、已接单、进行中)
+    @Select("SELECT COUNT(*) FROM moving_order WHERE vehicle_id = #{vehicleId} " +
+            "AND order_status IN (1, 2, 3)")
+    Integer countByAssignedVehicleId(Long vehicleId);
+
     // Future: 分页查询订单列表的方法 (需要根据 OrdersPageQueryDTO 进行过滤和分页)
     /*
     Page<MovingOrder> pageQuery(OrdersPageQueryDTO queryDTO);

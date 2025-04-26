@@ -97,4 +97,24 @@
         WHERE id = #{id}
     </update>
 
+    <select id="listByDriverId" resultType="TruckType">
+        SELECT tt.id,
+               tt.type_name,
+               tt.capacity,
+               tt.description,
+               tt.base_fare,
+               tt.price_per_km_tier1,
+               tt.price_per_km_tier2,
+               tt.price_per_km_tier3,
+               tt.price_per_km_tier4,
+               tt.price_per_km_tier5,
+               tt.create_time,
+               tt.update_time,
+               tt.create_user,
+               tt.update_user
+        FROM truck_type tt
+                 JOIN driver_truck_type dtt ON tt.id = dtt.truck_type_id
+        WHERE dtt.driver_id = #{driverId}
+    </select>
+
 </mapper>

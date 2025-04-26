@@ -1,8 +1,13 @@
 package com.***REMOVED***.mapper;
 
+import com.***REMOVED***.annotation.AutoFill;
 import com.***REMOVED***.dto.VehiclePageQueryDTO;
+import com.***REMOVED***.entity.Vehicle;
+import com.***REMOVED***.enumeration.OperationType;
 import com.***REMOVED***.vo.VehicleVO;
 import com.github.pagehelper.Page;
+import org.apache.ibatis.annotations.Delete;
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
@@ -15,4 +20,30 @@ public interface VehicleMapper {
     // 根据货车类型ID查询关联的车辆数量
     @Select("SELECT COUNT(*) FROM vehicle WHERE truck_type_id = #{truckTypeId}")
     Integer countByTruckTypeId(Long truckTypeId);
+
+    // 新增车辆
+    @Insert("insert into vehicle (driver_id, truck_type_id, license_plate_number, vehicle_brand, create_time, " +
+            "update_time, create_user, update_user) " +
+            "values (#{driverId}, #{truckTypeId}, #{licensePlateNumber}, #{vehicleBrand}, #{createTime}, " +
+            "#{updateTime}, #{createUser}, #{updateUser})")
+    @AutoFill(value = OperationType.INSERT)
+    void insert(Vehicle vehicle);
+
+    // 查询指定车牌号的车辆数量 (排除指定ID)
+    Integer countByLicensePlateNumberExcludeId(String licensePlateNumber, Long excludeId);
+
+    // 查询指定司机和货车类型组合下的车辆数量 (排除指定ID)
+    Integer countByDriverIdAndTruckTypeIdExcludeId(Long driverId, Long truckTypeId, Long excludeId);
+
+    // 根据ID查询车辆详情(SELECT 所有字段 +关联管理员姓名)
+    VehicleVO getByIdByAdmin(Long id);
+
+    // 根据ID更新车辆信息
+    @AutoFill(value = OperationType.UPDATE)
+    void update(Vehicle vehicle);
+
+    // 根据ID删除车辆数据
+    @Delete("DELETE FROM vehicle WHERE id = #{id}")
+    void deleteById(Long id);
+
 }

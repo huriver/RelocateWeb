@@ -52,5 +52,8 @@ public interface TruckTypeMapper {
     @Delete("DELETE FROM truck_type WHERE id = #{id}")
     void deleteById(Long id);
 
+    // 根据司机ID查询该司机可以驾驶的货车类型列表
+    List<TruckType> listByDriverId(Long driverId);
+
 
 }
