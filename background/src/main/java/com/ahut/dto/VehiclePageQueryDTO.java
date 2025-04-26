@@ -10,7 +10,7 @@ public class VehiclePageQueryDTO {
     private int page; // 页码
     private int pageSize; // 每页记录数
     private String licensePlateNumber; // 车牌号搜索
-    private Long driverId; // 按所属司机ID筛选
+    private String driverName; // 按所属司机姓名模糊查询
     private Long truckTypeId; // 按货车类型ID筛选
     private String vehicleBrand; // 车辆品牌搜索
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

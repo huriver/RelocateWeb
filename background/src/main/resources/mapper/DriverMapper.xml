@@ -69,15 +69,15 @@
         ORDER BY create_time DESC
     </select>
 
-    <select id="list" resultType="Driver">
+    <select id="listByName" resultType="Driver">
         SELECT
-        id, username, name, gender, phone, id_card, driving_years, photo_url, is_banned, average_rating,
-        rating_count, create_time, update_time
+        id, username, name, gender, phone, id_card, driving_years, photo_url, is_banned, average_rating, rating_count,
+        create_time, update_time
         FROM
         driver
         <where>
-            <if test="isBanned != null">
-                AND is_banned = #{isBanned}
+            <if test="name != null and name != ''">
+                AND name LIKE CONCAT('%', #{name}, '%')
             </if>
         </where>
         ORDER BY name

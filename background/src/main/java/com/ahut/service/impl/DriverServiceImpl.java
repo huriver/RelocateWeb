@@ -145,14 +145,14 @@ public class DriverServiceImpl implements DriverService {
     }
 
     /**
-     * 查询司机列表 (用于前端下拉框等，可根据状态筛选)
+     * 根据姓名模糊查询司机列表 (供搜索下拉框使用)
      *
-     * @param isBanned
+     * @param name
      * @return
      */
     @Override
-    public List<Driver> list(Boolean isBanned) {
-        return driverMapper.list(isBanned);
+    public List<Driver> listByName(String name) {
+        return driverMapper.listByName(name);
     }
 
 }

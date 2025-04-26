@@ -79,16 +79,16 @@ public class DriverController {
     }
 
     /**
-     * 查询司机列表 (用于前端下拉框等，可根据状态筛选)
+     * 根据姓名模糊查询司机列表 (供搜索下拉框使用)
      *
-     * @param isBanned
+     * @param name
      * @return
      */
     @GetMapping("/list")
-    public Result<List<Driver>> list(Boolean isBanned) {
-        log.info("后台端查询司机列表，状态筛选：{}", isBanned);
-        List<Driver> driverList = driverService.list(isBanned);
-        return Result.success(driverList);
+    public Result<List<Driver>> listByName(@RequestParam(required = false) String name) {
+        log.info("后台端根据姓名模糊查询司机列表: {}", name);
+        List<Driver> list = driverService.listByName(name);
+        return Result.success(list);
     }
 
 //

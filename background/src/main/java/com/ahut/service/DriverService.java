@@ -23,7 +23,7 @@ public interface DriverService {
     // 分页查询司机
     PageResult pageQuery(DriverPageQueryDTO driverPageQueryDTO);
 
-    // 查询司机列表 (用于前端下拉框等，可根据状态筛选)
-    List<Driver> list(Boolean isBanned);
+    // 根据姓名模糊查询司机列表 (供搜索下拉框使用)
+    List<Driver> listByName(String name);
 
 }

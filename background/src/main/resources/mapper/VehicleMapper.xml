@@ -25,8 +25,8 @@
             <if test="licensePlateNumber != null and licensePlateNumber != ''">
                 AND v.license_plate_number LIKE CONCAT('%', #{licensePlateNumber}, '%')
             </if>
-            <if test="driverId != null">
-                AND v.driver_id = #{driverId}
+            <if test="driverName != null and driverName != ''">
+                AND d.name LIKE CONCAT('%', #{driverName}, '%')
             </if>
             <if test="truckTypeId != null">
                 AND v.truck_type_id = #{truckTypeId}
