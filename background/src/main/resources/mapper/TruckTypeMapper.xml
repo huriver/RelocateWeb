@@ -117,4 +117,11 @@
         WHERE dtt.driver_id = #{driverId}
     </select>
 
+    <select id="countExistingByIds" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM truck_type WHERE id IN
+        <foreach item='id' collection='ids' open='(' separator=',' close=')'>
+            #{id}
+        </foreach>
+    </select>
+
 </mapper>

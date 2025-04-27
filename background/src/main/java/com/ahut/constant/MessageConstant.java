@@ -72,6 +72,8 @@ public class MessageConstant {
     public static final String VEHICLE_BE_RELATED_BY_ORDER = "当前车辆关联了订单,不能删除";
 
     public static final String DRIVER_TRUCK_TYPE_EXIST = "司机和货车类型关联已存在";
-
-
+    public static final String INVALID_PARAMETER = "参数错误";
+    public static final String INVALID_TRUCK_TYPE = "无效的货车类型";
+    public static final String DRIVER_TRUCK_TYPE_HAS_PENDING_ORDER = "司机的对应货车类型有未完成订单，无法删除";
+    public static final String DRIVER_TRUCK_TYPE_HAS_ASSIGNED_VEHICLE = "司机的对应货车类型已分配车辆，无法删除";
 }

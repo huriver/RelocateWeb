@@ -63,6 +63,16 @@ public interface OrderMapper {
             "AND order_status IN (1, 2, 3)")
     Integer countByAssignedVehicleId(Long vehicleId);
 
+    // 统计分配给特定司机且需要特定货车类型的未完成订单数量
+    // 假设订单状态 1-3 表示未完成
+    @Select("SELECT COUNT(*) FROM moving_order WHERE driver_id = #{driverId} AND truck_type_id = #{truckTypeId} " +
+            "AND order_status IN (1, 2, 3)")
+    Integer countPendingOrdersByDriverAndTruckType(Long driverId, Long truckTypeId);
+
+    // 统计分配给特定司机的未完成订单总数 (不限货车类型)
+    @Select("SELECT COUNT(*) FROM moving_order WHERE driver_id = #{driverId} AND order_status IN (1, 2, 3)")
+    Integer countPendingOrdersByDriverId(Long driverId);
+
     // Future: 分页查询订单列表的方法 (需要根据 OrdersPageQueryDTO 进行过滤和分页)
     /*
     Page<MovingOrder> pageQuery(OrdersPageQueryDTO queryDTO);

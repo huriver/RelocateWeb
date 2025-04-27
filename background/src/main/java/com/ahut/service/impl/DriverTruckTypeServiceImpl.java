@@ -1,22 +1,27 @@
 package com.***REMOVED***.service.impl;
 
 import com.***REMOVED***.constant.MessageConstant;
-import com.***REMOVED***.dto.DriverTruckTypeDTO;
+import com.***REMOVED***.dto.DriverTruckTypeBatchDTO;
 import com.***REMOVED***.dto.DriverTruckTypePageQueryDTO;
+import com.***REMOVED***.entity.Driver;
 import com.***REMOVED***.entity.DriverTruckType;
 import com.***REMOVED***.exception.BusinessException;
-import com.***REMOVED***.mapper.DriverTruckTypeMapper;
+import com.***REMOVED***.mapper.*;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.service.DriverTruckTypeService;
 import com.***REMOVED***.vo.DriverTruckTypeRelationVO;
+import com.***REMOVED***.vo.TruckTypeSimpleVO;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 @Service
@@ -25,6 +30,18 @@ public class DriverTruckTypeServiceImpl implements DriverTruckTypeService {
 
     @Autowired
     private DriverTruckTypeMapper driverTruckTypeMapper;
+
+    @Autowired
+    private TruckTypeMapper truckTypeMapper;
+
+    @Autowired
+    private DriverMapper driverMapper;
+
+    @Autowired
+    private OrderMapper orderMapper;
+
+    @Autowired
+    private VehicleMapper vehicleMapper;
 
 
     /**
@@ -55,95 +72,193 @@ public class DriverTruckTypeServiceImpl implements DriverTruckTypeService {
     }
 
     /**
-     * 新增司机的可驾驶货车类型关联
+     * 批量新增司机的可驾驶货车类型关联
      *
-     * @param driverTruckTypeDTO
+     * @param driverTruckTypeBatchDTO
      */
     @Override
-    public void save(DriverTruckTypeDTO driverTruckTypeDTO) {
-        // ====== 业务校验：该关联是否已存在 ======
-        Integer count = driverTruckTypeMapper.countByDriverIdAndTruckTypeId(
-                driverTruckTypeDTO.getDriverId(),
-                driverTruckTypeDTO.getTruckTypeId()
-        );
-        if (count != null && count > 0) {
-            log.error("新增关联失败：该司机和货车类型关联已存在，司机ID: {}, 货车类型ID: {}",
-                    driverTruckTypeDTO.getDriverId(),
-                    driverTruckTypeDTO.getTruckTypeId());
-            throw new BusinessException(MessageConstant.DRIVER_TRUCK_TYPE_EXIST);
+    @Transactional
+    public void addDriverTruckTypesBatch(DriverTruckTypeBatchDTO driverTruckTypeBatchDTO) {
+        Long driverId = driverTruckTypeBatchDTO.getDriverId();
+        List<Long> truckTypeIds = driverTruckTypeBatchDTO.getTruckTypeIds();
+
+        if (driverId == null || truckTypeIds == null || truckTypeIds.isEmpty()) {
+            log.warn("批量新增关联：接收到无效参数，driverId: {}, truckTypeIds: {}", driverId, truckTypeIds);
+            throw new BusinessException(MessageConstant.INVALID_PARAMETER);
         }
+        for (Long truckTypeId : truckTypeIds) {
+            // ====== 业务校验：该关联是否已存在 ======
+            Integer count = driverTruckTypeMapper.countByDriverIdAndTruckTypeId(driverId, truckTypeId);
+            if (count != null && count > 0) {
+                // 如果已存在，跳过本次插入
+                log.warn("关联已存在，跳过插入：司机ID: {}, 货车类型ID: {}", driverId, truckTypeId);
+                continue;
+            }
 
-        // 将 DTO 对象属性拷贝到实体类对象
-        DriverTruckType driverTruckType = new DriverTruckType();
-        BeanUtils.copyProperties(driverTruckTypeDTO, driverTruckType);
+            // 构建实体对象并插入
+            DriverTruckType driverTruckType = DriverTruckType.builder()
+                    .driverId(driverId)
+                    .truckTypeId(truckTypeId)
+                    .build();
 
-        driverTruckTypeMapper.insert(driverTruckType);
+            // 注意：创建时间和更新时间由 @AutoFill 自动填充
+            driverTruckTypeMapper.insert(driverTruckType);
+            log.info("成功新增关联：司机ID: {}, 货车类型ID: {}", driverId, truckTypeId);
+        }
     }
 
-//    /**
-//     * 根据ID查询司机的可驾驶货车类型关联详情
-//     *
-//     * @param id
-//     * @return
-//     */
-//    @Override
-//    public VehicleVO getByIdByAdmin(Long id) {
-//        return vehicleMapper.getByIdByAdmin(id);
-//    }
-//
-//    /**
-//     * 修改司机的可驾驶货车类型关联
-//     *
-//     * @param vehicleDTO
-//     */
-//    @Override
-//    public void update(VehicleDTO vehicleDTO) {
-//        // 新增业务校验：修改后的司机和货车类型组合在该货车类型下是否只有一辆车
-//        Integer vehicleCount = vehicleMapper.countByDriverIdAndTruckTypeIdExcludeId(
-//                vehicleDTO.getDriverId(),
-//                vehicleDTO.getTruckTypeId(),
-//                vehicleDTO.getId()
-//        );
-//        if (vehicleCount != null && vehicleCount > 0) {
-//            log.error("修改司机的可驾驶货车类型关联失败：修改后的司机 ID {} 在货车类型 ID {} 下已存在**其他**司机的可驾驶货车类型关联",
-//                    vehicleDTO.getDriverId(),
-//                    vehicleDTO.getTruckTypeId());
-//            throw new BusinessException(MessageConstant.DRIVER_TRUCK_TYPE_VEHICLE_EXIST);
-//        }
-//
-//        // ====== 业务校验：修改后的车牌号是否与**其他**司机的可驾驶货车类型关联重复 ======
-//        Integer duplicateCount = vehicleMapper.countByLicensePlateNumberExcludeId(
-//                vehicleDTO.getLicensePlateNumber(),
-//                vehicleDTO.getId()
-//        );
-//        if (duplicateCount != null && duplicateCount > 0) {
-//            log.error("修改司机的可驾驶货车类型关联失败：车牌号已存在于其他司机的可驾驶货车类型关联: {}", vehicleDTO.getLicensePlateNumber());
-//            throw new BusinessException(MessageConstant.LICENSE_PLATE_NUMBER_EXIST);
-//        }
-//
-//        // 将 DTO 对象属性拷贝到实体类对象
-//        Vehicle vehicle = new Vehicle();
-//        BeanUtils.copyProperties(vehicleDTO, vehicle);
-//
-//        vehicle.setUpdateUser(BaseContext.getCurrentId());
-//        vehicleMapper.update(vehicle);
-//    }
-//
-//    /**
-//     * 根据ID删除司机的可驾驶货车类型关联
-//     *
-//     * @param id
-//     */
-//    @Override
-//    public void deleteById(Long id) {
-//        // 业务校验：检查当前司机的可驾驶货车类型关联是否关联了未完成订单
-//        Integer orderCount = orderMapper.countByAssignedVehicleId(id);
-//        if (orderCount != null && orderCount > 0) {
-//            log.error("司机的可驾驶货车类型关联删除失败：ID {} 关联了 {} 个未完成订单", id, orderCount);
-//            throw new DeletionNotAllowedException(MessageConstant.VEHICLE_BE_RELATED_BY_ORDER);
-//        }
-//
-//        // 如果没有关联的未完成订单，则执行删除
-//        vehicleMapper.deleteById(id);
-//    }
+    /**
+     * 根据司机ID获取修改关联时的回显数据
+     *
+     * @param driverId 司机的ID
+     * @return 包含回显数据的 VO (DriverTruckTypeRelationVO)
+     */
+    @Override
+    public DriverTruckTypeRelationVO getByDriverId(Long driverId) {
+        // 1. 校验司机是否存在 (可选，但推荐)
+        Driver driver = driverMapper.getById(driverId);
+        if (driver == null) {
+            log.error("获取司机关联回显数据失败：司机不存在，ID: {}", driverId);
+            throw new BusinessException(MessageConstant.DRIVER_NOT_FOUND);
+        }
+
+        // 2. 获取该司机当前已关联的货车类型的简要信息列表 (需要新的 Mapper 方法)
+        List<TruckTypeSimpleVO> associatedTruckTypeSimpleVOs = driverTruckTypeMapper.listTruckTypeSimpleVOByDriverId(driverId);
+
+        // 3. 构建 DriverTruckTypeRelationVO 作为回显 VO
+        return DriverTruckTypeRelationVO.builder()
+                .driverId(driver.getId())
+                .driverName(driver.getName())
+                .truckTypeSimpleVOList(associatedTruckTypeSimpleVOs)
+                .build();
+    }
+
+    /**
+     * 修改司机的可驾驶货车类型关联 (批量更新)
+     * 根据传入的最终关联列表与当前数据库中的列表进行比对，执行增删操作
+     *
+     * @param driverTruckTypeBatchDTO 包含司机ID和修改后最终的货车类型ID列表的DTO
+     */
+    @Override
+    @Transactional
+    public void updateDriverTruckTypesBatch(DriverTruckTypeBatchDTO driverTruckTypeBatchDTO) {
+        Long driverId = driverTruckTypeBatchDTO.getDriverId();
+        List<Long> newTruckTypeIds = driverTruckTypeBatchDTO.getTruckTypeIds();
+
+        if (driverId == null || newTruckTypeIds == null) {
+            log.warn("修改关联失败：接收到无效参数，driverId: {}, newTruckTypeIds: {}", driverId, newTruckTypeIds);
+            throw new BusinessException(MessageConstant.INVALID_PARAMETER);
+        }
+        log.info("后台端修改司机可驾驶货车类型关联：司机ID={}, 新关联货车类型ID列表={}", driverId, newTruckTypeIds);
+
+        // 1. 校验司机是否存在
+        Driver driver = driverMapper.getById(driverId);
+        if (driver == null) {
+            log.error("修改关联失败：司机不存在，ID: {}", driverId);
+            throw new BusinessException(MessageConstant.DRIVER_NOT_FOUND);
+        }
+
+        // 校验 newTruckTypeIds 是否都存在于 truck_type 表
+        if (!newTruckTypeIds.isEmpty()) {
+            Integer existingCount = truckTypeMapper.countExistingByIds(newTruckTypeIds);
+            if (existingCount == null || existingCount < newTruckTypeIds.size()) {
+                log.error("修改关联失败：包含无效的货车类型ID，ID列表: {}", newTruckTypeIds);
+                throw new BusinessException(MessageConstant.INVALID_TRUCK_TYPE);
+            }
+        }
+
+        // 2. 获取该司机当前已关联的货车类型ID列表
+        List<Long> currentTruckTypeIds = driverTruckTypeMapper.getTruckTypeIdsByDriverId(driverId);
+
+        // 3. 计算需要添加和删除的关联
+        Set<Long> currentSet = new HashSet<>(currentTruckTypeIds);
+        Set<Long> newSet = new HashSet<>(newTruckTypeIds);
+
+        // 需要删除的：在 currentSet 中但不在 newSet 中
+        Set<Long> idsToRemove = new HashSet<>(currentSet);
+        idsToRemove.removeAll(newSet);
+
+        // 需要添加的：在 newSet 中但不在 currentSet 中
+        Set<Long> idsToAdd = new HashSet<>(newSet);
+        idsToAdd.removeAll(currentSet);
+
+        // 4. 执行删除操作
+        if (!idsToRemove.isEmpty()) {
+            log.info("需要删除的关联：司机ID={}, 货车类型ID列表={}", driverId, idsToRemove);
+
+            // 业务校验：检查该司机是否被分配了需要删除资质的车辆 (放在订单校验之前)
+            for (Long truckTypeId : idsToRemove) {
+                Integer vehicleCount = vehicleMapper.countByDriverAndTruckType(driverId, truckTypeId);
+                if (vehicleCount != null && vehicleCount > 0) {
+                    log.error("修改关联失败：司机 {} 被分配了 {} 辆需要货车类型 ID: {} 的车辆，请先解除车辆分配", driverId, vehicleCount, truckTypeId);
+                    throw new BusinessException(MessageConstant.DRIVER_TRUCK_TYPE_HAS_ASSIGNED_VEHICLE);
+                }
+            }
+
+            // 业务校验：检查是否有未完成订单关联到需要删除的资质
+            for (Long truckTypeId : idsToRemove) {
+                Integer pendingOrderCount = orderMapper.countPendingOrdersByDriverAndTruckType(driverId, truckTypeId);
+                if (pendingOrderCount != null && pendingOrderCount > 0) {
+                    log.error("修改关联失败：司机 {} 有 {} 个未完成订单需要货车类型 ID: {}", driverId, pendingOrderCount, truckTypeId);
+                    throw new BusinessException(MessageConstant.DRIVER_TRUCK_TYPE_HAS_PENDING_ORDER);
+                }
+            }
+
+            // 如果所有检查通过，执行批量删除
+            driverTruckTypeMapper.deleteByDriverIdAndTruckTypeIds(driverId, new ArrayList<>(idsToRemove));
+        }
+
+        // 5. 执行添加操作
+        if (!idsToAdd.isEmpty()) {
+            log.info("需要添加的关联：司机ID={}, 货车类型ID列表={}", driverId, idsToAdd);
+            for (Long truckTypeId : idsToAdd) {
+                // 使用 Builder 模式创建实体对象
+                DriverTruckType driverTruckType = DriverTruckType.builder()
+                        .driverId(driverId)
+                        .truckTypeId(truckTypeId)
+                        .build();
+
+                // @AutoFill 自动填充创建时间和更新时间
+                driverTruckTypeMapper.insert(driverTruckType);
+                log.info("成功添加关联：司机ID: {}, 货车类型ID: {}", driverId, truckTypeId);
+            }
+        }
+
+        log.info("司机 {} 可驾驶货车类型关联修改完成", driverId);
+    }
+
+    /**
+     * 根据司机ID删除其所有可驾驶货车类型关联
+     *
+     * @param driverId 司机的ID
+     */
+    @Override
+    @Transactional
+    public void deleteByDriverId(Long driverId) {
+        // 1. 校验司机是否存在
+        Driver driver = driverMapper.getById(driverId);
+        if (driver == null) {
+            log.error("删除关联失败：司机不存在，ID: {}", driverId);
+            throw new BusinessException(MessageConstant.DRIVER_NOT_FOUND);
+        }
+
+        // 2. 业务校验：检查该司机是否有未完成订单
+        Integer pendingOrderCount = orderMapper.countPendingOrdersByDriverId(driverId);
+        if (pendingOrderCount != null && pendingOrderCount > 0) {
+            log.error("删除关联失败：司机 {} 有 {} 个未完成订单", driverId, pendingOrderCount);
+            throw new BusinessException(MessageConstant.DRIVER_TRUCK_TYPE_HAS_PENDING_ORDER);
+        }
+
+        // 3. 业务校验：检查该司机是否被分配了任何车辆
+        Integer vehicleCount = vehicleMapper.countByDriverId(driverId);
+        if (vehicleCount != null && vehicleCount > 0) {
+            log.error("删除关联失败：司机 {} 被分配了 {} 辆车辆，请先解除车辆分配", driverId, vehicleCount);
+            throw new BusinessException(MessageConstant.DRIVER_TRUCK_TYPE_HAS_ASSIGNED_VEHICLE);
+        }
+
+        // 4. 如果所有检查通过，执行删除操作
+        driverTruckTypeMapper.deleteByDriverId(driverId);
+        log.info("成功删除司机 {} 的所有可驾驶货车类型关联", driverId);
+    }
+
 }

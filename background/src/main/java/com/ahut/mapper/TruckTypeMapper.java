@@ -55,5 +55,7 @@ public interface TruckTypeMapper {
     // 根据司机ID查询该司机可以驾驶的货车类型列表
     List<TruckType> listByDriverId(Long driverId);
 
+    // 批量检查货车类型ID是否存在
+    Integer countExistingByIds(List<Long> ids);
 
 }

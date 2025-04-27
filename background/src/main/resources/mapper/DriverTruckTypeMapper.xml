@@ -61,4 +61,23 @@
         </where>
     </select>
 
+    <select id="listTruckTypeSimpleVOByDriverId" resultType="TruckTypeSimpleVO">
+        SELECT tt.id        AS truckTypeId,
+               tt.type_name AS truckTypeName
+        FROM driver_truck_type dtt
+                 JOIN truck_type tt ON dtt.truck_type_id = tt.id
+        WHERE dtt.driver_id = #{driverId}
+    </select>
+
+    <delete id="deleteByDriverIdAndTruckTypeIds">
+        DELETE FROM driver_truck_type
+        WHERE driver_id = #{driverId}
+        <if test="truckTypeIds != null and !truckTypeIds.isEmpty()">
+            AND truck_type_id IN
+            <foreach item="truckTypeId" collection="truckTypeIds" open="(" separator="," close=")">
+                #{truckTypeId}
+            </foreach>
+        </if>
+    </delete>
+
 </mapper>

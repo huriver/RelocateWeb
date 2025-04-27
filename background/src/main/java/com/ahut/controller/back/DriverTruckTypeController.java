@@ -1,10 +1,11 @@
 package com.***REMOVED***.controller.back;
 
-import com.***REMOVED***.dto.DriverTruckTypeDTO;
+import com.***REMOVED***.dto.DriverTruckTypeBatchDTO;
 import com.***REMOVED***.dto.DriverTruckTypePageQueryDTO;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.DriverTruckTypeService;
+import com.***REMOVED***.vo.DriverTruckTypeRelationVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -32,55 +33,58 @@ public class DriverTruckTypeController {
     }
 
     /**
-     * 新增司机的可驾驶货车类型关联
+     * 批量新增司机的可驾驶货车类型关联
      *
-     * @param driverTruckTypeDTO
+     * @param driverTruckTypeBatchDTO 包含 driverId 和 truckTypeIds 列表的DTO
      * @return
      */
     @PostMapping
-    public Result save(@RequestBody DriverTruckTypeDTO driverTruckTypeDTO) {
-        log.info("后台端新增司机的可驾驶货车类型关联: {}", driverTruckTypeDTO);
-        driverTruckTypeService.save(driverTruckTypeDTO);
+    public Result saveBatch(@RequestBody DriverTruckTypeBatchDTO driverTruckTypeBatchDTO) {
+        log.info("后台端批量新增司机的可驾驶货车类型关联: 司机ID={}, 货车类型ID列表={}",
+                driverTruckTypeBatchDTO.getDriverId(),
+                driverTruckTypeBatchDTO.getTruckTypeIds());
+        driverTruckTypeService.addDriverTruckTypesBatch(driverTruckTypeBatchDTO);
         return Result.success();
     }
 
-//    /**
-//     * 根据ID查询司机的可驾驶货车类型关联详情 (用于回显)
-//     *
-//     * @param id
-//     * @return
-//     */
-//    @GetMapping("/{id}")
-//    public Result<VehicleVO> getById(@PathVariable Long id) {
-//        log.info("后台端根据ID查询司机的可驾驶货车类型关联详情: {}", id);
-//        VehicleVO vehicleVO = vehicleService.getByIdByAdmin(id);
-//        return Result.success(vehicleVO);
-//    }
-//
-//    /**
-//     * 修改司机的可驾驶货车类型关联
-//     *
-//     * @param vehicleDTO
-//     * @return
-//     */
-//    @PutMapping
-//    public Result update(@RequestBody VehicleDTO vehicleDTO) {
-//        log.info("后台端修改司机的可驾驶货车类型关联: {}", vehicleDTO);
-//        vehicleService.update(vehicleDTO);
-//        return Result.success();
-//    }
-//
-//    /**
-//     * 根据ID删除司机的可驾驶货车类型关联
-//     *
-//     * @param id
-//     * @return
-//     */
-//    @DeleteMapping
-//    public Result deleteById(Long id) {
-//        log.info("后台端删除司机的可驾驶货车类型关联: {}", id);
-//        vehicleService.deleteById(id);
-//        return Result.success();
-//    }
+    /**
+     * 根据司机ID获取修改关联时的回显数据
+     *
+     * @param driverId
+     * @return
+     */
+    @GetMapping("/{driverId}")
+    public Result<DriverTruckTypeRelationVO> getByDriverId(@PathVariable Long driverId) {
+        log.info("后台端获取司机 {} 的可驾驶货车类型关联回显数据", driverId);
+        DriverTruckTypeRelationVO relationVO = driverTruckTypeService.getByDriverId(driverId);
+        return Result.success(relationVO);
+    }
+
+    /**
+     * 修改司机的可驾驶货车类型关联 (批量更新)
+     * 接收包含司机ID和修改后最终的货车类型ID列表的DTO
+     *
+     * @param driverTruckTypeBatchDTO 包含 driverId 和修改后最终的 truckTypeIds 列表的DTO
+     * @return 成功结果
+     */
+    @PutMapping
+    public Result updateBatch(@RequestBody DriverTruckTypeBatchDTO driverTruckTypeBatchDTO) {
+        log.info("后台端修改司机 {} 的可驾驶货车类型关联", driverTruckTypeBatchDTO.getDriverId());
+        driverTruckTypeService.updateDriverTruckTypesBatch(driverTruckTypeBatchDTO);
+        return Result.success();
+    }
+
+    /**
+     * 根据司机ID删除其所有可驾驶货车类型关联
+     *
+     * @param driverId 司机的ID
+     * @return 成功结果
+     */
+    @DeleteMapping
+    public Result deleteAllByDriverId(Long driverId) {
+        log.info("后台端删除司机 {} 的所有可驾驶货车类型关联", driverId);
+        driverTruckTypeService.deleteByDriverId(driverId);
+        return Result.success();
+    }
 
 }

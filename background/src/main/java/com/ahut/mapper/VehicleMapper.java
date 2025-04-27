@@ -46,4 +46,12 @@ public interface VehicleMapper {
     @Delete("DELETE FROM vehicle WHERE id = #{id}")
     void deleteById(Long id);
 
+    // 统计分配给特定司机的特定货车类型车辆数量
+    @Select("SELECT COUNT(*) FROM vehicle WHERE driver_id = #{driverId} AND truck_type_id = #{truckTypeId}")
+    Integer countByDriverAndTruckType(Long driverId, Long truckTypeId);
+
+    // 统计分配给特定司机的车辆总数 (不限货车类型)
+    @Select("SELECT COUNT(*) FROM vehicle WHERE driver_id = #{driverId}")
+    Integer countByDriverId(Long driverId);
+
 }

@@ -6,7 +6,9 @@ import com.***REMOVED***.dto.DriverTruckTypePageQueryDTO;
 import com.***REMOVED***.entity.DriverTruckType;
 import com.***REMOVED***.enumeration.OperationType;
 import com.***REMOVED***.vo.DriverTruckTypeRelationVO;
+import com.***REMOVED***.vo.TruckTypeSimpleVO;
 import com.github.pagehelper.Page;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -36,5 +38,18 @@ public interface DriverTruckTypeMapper {
     @Select("SELECT COUNT(*) FROM driver_truck_type WHERE driver_id = #{driverId} AND truck_type_id = #{truckTypeId}")
     Integer countByDriverIdAndTruckTypeId(Long driverId, Long truckTypeId);
 
+    // 根据司机ID查询其所有已关联的货车类型的简要信息列表 (用于回显修改页面)
+    List<TruckTypeSimpleVO> listTruckTypeSimpleVOByDriverId(Long driverId);
+
+    // 根据司机ID查询其所有已关联的货车类型ID列表 (用于Service层比较新旧列表)
+    @Select("SELECT truck_type_id FROM driver_truck_type WHERE driver_id = #{driverId}")
+    List<Long> getTruckTypeIdsByDriverId(Long driverId);
+
+    // 根据司机ID和货车类型ID列表批量删除关联记录
+    void deleteByDriverIdAndTruckTypeIds(Long driverId, List<Long> truckTypeIds);
+
+    // 根据司机ID删除其所有可驾驶货车类型关联
+    @Delete("DELETE FROM driver_truck_type WHERE driver_id = #{driverId}")
+    void deleteByDriverId(Long driverId);
 
 }
