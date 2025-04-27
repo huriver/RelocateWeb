@@ -14,9 +14,6 @@ public interface VehicleService {
     // 新增车辆
     void save(VehicleDTO vehicleDTO);
 
-    // 公共-根据ID查询车辆详情
-//    MovingNews getById(Long id);
-
     // 根据ID查询车辆详情
     VehicleVO getByIdByAdmin(Long id);
 

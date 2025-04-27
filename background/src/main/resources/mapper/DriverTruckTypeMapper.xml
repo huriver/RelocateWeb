@@ -3,25 +3,62 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.***REMOVED***.mapper.DriverTruckTypeMapper">
 
-    <select id="pageQuery" resultType="DriverTruckTypeVO">
+    <resultMap id="driverQualificationMap" type="DriverTruckTypeRelationVO">
+        <id property="driverId" column="driverId"/>
+        <result property="driverName" column="driverName"/>
+        <collection property="truckTypeSimpleVOList" ofType="TruckTypeSimpleVO" column="driverId">
+            <result property="truckTypeId" column="ttId"/>
+            <result property="truckTypeName" column="ttTypeName"/>
+        </collection>
+    </resultMap>
+
+    <select id="pageQueryDriverIds" resultType="java.lang.Long">
         SELECT
-        dtt.driver_id AS driverId,
-        d.name AS driverName,
-        dtt.truck_type_id AS truckTypeId,
-        tt.type_name AS truckTypeName,
-        dtt.create_time AS createTime,
-        dtt.update_time AS updateTime
-        FROM driver_truck_type dtt JOIN driver d ON dtt.driver_id = d.id
-        JOIN truck_type tt ON dtt.truck_type_id = tt.id
+        d.id , d.create_time
+        FROM driver d
+        LEFT JOIN driver_truck_type dtt ON d.id = dtt.driver_id
+        LEFT JOIN truck_type tt ON dtt.truck_type_id = tt.id
+
         <where>
             <if test="driverName != null and driverName != ''">
                 AND d.name LIKE CONCAT('%', #{driverName}, '%')
             </if>
+
             <if test="truckTypeId != null">
-                AND tt.id = #{truckTypeId}
+                AND EXISTS (
+                SELECT 1 FROM driver_truck_type dtt_filter
+                WHERE dtt_filter.driver_id = d.id
+                AND dtt_filter.truck_type_id = #{truckTypeId}
+                )
             </if>
         </where>
-        ORDER BY dtt.create_time DESC
+        GROUP BY d.id ,d.create_time
+        ORDER BY d.create_time DESC
+    </select>
+
+    <select id="listWithTruckTypeByDriverIds" resultMap="driverQualificationMap">
+        SELECT
+        d.id AS driverId,
+        d.name AS driverName,
+        d.create_time,
+        d.update_time,
+
+        dtt.truck_type_id AS dttTruckTypeId,
+        tt.id AS ttId,
+        tt.type_name AS ttTypeName
+
+        FROM
+        driver d LEFT JOIN driver_truck_type dtt ON d.id = dtt.driver_id
+        LEFT JOIN truck_type tt ON dtt.truck_type_id = tt.id
+
+        <where>
+            <if test="driverIds != null and !driverIds.isEmpty()">
+                AND d.id IN
+                <foreach item="driverId" collection="driverIds" open="(" separator="," close=")">
+                    #{driverId}
+                </foreach>
+            </if>
+        </where>
     </select>
 
 </mapper>

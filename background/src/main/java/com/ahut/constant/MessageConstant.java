@@ -71,4 +71,7 @@ public class MessageConstant {
     public static final String DRIVER_TRUCK_TYPE_VEHICLE_EXIST = "司机在对应货车类型下已有一辆车";
     public static final String VEHICLE_BE_RELATED_BY_ORDER = "当前车辆关联了订单,不能删除";
 
+    public static final String DRIVER_TRUCK_TYPE_EXIST = "司机和货车类型关联已存在";
+
+
 }
