@@ -23,7 +23,7 @@ public interface OrderMapper {
     @AutoFill(OperationType.INSERT)
     void insert(MovingOrder movingOrder);
 
-    // 根据订单ID查询订单详情
+    // 根据ID查询订单详情 (用于用户端和后台详情展示)
     OrderVO getById(Long id);
 
     // 根据订单号查询订单详情
@@ -80,6 +80,9 @@ public interface OrderMapper {
     // 统计引用了特定服务项的总订单数量 (任何状态)
     @Select("SELECT COUNT(*) FROM moving_order WHERE service_id = #{serviceId}")
     Integer countByServiceId(Long serviceId);
+
+    // 管理端分页查询订单列表
+    Page<OrderVO> pageQueryByAdmin(OrdersPageQueryDTO ordersPageQueryDTO);
 
 
     // Future: 定时任务需要的方法 (例如根据状态和时间查询订单)

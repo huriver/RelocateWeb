@@ -22,7 +22,7 @@
         where id = #{id}
     </update>
 
-    <resultMap id="orderVOResultMap" type="OrderVO">
+    <resultMap id="orderVOResultMap" type="com.***REMOVED***.vo.OrderVO">
         <id column="order_id" property="id"/>
         <result column="customer_id" property="customerId"/>
         <result column="order_number" property="orderNumber"/>
@@ -54,6 +54,9 @@
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
 
+        <result column="customer_name" property="customerName"/>
+        <result column="customer_phone" property="customerPhone"/>
+
         <result column="service_name" property="serviceName"/>
         <result column="truck_type_name" property="truckTypeName"/>
         <result column="category_name" property="serviceCategoryName"/>
@@ -70,7 +73,6 @@
         </collection>
 
     </resultMap>
-
 
     <select id="pageQuery" resultMap="orderVOResultMap">
         select
@@ -114,7 +116,7 @@
         order by mo.create_time desc
     </select>
 
-    <select id="getById" resultMap="orderVOResultMap">
+    <select id="getById" parameterType="long" resultMap="orderVOResultMap">
         select mo.id                  as order_id, -- 订单主键 (别名用于 ResultMap 的 id 和 collection 分组)
                mo.customer_id,
                mo.order_number,
@@ -143,9 +145,11 @@
                mo.create_time,
                mo.update_time,
 
+               c.name                 as customer_name,
+               c.phone                as customer_phone,
                s.service_name,
-               tt.type_name           as truck_type_name,
                sc.type_name           as category_name,
+               tt.type_name           as truck_type_name,
 
                d.name                 as driver_name,
                d.phone                as driver_phone,
@@ -158,6 +162,7 @@
 
 
         from moving_order mo
+                 join customer c on mo.customer_id = c.id
                  join service s on mo.service_id = s.id
                  join truck_type tt on mo.truck_type_id = tt.id
                  join service_category sc on s.category_id = sc.id
@@ -166,6 +171,86 @@
                  left join order_mover om on mo.id = om.order_id
                  left join mover m on om.mover_id = m.id
         where mo.id = #{id}
+    </select>
+
+    <select id="pageQueryByAdmin" parameterType="com.***REMOVED***.dto.OrdersPageQueryDTO" resultMap="orderVOResultMap">
+        SELECT
+        mo.id as order_id,
+        mo.customer_id,
+        mo.order_number,
+        mo.service_id,
+        mo.truck_type_id,
+        mo.driver_id,
+        mo.vehicle_id,
+        mo.order_status,
+        mo.reservation_time,
+        mo.moving_origin,
+        mo.moving_destination,
+        mo.moving_price,
+        mo.mileage_cost,
+        mo.helper_cost,
+        mo.category_price_multiplier,
+        mo.is_paid,
+        mo.payment_time,
+        mo.pay_method,
+        mo.cancel_reason,
+        mo.cancel_time,
+        mo.moving_start_time,
+        mo.moving_end_time,
+        mo.number_of_helpers,
+        mo.notes,
+        mo.is_reviewed,
+        mo.create_time,
+        mo.update_time,
+
+        c.name as customer_name, c.phone as customer_phone, s.service_name,
+        sc.type_name as category_name, tt.type_name as truck_type_name,
+
+        d.name as driver_name, v.license_plate_number as vehicle_plate, d.phone as driver_phone FROM moving_order mo
+        JOIN customer c ON mo.customer_id = c.id JOIN service s ON mo.service_id = s.id
+        JOIN truck_type tt ON mo.truck_type_id = tt.id
+        JOIN service_category sc ON s.category_id = sc.id LEFT JOIN driver d ON mo.driver_id = d.id LEFT JOIN vehicle v
+        ON mo.vehicle_id = v.id
+        <where>
+            <if test="orderNumber != null and orderNumber != ''">
+                AND mo.order_number LIKE CONCAT('%', #{orderNumber}, '%')
+            </if>
+            <if test="orderStatus != null">
+                AND mo.order_status = #{orderStatus}
+            </if>
+            <if test="isPaid != null">
+                AND mo.is_paid = #{isPaid}
+            </if>
+            <if test="createTimeStart != null">
+                AND mo.create_time &gt;= #{createTimeStart}
+            </if>
+            <if test="createTimeEnd != null">
+                AND mo.create_time &lt;= #{createTimeEnd}
+            </if>
+            <if test="customerKeyword != null and customerKeyword != ''">
+                AND (c.name LIKE CONCAT('%', #{customerKeyword}, '%') OR c.phone LIKE CONCAT('%', #{customerKeyword},
+                '%'))
+            </if>
+            <if test="driverName != null and driverName != ''">
+                AND d.name LIKE CONCAT('%', #{driverName}, '%')
+            </if>
+            <if test="serviceItemName != null and serviceItemName != ''">
+                AND s.service_name LIKE CONCAT('%', #{serviceItemName}, '%')
+            </if>
+            <if test="categoryId != null">
+                AND s.category_id = #{categoryId}
+            </if>
+            <if test="truckTypeId != null">
+                AND mo.truck_type_id = #{truckTypeId}
+            </if>
+            <if test="reservationTimeStart != null">
+                AND mo.reservation_time &gt;= #{reservationTimeStart}
+            </if>
+            <if test="reservationTimeEnd != null">
+                AND mo.reservation_time &lt;= #{reservationTimeEnd}
+            </if>
+        </where>
+        ORDER BY mo.create_time DESC
     </select>
 
 </mapper>

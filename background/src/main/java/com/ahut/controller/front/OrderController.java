@@ -1,25 +1,32 @@
 package com.***REMOVED***.controller.front;
 
+import com.***REMOVED***.constant.MessageConstant;
+import com.***REMOVED***.context.BaseContext;
 import com.***REMOVED***.dto.*;
+import com.***REMOVED***.entity.MovingOrder;
+import com.***REMOVED***.exception.BusinessException;
+import com.***REMOVED***.mapper.OrderMapper;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.OrderService;
-import com.***REMOVED***.vo.OrderPaymentVO;
-import com.***REMOVED***.vo.OrderSubmitVO;
-import com.***REMOVED***.vo.OrderVO;
-import com.***REMOVED***.vo.PriceEstimationResultVO;
+import com.***REMOVED***.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 
-@RestController
+
+@RestController("frontOrderController")
 @RequestMapping("/front/order")
 @Slf4j
 public class OrderController {
 
     @Autowired
     private OrderService orderService;
+
+    @Autowired
+    private OrderMapper orderMapper;
 
 
     /**
@@ -83,6 +90,20 @@ public class OrderController {
     @GetMapping("/orderDetail/{id}")
     public Result<OrderVO> getOrderDetail(@PathVariable Long id) {
         log.info("用户端查询订单详情，订单ID：{}", id);
+
+        MovingOrder order = orderMapper.getMovingOrderById(id);
+        // 校验订单是否存在
+        if (order == null) {
+            log.error("用户端查询订单详情失败，订单不存在：ID {}", id);
+            throw new BusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        // 校验订单是否属于当前用户
+        if (!order.getCustomerId().equals(BaseContext.getCurrentId())) {
+            log.error("用户端查询订单详情失败，订单 {} 属于用户 {}，不属于当前用户 {}",
+                    id, order.getCustomerId(), BaseContext.getCurrentId());
+            throw new BusinessException(MessageConstant.ORDER_NOT_BELONG_TO_CURRENT_USER);
+        }
+
         OrderVO orderVO = orderService.getOrderDetail(id);
         return Result.success(orderVO);
     }
@@ -112,6 +133,18 @@ public class OrderController {
         log.info("用户端提交订单评价，参数：{}", overallRatingSubmitDTO);
         orderService.submitRatings(overallRatingSubmitDTO);
         return Result.success();
+    }
+
+    /**
+     * 获取所有订单状态列表接口 (用于前端管理端订单筛选下拉框/Tab)
+     *
+     * @return 订单状态VO列表
+     */
+    @GetMapping("/status")
+    public Result<List<OrderStatusVO>> getStatus() {
+        log.info("用户端获取所有订单状态列表");
+        List<OrderStatusVO> statusList = orderService.getOrderStatusList();
+        return Result.success(statusList);
     }
 
 }

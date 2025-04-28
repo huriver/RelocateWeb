@@ -11,10 +11,7 @@ import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.PriceCalculationResult;
 import com.***REMOVED***.service.OrderService;
 import com.***REMOVED***.utils.HttpClientUtil;
-import com.***REMOVED***.vo.OrderPaymentVO;
-import com.***REMOVED***.vo.OrderSubmitVO;
-import com.***REMOVED***.vo.OrderVO;
-import com.***REMOVED***.vo.PriceEstimationResultVO;
+import com.***REMOVED***.vo.*;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -618,8 +615,6 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     public OrderVO getOrderDetail(Long id) {
-        log.info("用户端查询订单详情，订单ID：{}", id);
-
         // 1. 查找订单详情
         OrderVO orderVO = orderMapper.getById(id);
 
@@ -627,13 +622,6 @@ public class OrderServiceImpl implements OrderService {
         if (orderVO == null) {
             log.error("订单详情查询失败，订单不存在：ID {}", id);
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
-        }
-
-        // 3. 校验订单是否属于当前用户
-        Long currentUserId = BaseContext.getCurrentId();
-        if (!orderVO.getCustomerId().equals(currentUserId)) {
-            log.error("订单详情查询失败，订单 {} 不属于当前用户 {}", id, currentUserId);
-            throw new OrderBusinessException(MessageConstant.ORDER_NOT_BELONG_TO_CURRENT_USER);
         }
 
         // 4. 进行数据后处理和格式化：将状态码转换为文字描述
@@ -647,7 +635,6 @@ public class OrderServiceImpl implements OrderService {
             orderVO.setPayMethodDescription(PayMethodConstant.getDescription(orderVO.getPayMethod()));
         }
 
-        log.info("订单详情查询成功，订单ID：{}", id);
         return orderVO;
     }
 
@@ -948,6 +935,80 @@ public class OrderServiceImpl implements OrderService {
         }
 
         log.info("用户提交订单评价处理完成，订单ID：{}", overallRatingSubmitDTO.getOrderId());
+    }
+
+    /**
+     * 获取所有订单状态列表
+     * 用于前端管理端订单筛选下拉框或Tab展示
+     *
+     * @return 订单状态VO列表
+     */
+    @Override
+    public List<OrderStatusVO> getOrderStatusList() {
+        List<OrderStatusVO> statusList = new ArrayList<>();
+
+        // 直接从 OrderStatusConstant 中获取所有状态码和描述
+        // 按照 OrderStatusConstant 中定义的顺序或逻辑顺序添加
+        statusList.add(new OrderStatusVO(OrderStatusConstant.PENDING_ACCEPTANCE, OrderStatusConstant.getDescription(OrderStatusConstant.PENDING_ACCEPTANCE)));
+        statusList.add(new OrderStatusVO(OrderStatusConstant.DRIVER_ACCEPTED_WAITING_MOVERS, OrderStatusConstant.getDescription(OrderStatusConstant.DRIVER_ACCEPTED_WAITING_MOVERS)));
+        statusList.add(new OrderStatusVO(OrderStatusConstant.ACCEPTED, OrderStatusConstant.getDescription(OrderStatusConstant.ACCEPTED)));
+        statusList.add(new OrderStatusVO(OrderStatusConstant.IN_PROGRESS, OrderStatusConstant.getDescription(OrderStatusConstant.IN_PROGRESS)));
+        statusList.add(new OrderStatusVO(OrderStatusConstant.COMPLETED, OrderStatusConstant.getDescription(OrderStatusConstant.COMPLETED)));
+        statusList.add(new OrderStatusVO(OrderStatusConstant.CANCELLED, OrderStatusConstant.getDescription(OrderStatusConstant.CANCELLED)));
+
+        log.info("获取到 {} 个订单状态", statusList.size());
+        return statusList;
+    }
+
+    /**
+     * 获取所有支付状态列表
+     * 用于前端下拉框或Tab展示
+     *
+     * @return 支付状态VO列表
+     */
+    @Override
+    public List<PaymentStatusVO> getPaymentStatusList() {
+        List<PaymentStatusVO> statusList = new ArrayList<>();
+
+        // 直接从 PaymentStatusConstant 中获取所有状态码和描述
+        // 按照 Constant 中定义的顺序或逻辑顺序添加
+        statusList.add(new PaymentStatusVO(PaymentStatusConstant.UN_PAID, PaymentStatusConstant.getDescription(PaymentStatusConstant.UN_PAID)));
+        statusList.add(new PaymentStatusVO(PaymentStatusConstant.PAID, PaymentStatusConstant.getDescription(PaymentStatusConstant.PAID)));
+        statusList.add(new PaymentStatusVO(PaymentStatusConstant.REFUNDED, PaymentStatusConstant.getDescription(PaymentStatusConstant.REFUNDED)));
+
+        log.info("获取到 {} 个支付状态", statusList.size());
+        return statusList;
+    }
+
+    /**
+     * 管理端分页查询订单列表
+     * 返回所有状态的订单，并支持多种筛选条件
+     *
+     * @param ordersPageQueryDTO 查询条件 (包含管理端筛选字段)
+     * @return 分页结果 (PageResult<OrderVO>)
+     */
+    @Override
+    public PageResult pageQueryByAdmin(OrdersPageQueryDTO ordersPageQueryDTO) {
+        PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
+        Page<OrderVO> page = orderMapper.pageQueryByAdmin(ordersPageQueryDTO);
+
+        // 对查询结果列表进行后处理：将状态码转换为文字描述
+        // 虽然 OrderVO 中有描述字段，Mapper SQL 选择了原始码，这里进行转换填充
+        if (page != null && page.getResult() != null) {
+            for (OrderVO orderVO : page.getResult()) {
+                if (orderVO.getOrderStatus() != null) {
+                    orderVO.setOrderStatusDescription(OrderStatusConstant.getDescription(orderVO.getOrderStatus()));
+                }
+                if (orderVO.getIsPaid() != null) {
+                    orderVO.setIsPaidDescription(PaymentStatusConstant.getDescription(orderVO.getIsPaid()));
+                }
+                if (orderVO.getPayMethod() != null) {
+                    orderVO.setPayMethodDescription(PayMethodConstant.getDescription(orderVO.getPayMethod()));
+                }
+            }
+        }
+
+        return new PageResult(page.getTotal(), page.getResult());
     }
 
 

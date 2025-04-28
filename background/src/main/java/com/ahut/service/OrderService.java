@@ -2,10 +2,9 @@ package com.***REMOVED***.service;
 
 import com.***REMOVED***.dto.*;
 import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.vo.OrderPaymentVO;
-import com.***REMOVED***.vo.OrderSubmitVO;
-import com.***REMOVED***.vo.OrderVO;
-import com.***REMOVED***.vo.PriceEstimationResultVO;
+import com.***REMOVED***.vo.*;
+
+import java.util.List;
 
 
 public interface OrderService {
@@ -25,7 +24,7 @@ public interface OrderService {
     // 用户端历史订单分页查询
     PageResult pageQuery(OrdersPageQueryDTO ordersPageQueryDTO);
 
-    // 用户端根据订单id查询订单详情
+    // 用户端/管理端根据订单id查询订单详情
     OrderVO getOrderDetail(Long id);
 
     // 用户取消订单
@@ -33,5 +32,14 @@ public interface OrderService {
 
     // 用户提交订单评价 (多个评分项)
     void submitRatings(OverallRatingSubmitDTO overallRatingSubmitDTO);
+
+    // 获取所有订单状态列表
+    List<OrderStatusVO> getOrderStatusList();
+
+    // 获取所有支付状态列表
+    List<PaymentStatusVO> getPaymentStatusList();
+
+    // 管理端分页查询订单列表
+    PageResult pageQueryByAdmin(OrdersPageQueryDTO ordersPageQueryDTO);
 
 }
