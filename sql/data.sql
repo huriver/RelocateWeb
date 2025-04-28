@@ -198,11 +198,13 @@ CREATE TABLE `service` (
   `loading_capacity_description` text COMMENT '装载能力详细说明',
   `average_rating` decimal(3,2) NOT NULL DEFAULT 0.00 COMMENT '平均评分值',
   `rating_count` int(11) NOT NULL DEFAULT 0 COMMENT '评分数量',
+  `status` tinyint(1) NOT NULL DEFAULT 0 COMMENT '服务项状态：0-停售，1-起售', 
   `create_time` datetime COMMENT '创建时间',
   `update_time` datetime COMMENT '修改时间',
   `create_user` bigint(20) COMMENT '创建用户ID',
   `update_user` bigint(20) COMMENT '更新用户ID',
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `uk_category_name` (`category_id`, `service_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='服务项表';
 
 -- ----------------------------
@@ -353,10 +355,10 @@ INSERT INTO `service_category` (`id`, `type_name`, `description`, `price_multipl
 -- ----------------------------
 -- Data for table service
 -- ----------------------------
-INSERT INTO `service` (`id`, `category_id`, `truck_type_id`, `service_name`, `short_description`, `loading_capacity_description`, `average_rating`, `rating_count`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
-(1, 1, 1, '标准搬家 (小型面包车)', '经济型小型搬家服务', '约可装载10-15个大纸箱、一台洗衣机', 4.80, 10, NOW(), NOW(), 1, 1),
-(2, 1, 2, '标准搬家 (中型厢式货车)', '适合普通家庭的标准搬家服务', '约可装载床、沙发、冰箱、洗衣机及20个纸箱', 4.50, 25, NOW(), NOW(), 1, 1),
-(3, 2, 2, '精品搬家 (中型厢式货车)', '提供打包和基础还原服务的家庭搬家', '同中型厢式货车容量，含打包材料和人工', 4.90, 15, NOW(), NOW(), 1, 1);
+INSERT INTO `service` (`id`, `category_id`, `truck_type_id`, `service_name`, `short_description`, `loading_capacity_description`, `average_rating`, `rating_count`, `status`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
+(1, 1, 1, '标准搬家 (小型面包车)', '经济型小型搬家服务', '约可装载10-15个大纸箱、一台洗衣机', 4.80, 10, 1, NOW(), NOW(), 1, 1),
+(2, 1, 2, '标准搬家 (中型厢式货车)', '适合普通家庭的标准搬家服务', '约可装载床、沙发、冰箱、洗衣机及20个纸箱', 4.50, 25, 1, NOW(), NOW(), 1, 1),
+(3, 2, 2, '精品搬家 (中型厢式货车)', '提供打包和基础还原服务的家庭搬家', '同中型厢式货车容量，含打包材料和人工', 4.90, 15, 1, NOW(), NOW(), 1, 1);
 
 -- ----------------------------
 -- Data for table driver

@@ -76,4 +76,14 @@ public class MessageConstant {
     public static final String INVALID_TRUCK_TYPE = "无效的货车类型";
     public static final String DRIVER_TRUCK_TYPE_HAS_PENDING_ORDER = "司机的对应货车类型有未完成订单，无法删除";
     public static final String DRIVER_TRUCK_TYPE_HAS_ASSIGNED_VEHICLE = "司机的对应货车类型已分配车辆，无法删除";
+    public static final String SERVICE_CATEGORY_NOT_FOUND = "服务分类不存在";
+    public static final String SERVICE_NAME_ALREADY_EXISTS_IN_CATEGORY = "服务名称在服务分类下已存在";
+    public static final String SERVICE_NOT_FOUND = "服务项不存在";
+    public static final String SERVICE_ACTIVE_STRUCTURAL_CHANGE_BLOCKED = "服务项状态为启用时，不允许进行结构化修改";
+    public static final String SERVICE_HAS_PENDING_ORDERS_STRUCTURAL_CHANGE_BLOCKED = "服务项有未完成订单时，不允许进行结构化修改";
+
+    public static final String SERVICE_HAS_ASSOCIATED_ORDERS = "当前服务项关联了订单,无法删除";
+    public static final String SERVICE_HAS_ASSOCIATED_RATINGS = "当前服务项关联了评价,无法删除";
+    public static final String SERVICE_INFO_INCOMPLETE_FOR_ACTIVATION = "服务信息不完整，无法启用";
+    public static final String SERVICE_HAS_PENDING_ORDERS_BLOCKED_ACTIVATION = "服务项有未完成订单时，不允许启用";
 }

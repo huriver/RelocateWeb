@@ -15,7 +15,6 @@ public interface RatingMapper {
     // @AutoFill(OperationType.INSERT)  // @AutoFill 通常应用于单条记录插入
     void insertBatch(List<Rating> ratings);
 
-
     /**
      * 根据订单ID查询评价记录列表
      *
@@ -32,13 +31,15 @@ public interface RatingMapper {
             "FROM rating WHERE order_id = #{orderId} AND rating_type = #{ratingType} AND ratee_id = #{rateeId}")
     Rating getByOrderIdAndTypeAndRateeId(Long orderId, String ratingType, Long rateeId);
 
-
     // 根据服务项ID获取用户评价列表，包含评价人姓名
     List<ServiceRatingVO> getServiceRatingsByServiceId(Long serviceId);
 
     // 根据用户ID查询该用户提交的历史评价记录，包含关联信息
     List<CustomerRatingVO> getCustomerRatingByCustomerId(Long customerId);
 
+    // 统计关联到特定服务项的评价数量
+    @Select("SELECT COUNT(*) FROM rating WHERE rating_type = 'SERVICE' AND ratee_id = #{serviceId}")
+    Integer countByServiceId(Long serviceId);
 
     // 其他可能的查询方法，例如根据客户ID查询评价列表，查询某个司机/搬运工人的平均评分等
 }

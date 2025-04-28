@@ -1,14 +1,14 @@
 package com.***REMOVED***.controller.back;
 
+import com.***REMOVED***.dto.ServiceDTO;
 import com.***REMOVED***.dto.ServiceQueryDTO;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.ServiceService;
+import com.***REMOVED***.vo.ServiceDetailVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController("backServiceController")
 @RequestMapping("/back/service")
@@ -30,5 +30,71 @@ public class ServiceController {
         return Result.success(pageResult); // 返回包含所有字段+关联名称的分页结果
     }
 
+    /**
+     * 新增服务项
+     *
+     * @param serviceDTO 包含服务项信息DTO
+     * @return 成功结果
+     */
+    @PostMapping
+    public Result save(@RequestBody ServiceDTO serviceDTO) {
+        log.info("后台端新增服务项: {}", serviceDTO);
+        serviceService.save(serviceDTO);
+        return Result.success();
+    }
+
+    /**
+     * 根据ID查询服务项详情
+     *
+     * @param id 服务项ID
+     * @return 包含服务项详情的 VO
+     */
+    @GetMapping("/{id}")
+    public Result<ServiceDetailVO> getById(@PathVariable Long id) {
+        log.info("后台端根据ID查询服务项: {}", id);
+        ServiceDetailVO serviceDetailVO = serviceService.details(id);
+        return Result.success(serviceDetailVO);
+    }
+
+    /**
+     * 修改服务项
+     * 接收包含服务项信息DTO (id必填)
+     *
+     * @param serviceDTO 包含服务项信息DTO (id必填)
+     * @return 成功结果
+     */
+    @PutMapping
+    public Result update(@RequestBody ServiceDTO serviceDTO) {
+        log.info("后台端修改服务项: {}", serviceDTO.getId());
+        serviceService.update(serviceDTO);
+        return Result.success();
+    }
+
+    /**
+     * 根据ID删除服务项
+     *
+     * @param id 服务项ID
+     * @return 成功结果
+     */
+    @DeleteMapping
+    public Result deleteById(Long id) {
+        log.info("后台端删除服务项: {}", id);
+        serviceService.deleteById(id);
+        return Result.success();
+    }
+
+    /**
+     * 修改服务项状态 (停售/起售)
+     *
+     * @param status 目标状态 (0-停售，1-起售)
+     * @param id     服务项ID
+     * @return 成功结果
+     */
+    @PutMapping("/status/{status}")
+    public Result startOrStop(@PathVariable Integer status, Long id) {
+        log.info("后台端修改服务项 {} 状态为 {}", id, status == 0 ? "停售" : "起售");
+        serviceService.startOrStop(id, status);
+        return Result.success();
+    }
 
 }

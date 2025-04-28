@@ -6,46 +6,21 @@
     <update id="update" parameterType="MovingOrder">
         update moving_order
         <set>
-            <if test="orderStatus != null">
-                order_status = #{orderStatus},
-            </if>
-            <if test="isPaid != null">
-                is_paid = #{isPaid},
-            </if>
-            <if test="paymentTime != null">
-                payment_time = #{paymentTime},
-            </if>
-            <if test="payMethod != null">
-                pay_method = #{payMethod},
-            </if>
-            <if test="cancelReason != null">
-                cancel_reason = #{cancelReason},
-            </if>
-            <if test="cancelTime != null">
-                cancel_time = #{cancelTime},
-            </if>
-            <if test="movingStartTime != null">
-                moving_start_time = #{movingStartTime},
-            </if>
-            <if test="movingEndTime != null">
-                moving_end_time = #{movingEndTime},
-            </if>
-            <if test="driverId != null">
-                driver_id = #{driverId},
-            </if>
-            <if test="vehicleId != null">
-                vehicle_id = #{vehicleId},
-            </if>
-            <if test="isReviewed != null">
-                is_reviewed = #{isReviewed},
-            </if>
-            <if test="updateTime != null">
-                update_time = #{updateTime},
-            </if>
+            <if test="orderStatus != null">order_status = #{orderStatus},</if>
+            <if test="isPaid != null">is_paid = #{isPaid},</if>
+            <if test="paymentTime != null">payment_time = #{paymentTime},</if>
+            <if test="payMethod != null">pay_method = #{payMethod},</if>
+            <if test="cancelReason != null">cancel_reason = #{cancelReason},</if>
+            <if test="cancelTime != null">cancel_time = #{cancelTime},</if>
+            <if test="movingStartTime != null">moving_start_time = #{movingStartTime},</if>
+            <if test="movingEndTime != null">moving_end_time = #{movingEndTime},</if>
+            <if test="driverId != null">driver_id = #{driverId},</if>
+            <if test="vehicleId != null">vehicle_id = #{vehicleId},</if>
+            <if test="isReviewed != null">is_reviewed = #{isReviewed},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
         </set>
         where id = #{id}
     </update>
-
 
     <resultMap id="orderVOResultMap" type="OrderVO">
         <id column="order_id" property="id"/>
@@ -192,6 +167,5 @@
                  left join mover m on om.mover_id = m.id
         where mo.id = #{id}
     </select>
-
 
 </mapper>

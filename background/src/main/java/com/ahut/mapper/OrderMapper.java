@@ -73,10 +73,13 @@ public interface OrderMapper {
     @Select("SELECT COUNT(*) FROM moving_order WHERE driver_id = #{driverId} AND order_status IN (1, 2, 3)")
     Integer countPendingOrdersByDriverId(Long driverId);
 
-    // Future: 分页查询订单列表的方法 (需要根据 OrdersPageQueryDTO 进行过滤和分页)
-    /*
-    Page<MovingOrder> pageQuery(OrdersPageQueryDTO queryDTO);
-     */
+    // 统计引用了特定服务项的未完成订单总数
+    @Select("SELECT COUNT(*) FROM moving_order WHERE service_id = #{serviceId} AND order_status IN (0, 1, 2, 3)")
+    Integer countPendingOrdersByServiceId(Long serviceId);
+
+    // 统计引用了特定服务项的总订单数量 (任何状态)
+    @Select("SELECT COUNT(*) FROM moving_order WHERE service_id = #{serviceId}")
+    Integer countByServiceId(Long serviceId);
 
 
     // Future: 定时任务需要的方法 (例如根据状态和时间查询订单)

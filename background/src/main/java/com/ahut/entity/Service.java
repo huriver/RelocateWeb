@@ -21,6 +21,7 @@ public class Service {
     private String loadingCapacityDescription;
     private BigDecimal averageRating;
     private Integer ratingCount;
+    private Integer status; // 服务项状态：0-停售，1-起售
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private Long createUser;

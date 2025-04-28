@@ -19,6 +19,8 @@ public class ServiceQueryDTO {
     private BigDecimal maxAverageRating; // 平均评分范围 - 最高
     private Integer minRatingCount; // 评分数量范围 - 最低
     private Integer maxRatingCount; // 评分数量范围 - 最高
+    // 状态，用户端分页查询时不需要传递，后台自己设置1、起售；     后台端端分页查询时，可选传递
+    private Integer status;
 
     // 创建时间范围筛选
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

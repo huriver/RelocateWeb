@@ -7,7 +7,9 @@ import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 
-
+/**
+ * 用户端查询服务项详情VO
+ */
 @Data
 @EqualsAndHashCode(callSuper = true) // 继承 Service 后，需要包含父类字段来生成 equals 和 hashCode
 public class ServiceDetailVO extends Service {

@@ -3,7 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.***REMOVED***.mapper.ServiceMapper">
 
-    <resultMap id="serviceDetailVOResultMap" type="ServiceDetailVO">
+    <resultMap id="serviceDetailVOResultMap" type="com.***REMOVED***.vo.ServiceDetailVO">
         <id column="s_id" property="id"/>
         <result column="s_category_id" property="categoryId"/>
         <result column="s_truck_type_id" property="truckTypeId"/>
@@ -12,6 +12,7 @@
         <result column="s_loading_capacity_description" property="loadingCapacityDescription"/>
         <result column="s_average_rating" property="averageRating"/>
         <result column="s_rating_count" property="ratingCount"/>
+        <result column="s_status" property="status"/>
         <result column="s_create_time" property="createTime"/>
         <result column="s_update_time" property="updateTime"/>
         <result column="s_create_user" property="createUser"/>
@@ -40,7 +41,7 @@
 
     </resultMap>
 
-    <select id="pageQuery" parameterType="ServiceQueryDTO" resultType="ServiceVO">
+    <select id="pageQuery" parameterType="com.***REMOVED***.dto.ServiceQueryDTO" resultType="com.***REMOVED***.vo.ServiceVO">
         SELECT
         s.id as id,
         s.service_name as serviceName,
@@ -48,35 +49,32 @@
         s.short_description as shortDescription,
         tt.type_name as truckTypeName,
         tt.base_fare as basePrice,
-        s.average_rating as averageRating, s.rating_count as ratingCount FROM service s
+        s.average_rating as averageRating,
+        s.rating_count as ratingCount
+        FROM service s
         JOIN service_category sc ON s.category_id = sc.id
         JOIN truck_type tt ON s.truck_type_id = tt.id
         <where>
             <if test="categoryId != null">
                 and s.category_id = #{categoryId}
             </if>
+            AND s.status = #{status}
         </where>
         ORDER BY s.average_rating DESC, s.rating_count DESC
     </select>
 
-    <select id="pageQueryByAdmin" resultType="ServiceItemVO">
+    <select id="pageQueryByAdmin" parameterType="ServiceQueryDTO" resultType="ServiceItemVO">
         SELECT
         s.id, s.category_id, s.truck_type_id, s.service_name, s.short_description, s.loading_capacity_description,
-        s.average_rating, s.rating_count, s.create_time, s.update_time, s.create_user, s.update_user,
+        s.average_rating, s.rating_count, s.status, s.create_time, s.update_time, s.create_user, s.update_user,
         sc.type_name AS categoryName,
         tt.type_name AS truckTypeName,
         ca.name AS createUserName,
         ua.name AS updateUserName
-        FROM
-        service s
-        LEFT JOIN
-        service_category sc ON s.category_id = sc.id
-        LEFT JOIN
-        truck_type tt ON s.truck_type_id = tt.id
-        LEFT JOIN
-        admin ca ON s.create_user = ca.id
-        LEFT JOIN
-        admin ua ON s.update_user = ua.id
+        FROM service s LEFT JOIN service_category sc ON s.category_id = sc.id
+        LEFT JOIN truck_type tt ON s.truck_type_id = tt.id
+        LEFT JOIN admin ca ON s.create_user = ca.id
+        LEFT JOIN admin ua ON s.update_user = ua.id
         <where>
             <if test="serviceName != null and serviceName != ''">
                 AND s.service_name LIKE CONCAT('%', #{serviceName}, '%')
@@ -99,6 +97,9 @@
             <if test="maxRatingCount != null">
                 AND s.rating_count &lt;= #{maxRatingCount}
             </if>
+            <if test="status != null">
+                AND s.status = #{status}
+            </if>
             <if test="createTimeStart != null">
                 AND s.create_time &gt;= #{createTimeStart}
             </if>
@@ -118,6 +119,7 @@
                s.loading_capacity_description as s_loading_capacity_description,
                s.average_rating               as s_average_rating,
                s.rating_count                 as s_rating_count,
+               s.status                       as s_status,
                s.create_time                  as s_create_time,
                s.update_time                  as s_update_time,
                s.create_user                  as s_create_user,
@@ -127,20 +129,20 @@
                sc.type_name                   as sc_name,
                sc.price_multiplier            as sc_price_multiplier,
 
-               tt.id                 as tt_id,
-               tt.type_name          as tt_name,
-               tt.capacity           as tt_capacity,
-               tt.description        as tt_description,
-               tt.base_fare          as tt_base_fare,
-               tt.price_per_km_tier1 as tt_price_tier1,
-               tt.price_per_km_tier2 as tt_price_tier2,
-               tt.price_per_km_tier3 as tt_price_tier3,
-               tt.price_per_km_tier4 as tt_price_tier4,
-               tt.price_per_km_tier5 as tt_price_tier5,
-               tt.create_time        as tt_create_time,
-               tt.update_time        as tt_update_time,
-               tt.create_user        as tt_create_user,
-               tt.update_user        as tt_update_user
+               tt.id                          as tt_id,
+               tt.type_name                   as tt_name,
+               tt.capacity                    as tt_capacity,
+               tt.description                 as tt_description,
+               tt.base_fare                   as tt_base_fare,
+               tt.price_per_km_tier1          as tt_price_tier1,
+               tt.price_per_km_tier2          as tt_price_tier2,
+               tt.price_per_km_tier3          as tt_price_tier3,
+               tt.price_per_km_tier4          as tt_price_tier4,
+               tt.price_per_km_tier5          as tt_price_tier5,
+               tt.create_time                 as tt_create_time,
+               tt.update_time                 as tt_update_time,
+               tt.create_user                 as tt_create_user,
+               tt.update_user                 as tt_update_user
 
         FROM service s
                  JOIN service_category sc ON s.category_id = sc.id
@@ -160,6 +162,7 @@
             </if>
             <if test="averageRating != null">average_rating = #{averageRating},</if>
             <if test="ratingCount != null">rating_count = #{ratingCount},</if>
+            <if test="status != null">status = #{status},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
             <if test="updateUser != null">update_user = #{updateUser},</if>
         </set>

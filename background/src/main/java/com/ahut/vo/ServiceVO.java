@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 
+/**
+ * 用户端分页查询服务项VO
+ */
 @Data
 public class ServiceVO {
     private Long id;

@@ -5,6 +5,9 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/**
+ * 管理员分页查询服务项VO
+ */
 @Data
 public class ServiceItemVO {
     private Long id;
@@ -15,6 +18,7 @@ public class ServiceItemVO {
     private String loadingCapacityDescription; // 装载能力详细说明
     private BigDecimal averageRating; // 平均评分值
     private Integer ratingCount; // 评分数量
+    private Integer status; // 服务项状态：0-停售，1-起售
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private Long createUser; // 创建用户ID
