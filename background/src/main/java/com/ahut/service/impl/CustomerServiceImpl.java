@@ -4,13 +4,14 @@ import com.***REMOVED***.constant.MessageConstant;
 import com.***REMOVED***.context.BaseContext;
 import com.***REMOVED***.dto.*;
 import com.***REMOVED***.entity.Customer;
-import com.***REMOVED***.exception.*;
+import com.***REMOVED***.exception.AccountLockedException;
+import com.***REMOVED***.exception.AccountNotFoundException;
+import com.***REMOVED***.exception.BusinessException;
+import com.***REMOVED***.exception.PasswordErrorException;
 import com.***REMOVED***.mapper.CustomerMapper;
 import com.***REMOVED***.mapper.OrderMapper;
-import com.***REMOVED***.mapper.RatingMapper;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.service.CustomerService;
-import com.***REMOVED***.vo.CustomerRatingVO;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
@@ -19,17 +20,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
-import java.util.List;
-
 @Service
 @Slf4j
 public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private CustomerMapper customerMapper;
-
-    @Autowired
-    private RatingMapper ratingMapper;
 
     @Autowired
     private OrderMapper orderMapper;
@@ -120,16 +116,6 @@ public class CustomerServiceImpl implements CustomerService {
                 .build();
 
         customerMapper.update(customer);
-    }
-
-    /**
-     * 获取当前用户提交的历史评价记录列表
-     *
-     * @return
-     */
-    @Override
-    public List<CustomerRatingVO> getCustomerRatingHistory() {
-        return ratingMapper.getCustomerRatingByCustomerId(BaseContext.getCurrentId());
     }
 
     /**

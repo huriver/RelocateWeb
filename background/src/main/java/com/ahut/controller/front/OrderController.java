@@ -123,19 +123,6 @@ public class OrderController {
     }
 
     /**
-     * 用户提交订单评价 (多个评分项)
-     *
-     * @param overallRatingSubmitDTO
-     * @return
-     */
-    @PostMapping("/review")
-    public Result<String> submitRatings(@RequestBody OverallRatingSubmitDTO overallRatingSubmitDTO) {
-        log.info("用户端提交订单评价，参数：{}", overallRatingSubmitDTO);
-        orderService.submitRatings(overallRatingSubmitDTO);
-        return Result.success();
-    }
-
-    /**
      * 获取所有订单状态列表接口 (用于前端管理端订单筛选下拉框/Tab)
      *
      * @return 订单状态VO列表

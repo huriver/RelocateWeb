@@ -6,16 +6,11 @@ import com.***REMOVED***.dto.CustomerDTO;
 import com.***REMOVED***.entity.Customer;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.CustomerService;
-import com.***REMOVED***.vo.CustomerRatingVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
-/**
- * 员工管理
- */
 @RestController("frontCustomerController")
 @RequestMapping("/front/customer")
 @Slf4j
@@ -62,18 +57,6 @@ public class CustomerController {
         log.info("用户端消费者修改密码：{}", changePasswordDTO);
         customerService.changePassword(changePasswordDTO);
         return Result.success();
-    }
-
-    /**
-     * 获取当前用户历史评价列表
-     *
-     * @return
-     */
-    @GetMapping("/ratings")
-    public Result<List<CustomerRatingVO>> getCustomerRatingHistory() {
-        log.info("用户端用户{}，获取当前用户历史评价列表", BaseContext.getCurrentId());
-        List<CustomerRatingVO> customerRatingVOList = customerService.getCustomerRatingHistory();
-        return Result.success(customerRatingVOList);
     }
 
 }

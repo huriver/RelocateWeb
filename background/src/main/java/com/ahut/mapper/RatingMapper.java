@@ -34,7 +34,7 @@ public interface RatingMapper {
     // 根据服务项ID获取用户评价列表，包含评价人姓名
     List<ServiceRatingVO> getServiceRatingsByServiceId(Long serviceId);
 
-    // 根据用户ID查询该用户提交的历史评价记录，包含关联信息
+    // 根据消费者ID查询其历史评价记录，包含订单和服务信息
     List<CustomerRatingVO> getCustomerRatingByCustomerId(Long customerId);
 
     // 统计关联到特定服务项的评价数量

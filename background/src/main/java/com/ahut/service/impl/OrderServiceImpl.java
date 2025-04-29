@@ -1,10 +1,16 @@
 package com.***REMOVED***.service.impl;
 
 
-import com.***REMOVED***.constant.*;
+import com.***REMOVED***.constant.MessageConstant;
+import com.***REMOVED***.constant.OrderStatusConstant;
+import com.***REMOVED***.constant.PayMethodConstant;
+import com.***REMOVED***.constant.PaymentStatusConstant;
 import com.***REMOVED***.context.BaseContext;
 import com.***REMOVED***.dto.*;
-import com.***REMOVED***.entity.*;
+import com.***REMOVED***.entity.Configuration;
+import com.***REMOVED***.entity.MovingOrder;
+import com.***REMOVED***.entity.ServiceCategory;
+import com.***REMOVED***.entity.TruckType;
 import com.***REMOVED***.exception.*;
 import com.***REMOVED***.mapper.*;
 import com.***REMOVED***.result.PageResult;
@@ -27,7 +33,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -47,15 +56,6 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private TruckTypeMapper truckTypeMapper;
-
-    @Autowired
-    private RatingMapper ratingMapper;
-
-    @Autowired
-    private DriverMapper driverMapper;
-
-    @Autowired
-    private MoverMapper moverMapper;
 
     @Autowired
     private ConfigurationMapper configurationMapper;
@@ -608,7 +608,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 用户端根据订单id查询订单详情
+     * 用户端/管理端根据订单id查询订单详情
      *
      * @param id
      * @return
@@ -736,208 +736,6 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 用户提交订单评价 (多个评分项)
-     *
-     * @param overallRatingSubmitDTO
-     */
-    @Override
-    @Transactional
-    public void submitRatings(OverallRatingSubmitDTO overallRatingSubmitDTO) {
-        log.info("用户端提交订单评价，参数：{}", overallRatingSubmitDTO);
-
-        // 1. 校验评价信息 DTO 的完整性
-        if (overallRatingSubmitDTO == null || overallRatingSubmitDTO.getOrderId() == null || overallRatingSubmitDTO.getRatings() == null || overallRatingSubmitDTO.getRatings().isEmpty()) {
-            throw new OrderBusinessException(MessageConstant.REVIEW_INFO_INCOMPLETE);
-        }
-
-        // 2. 查找订单 (获取 MovingOrder 实体，需要 driverId 和 vehicleId，以及 orderStatus)
-        MovingOrder order = orderMapper.getMovingOrderById(overallRatingSubmitDTO.getOrderId());
-
-        // 3. 校验订单是否存在
-        if (order == null) {
-            log.error("提交评价失败，订单不存在：ID {}", overallRatingSubmitDTO.getOrderId());
-            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
-        }
-
-        // 4. 校验订单是否属于当前用户
-        Long currentUserId = BaseContext.getCurrentId();
-        if (!order.getCustomerId().equals(currentUserId)) {
-            log.error("提交评价失败，订单 {} 不属于当前用户 {}", overallRatingSubmitDTO.getOrderId(), currentUserId);
-            throw new OrderBusinessException(MessageConstant.ORDER_NOT_BELONG_TO_CURRENT_USER);
-        }
-
-        // 5. 校验订单状态是否允许评价
-        // 只有“已完成”状态的订单才能评价
-        if (!order.getOrderStatus().equals(OrderStatusConstant.COMPLETED)) {
-            log.error("提交评价失败，订单状态 {} 不允许评价：订单ID {}", order.getOrderStatus(), overallRatingSubmitDTO.getOrderId());
-            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_NOT_ALLOW_REVIEW);
-        }
-
-        // 6. 校验订单是否已评价 (通过检查 moving_order 表的 is_reviewed 字段)
-        // 如果 is_reviewed 字段已为 true，直接拒绝提交
-        if (order.getIsReviewed() != null && order.getIsReviewed()) {
-            log.error("提交评价失败，订单 {} 已标记为已评价", overallRatingSubmitDTO.getOrderId());
-            throw new OrderBusinessException(MessageConstant.ORDER_ALREADY_REVIEWED); // 复用常量
-        }
-
-        // 7. 获取订单关联的搬运工人ID列表，用于 MOVER 评分的 rateeId 校验
-        List<Long> assignedMoverIds = orderMoverMapper.getMoverIdsByOrderId(overallRatingSubmitDTO.getOrderId());
-
-        // 8. 构建 Rating 实体列表并进行单项校验和防重复提交检查
-        List<Rating> ratingList = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
-
-        for (SingleRatingDTO singleRatingDTO : overallRatingSubmitDTO.getRatings()) {
-            // 8.1 单项评分数据校验
-            if (singleRatingDTO.getRatingType() == null || singleRatingDTO.getRatingValue() == null) {
-                throw new OrderBusinessException(MessageConstant.REVIEW_INFO_INCOMPLETE + ": 缺少评分类型或评分值");
-            }
-            // 校验评分值范围 (1-5)
-            if (singleRatingDTO.getRatingValue() < 1 || singleRatingDTO.getRatingValue() > 5) {
-                throw new OrderBusinessException(MessageConstant.INVALID_REVIEW_SCORE + ": 评分值超出范围");
-            }
-            // 规范化 ratingType (转为大写)
-            String ratingType = singleRatingDTO.getRatingType().toUpperCase();
-
-            // 8.2 校验 rateeId 和 ratingType 的匹配性，并检查是否已评价 (防重复提交)
-            Long rateeId = singleRatingDTO.getRateeId();
-
-            switch (ratingType) {
-                case RatingTypeConstant.RATING_TYPE_DRIVER:
-                    // 如果评价司机，rateeId 必须是订单的 driverId，且 driverId 不能为 null
-                    if (order.getDriverId() == null || !order.getDriverId().equals(rateeId)) {
-                        log.error("订单 {} 未分配司机或 rateeId {} 与订单司机不匹配 {}", overallRatingSubmitDTO.getOrderId(), rateeId, order.getDriverId());
-                        throw new OrderBusinessException(MessageConstant.INVALID_RATING_TARGET + ": 司机不匹配或未分配");
-                    }
-                    break;
-                case RatingTypeConstant.RATING_TYPE_MOVER:
-                    // 如果评价搬运工人，rateeId 必须是订单分配的某个 moverId
-                    // 且 assignedMoverIds 列表不能为 null 且包含 rateeId
-                    if (singleRatingDTO.getRateeId() == null || assignedMoverIds == null || !assignedMoverIds.contains(singleRatingDTO.getRateeId())) {
-                        log.error("订单 {} 的搬运工人 rateeId {} 无效或不属于该订单", overallRatingSubmitDTO.getOrderId(), singleRatingDTO.getRateeId());
-                        throw new OrderBusinessException(MessageConstant.INVALID_RATING_TARGET + ": 搬运工人无效或不属于该订单");
-                    }
-                    rateeId = singleRatingDTO.getRateeId(); // 使用校验后的 rateeId
-                    break;
-                case RatingTypeConstant.RATING_TYPE_SERVICE:
-                    if (singleRatingDTO.getRateeId() == null || !singleRatingDTO.getRateeId().equals(order.getServiceId())) {
-                        log.error("订单 {} 的服务项 rateeId {} 无效或与订单服务项不匹配 {}", overallRatingSubmitDTO.getOrderId(), singleRatingDTO.getRateeId(), order.getServiceId());
-                        throw new OrderBusinessException(MessageConstant.INVALID_RATING_TARGET + ": 服务项不匹配");
-                    }
-                    rateeId = singleRatingDTO.getRateeId(); // 使用校验后的 rateeId (即 serviceId)
-                    break;
-                default:
-                    log.error("无效的评分类型：{}", singleRatingDTO.getRatingType());
-                    throw new OrderBusinessException(MessageConstant.INVALID_RATING_TYPE);
-            }
-
-            // 8.3 检查是否已提交过此项评分 (防重复提交 - 数据库唯一约束的补充校验)
-            // 根据订单ID, 评分类型, 被评分者ID 组合检查
-            Rating existingRating = ratingMapper.getByOrderIdAndTypeAndRateeId(overallRatingSubmitDTO.getOrderId(), ratingType, rateeId);
-            if (existingRating != null) {
-                log.error("订单 {} 的评分项 (Type: {}, Ratee: {}) 已评价", overallRatingSubmitDTO.getOrderId(), ratingType, rateeId);
-                throw new OrderBusinessException(MessageConstant.ORDER_ALREADY_REVIEWED + ": 重复提交评分项");
-            }
-
-            // --- 构建 Rating 实体对象 ---
-            Rating rating = Rating.builder()
-                    .orderId(overallRatingSubmitDTO.getOrderId())
-                    .customerId(currentUserId) // 评价人就是当前用户
-                    .rateeId(rateeId) // 使用校验后的 rateeId (确保非 NULL)
-                    .ratingType(ratingType) // 使用规范化后的 ratingType
-                    .ratingValue(singleRatingDTO.getRatingValue())
-                    .comment(singleRatingDTO.getComment())
-                    .ratingTime(now) // 设置评分时间
-                    .createTime(now) // 手动设置创建时间
-                    .updateTime(now) // 手动设置更新时间
-                    .build();
-
-            ratingList.add(rating);
-        }
-
-        // --- 9. 批量插入评价记录到 rating 表 ---
-        if (!ratingList.isEmpty()) {
-            ratingMapper.insertBatch(ratingList);
-            log.info("批量插入订单评价记录成功，订单ID：{}，数量：{}", overallRatingSubmitDTO.getOrderId(), ratingList.size());
-        }
-
-        // --- 10. 更新 moving_order 表的 is_reviewed 字段 ---
-        MovingOrder updateOrder = MovingOrder.builder()
-                .id(overallRatingSubmitDTO.getOrderId())
-                .isReviewed(true)
-                .build();
-        orderMapper.update(updateOrder); // 调用通用的 update 方法
-
-
-        // --- 11. 计算司机、搬运工人等的平均评分、更新聚合数据 ---
-        // 需要获取本次评价涉及的司机和搬运工人 ID
-        Long driverId = order.getDriverId();
-        List<Long> ratedMoverIdList = new ArrayList<>();
-        for (SingleRatingDTO singleRatingDTO : overallRatingSubmitDTO.getRatings()) {
-            if (singleRatingDTO.getRatingType().toUpperCase().equals(RatingTypeConstant.RATING_TYPE_MOVER)) {
-                if (singleRatingDTO.getRateeId() != null) {
-                    ratedMoverIdList.add(singleRatingDTO.getRateeId());
-                }
-            }
-        }
-        // 确保只处理不重复的搬运工人ID
-        ratedMoverIdList = new ArrayList<>(new HashSet<>(ratedMoverIdList));
-
-        // 11.1 计算并更新司机的平均评分和评分总数
-        if (driverId != null) {
-            Map<String, Object> driverRatingStats = driverMapper.getAverageRatingAndCount(driverId);
-            BigDecimal avgRating = (BigDecimal) driverRatingStats.get("averageRating");
-            Integer ratingCount = ((Long) driverRatingStats.get("ratingCount")).intValue();
-
-            Driver updateDriver = Driver.builder()
-                    .id(driverId)
-                    .averageRating(avgRating)
-                    .ratingCount(ratingCount)
-                    .build();
-            driverMapper.update(updateDriver);
-            log.info("司机 {} 平均评分和总数更新成功：Avg={}, Count={}", driverId, avgRating, ratingCount);
-        }
-
-        // 11.2 计算并更新搬运工人的平均评分和评分总数
-        if (ratedMoverIdList != null && !ratedMoverIdList.isEmpty()) {
-            for (Long moverId : ratedMoverIdList) {
-                Map<String, Object> moverRatingStats = moverMapper.getAverageRatingAndCount(moverId);
-                BigDecimal avgRating = (BigDecimal) moverRatingStats.get("averageRating");
-                Integer ratingCount = ((Long) moverRatingStats.get("ratingCount")).intValue();
-
-                Mover updateMover = Mover.builder()
-                        .id(moverId)
-                        .averageRating(avgRating)
-                        .ratingCount(ratingCount)
-                        .build();
-                moverMapper.update(updateMover);
-                log.info("搬运工人 {} 平均评分和总数更新成功：Avg={}, Count={}", moverId, avgRating, ratingCount);
-            }
-        }
-
-        // ====== 11.3 计算并更新服务项的平均评分和评分总数 ======
-        Long serviceId = order.getServiceId();
-
-        if (serviceId != null) {
-            Map<String, Object> serviceRatingStats = serviceMapper.getAverageRatingAndCount(serviceId);
-            BigDecimal avgRating = (BigDecimal) serviceRatingStats.get("averageRating");
-            Integer ratingCount = ((Long) serviceRatingStats.get("ratingCount")).intValue();
-
-            // 构建 Service 对象，只设置 id 和需要更新的字段
-            com.***REMOVED***.entity.Service updateService = com.***REMOVED***.entity.Service.builder()
-                    .id(serviceId)
-                    .averageRating(avgRating)
-                    .ratingCount(ratingCount)
-                    .updateUser(currentUserId)
-                    .build();
-            serviceMapper.update(updateService);
-            log.info("服务项 {} 平均评分和总数更新成功：Avg={}, Count={}", serviceId, avgRating, ratingCount);
-        }
-
-        log.info("用户提交订单评价处理完成，订单ID：{}", overallRatingSubmitDTO.getOrderId());
-    }
-
-    /**
      * 获取所有订单状态列表
      * 用于前端管理端订单筛选下拉框或Tab展示
      *
@@ -1010,6 +808,5 @@ public class OrderServiceImpl implements OrderService {
 
         return new PageResult(page.getTotal(), page.getResult());
     }
-
 
 }

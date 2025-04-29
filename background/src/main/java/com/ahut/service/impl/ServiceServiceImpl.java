@@ -14,7 +14,6 @@ import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.service.ServiceService;
 import com.***REMOVED***.vo.ServiceDetailVO;
 import com.***REMOVED***.vo.ServiceItemVO;
-import com.***REMOVED***.vo.ServiceRatingVO;
 import com.***REMOVED***.vo.ServiceVO;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -24,7 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -96,17 +94,6 @@ public class ServiceServiceImpl implements ServiceService {
 
         // 返回组装好的 ServiceDetailVO
         return serviceDetailVO;
-    }
-
-    /**
-     * 根据服务项ID获取用户评价列表，包含评价人姓名 (用户端和后台查看评价)
-     *
-     * @param serviceId 服务项ID
-     * @return 评价列表VO
-     */
-    @Override
-    public List<ServiceRatingVO> getServiceRatings(Long serviceId) {
-        return ratingMapper.getServiceRatingsByServiceId(serviceId);
     }
 
     /**

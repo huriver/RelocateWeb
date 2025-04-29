@@ -1,0 +1,20 @@
+package com.***REMOVED***.service;
+
+import com.***REMOVED***.dto.OverallRatingSubmitDTO;
+import com.***REMOVED***.vo.CustomerRatingVO;
+import com.***REMOVED***.vo.ServiceRatingVO;
+
+import java.util.List;
+
+public interface RatingService {
+
+    // 根据消费者ID查询其历史评价记录，包含订单和服务信息
+    List<CustomerRatingVO> getCustomerRatingHistory(Long customerId);
+
+    // 用户提交订单评价 (多个评分项)
+    void submitRatings(OverallRatingSubmitDTO overallRatingSubmitDTO);
+
+    // 根据服务项ID获取用户评价列表，包含评价人姓名
+    List<ServiceRatingVO> getServiceRatings(Long serviceId);
+
+}

@@ -30,9 +30,6 @@ public interface OrderService {
     // 用户取消订单
     void cancelOrder(Long id, OrderCancelDTO orderCancelDTO);
 
-    // 用户提交订单评价 (多个评分项)
-    void submitRatings(OverallRatingSubmitDTO overallRatingSubmitDTO);
-
     // 获取所有订单状态列表
     List<OrderStatusVO> getOrderStatusList();
 
