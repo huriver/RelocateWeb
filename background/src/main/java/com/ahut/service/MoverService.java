@@ -13,4 +13,8 @@ public interface MoverService {
 
     // 分页查询搬家工人
     PageResult pageQuery(MoverPageQueryDTO moverPageQueryDTO);
+
+    // 更新搬家工人账号状态 (封禁/解封)
+    void updateStatus(Long id, Integer isBanned);
+
 }

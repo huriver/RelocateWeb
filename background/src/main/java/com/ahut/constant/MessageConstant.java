@@ -86,4 +86,8 @@ public class MessageConstant {
     public static final String SERVICE_HAS_ASSOCIATED_RATINGS = "当前服务项关联了评价,无法删除";
     public static final String SERVICE_INFO_INCOMPLETE_FOR_ACTIVATION = "服务信息不完整，无法启用";
     public static final String SERVICE_HAS_PENDING_ORDERS_BLOCKED_ACTIVATION = "服务项有未完成订单时，不允许启用";
+    public static final String CONSUMER_HAS_PENDING_ORDERS_BLOCKED_BAN = "用户有未完成订单时，不允许禁用";
+
+    public static final String DRIVER_HAS_PENDING_ORDERS_BLOCKED_BAN = "司机有未完成订单时，不允许禁用";
+    public static String Mover_HAS_PENDING_ORDERS_BLOCKED_BAN = "搬运工人有未完成订单时，不允许禁用";
 }

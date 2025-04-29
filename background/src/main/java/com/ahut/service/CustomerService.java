@@ -24,4 +24,7 @@ public interface CustomerService {
     // 消费者分页查询
     PageResult pageQuery(CustomerPageQueryDTO pageQueryDTO);
 
+    // 更新消费者状态 (封禁/解封)
+    void updateStatus(Long id, Integer isBanned);
+
 }

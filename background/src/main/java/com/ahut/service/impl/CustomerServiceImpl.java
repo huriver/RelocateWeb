@@ -4,16 +4,16 @@ import com.***REMOVED***.constant.MessageConstant;
 import com.***REMOVED***.context.BaseContext;
 import com.***REMOVED***.dto.*;
 import com.***REMOVED***.entity.Customer;
-import com.***REMOVED***.exception.AccountLockedException;
-import com.***REMOVED***.exception.AccountNotFoundException;
-import com.***REMOVED***.exception.PasswordErrorException;
+import com.***REMOVED***.exception.*;
 import com.***REMOVED***.mapper.CustomerMapper;
+import com.***REMOVED***.mapper.OrderMapper;
 import com.***REMOVED***.mapper.RatingMapper;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.service.CustomerService;
 import com.***REMOVED***.vo.CustomerRatingVO;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +22,7 @@ import org.springframework.util.DigestUtils;
 import java.util.List;
 
 @Service
+@Slf4j
 public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
@@ -29,6 +30,9 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private RatingMapper ratingMapper;
+
+    @Autowired
+    private OrderMapper orderMapper;
 
 
     @Override
@@ -141,5 +145,43 @@ public class CustomerServiceImpl implements CustomerService {
         return new PageResult(page.getTotal(), page.getResult());
     }
 
+    /**
+     * 更新消费者状态 (封禁/解封)
+     *
+     * @param id
+     * @param isBanned
+     */
+    @Override
+    public void updateStatus(Long id, Integer isBanned) {
+        // 校验参数
+        if (id == null || (isBanned != 0 && isBanned != 1)) {
+            throw new BusinessException(MessageConstant.INVALID_PARAMETER);
+        }
+
+        // 查询消费者是否存在
+        Customer customer = customerMapper.getById(id);
+        if (customer == null) {
+            throw new BusinessException(MessageConstant.ACCOUNT_NOT_FOUND);
+        }
+
+        // 1. 业务校验：从“正常”改为“封禁”时的特殊校验
+        if (isBanned == 1) {
+            log.info("消费者 {} 尝试从正常改为封禁，进行未完成订单校验", id);
+            // 检查是否有未完成订单关联到该消费者ID，如果存在未完成订单，阻止封禁
+            Integer pendingOrderCount = orderMapper.countPendingOrdersByCustomerId(id);
+            if (pendingOrderCount != null && pendingOrderCount > 0) {
+                log.error("封禁消费者 {} 失败：该消费者有 {} 个未完成订单，无法封禁", id, pendingOrderCount);
+                throw new BusinessException(MessageConstant.CONSUMER_HAS_PENDING_ORDERS_BLOCKED_BAN);
+            }
+            log.info("消费者 {} 没有未完成订单，允许封禁", id);
+        }
+
+        // 2. 更新消费者状态
+        Customer updateCustomer = Customer.builder()
+                .id(id)
+                .isBanned(isBanned == 1)
+                .build();
+        customerMapper.update(updateCustomer);
+    }
 
 }

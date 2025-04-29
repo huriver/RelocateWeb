@@ -26,4 +26,7 @@ public interface DriverService {
     // 根据姓名模糊查询司机列表 (供搜索下拉框使用)
     List<Driver> listByName(String name);
 
+    // 更新司机账号状态 (封禁/解封)
+    void updateStatus(Long id, Integer isBanned);
+
 }

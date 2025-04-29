@@ -7,9 +7,7 @@ import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.MoverService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 员工管理
@@ -37,47 +35,18 @@ public class MoverController {
         return Result.success(pageResult);
     }
 
-//
-//    /**
-//     * 启用禁用员工账号
-//     *
-//     * @param status
-//     * @param id
-//     * @return
-//     */
-//    @PostMapping("/status/{status}")
-//    @ApiOperation("启用禁用员工账号")
-//    public Result startOrStop(@PathVariable Integer status, long id) {
-//        log.info("启用禁用员工账号:{},{}", status, id);
-//        employeeService.startOrStop(status, id);
-//        return Result.success();
-//    }
-//
-//    /**
-//     * 根据id查询员工信息
-//     *
-//     * @param id
-//     * @return
-//     */
-//    @GetMapping("/{id}")
-//    @ApiOperation("根据id查询员工信息")
-//    public Result<Employee> getById(@PathVariable long id) {
-//        Employee employee = employeeService.getById(id);
-//        return Result.success(employee);
-//    }
-//
-//    /**
-//     * 编辑员工信息
-//     *
-//     * @param employeeDTO
-//     * @return
-//     */
-//    @PutMapping
-//    @ApiOperation("编辑员工信息")
-//    public Result update(@RequestBody EmployeeDTO employeeDTO) {
-//        log.info("编辑员工信息:{}", employeeDTO);
-//        employeeService.update(employeeDTO);
-//        return Result.success();
-//    }
+    /**
+     * 封禁/解封搬运工人账号
+     *
+     * @param isBanned 账号状态：0-解封，1-封禁
+     * @param id       搬运工人ID
+     * @return
+     */
+    @PostMapping("/status/{isBanned}")
+    public Result enableOrDisable(@PathVariable Integer isBanned, Long id) {
+        log.info("封禁/解封搬运工人账号：id={}, status={}", id, isBanned == 0 ? "解封" : "封禁");
+        moverService.updateStatus(id, isBanned);
+        return Result.success();
+    }
 
 }

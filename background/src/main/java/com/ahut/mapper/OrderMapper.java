@@ -84,6 +84,9 @@ public interface OrderMapper {
     // 管理端分页查询订单列表
     Page<OrderVO> pageQueryByAdmin(OrdersPageQueryDTO ordersPageQueryDTO);
 
+    // 统计指定消费者未完成订单数量   订单状态 0, 1, 2, 3 通常表示未完成/进行中
+    @Select("SELECT COUNT(*) FROM moving_order WHERE customer_id = #{customerId} AND order_status IN (0, 1, 2, 3)")
+    Integer countPendingOrdersByCustomerId(Long customerId);
 
     // Future: 定时任务需要的方法 (例如根据状态和时间查询订单)
     /*

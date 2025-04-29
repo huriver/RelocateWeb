@@ -6,8 +6,10 @@ import com.***REMOVED***.dto.*;
 import com.***REMOVED***.entity.Driver;
 import com.***REMOVED***.exception.AccountLockedException;
 import com.***REMOVED***.exception.AccountNotFoundException;
+import com.***REMOVED***.exception.BusinessException;
 import com.***REMOVED***.exception.PasswordErrorException;
 import com.***REMOVED***.mapper.DriverMapper;
+import com.***REMOVED***.mapper.OrderMapper;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.service.DriverService;
 import com.github.pagehelper.Page;
@@ -16,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 
 import java.util.List;
@@ -27,6 +30,8 @@ public class DriverServiceImpl implements DriverService {
     @Autowired
     private DriverMapper driverMapper;
 
+    @Autowired
+    private OrderMapper orderMapper;
 
     @Override
     public Driver login(UserLoginDTO userLoginDTO) {
@@ -153,6 +158,42 @@ public class DriverServiceImpl implements DriverService {
     @Override
     public List<Driver> listByName(String name) {
         return driverMapper.listByName(name);
+    }
+
+    /**
+     * 更新司机账号状态 (封禁/解封)
+     *
+     * @param id       司机ID
+     * @param isBanned 目标状态 (0: 解封, 1: 封禁)
+     */
+    @Transactional
+    public void updateStatus(Long id, Integer isBanned) {
+        // 校验参数
+        if (id == null || (isBanned != 0 && isBanned != 1)) {
+            throw new BusinessException(MessageConstant.INVALID_PARAMETER);
+        }
+
+        // 查询司机是否存在
+        Driver driver = driverMapper.getById(id);
+        if (driver == null) {
+            throw new BusinessException(MessageConstant.ACCOUNT_NOT_FOUND);
+        }
+
+        // 业务校验: 如果是封禁操作，检查是否有未完成订单
+        if (isBanned == 1) {
+            int activeOrderCount = orderMapper.countPendingOrdersByDriverId(id);
+            if (activeOrderCount > 0) {
+                // 存在未完成订单，抛出异常阻止封禁
+                throw new BusinessException(MessageConstant.DRIVER_HAS_PENDING_ORDERS_BLOCKED_BAN);
+            }
+        }
+
+        // 执行状态更新
+        Driver updateDriver = Driver.builder()
+                .id(id)
+                .isBanned(isBanned == 1)
+                .build();
+        driverMapper.update(updateDriver);
     }
 
 }

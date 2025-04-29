@@ -6,9 +6,7 @@ import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.CustomerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 员工管理
@@ -32,6 +30,20 @@ public class CustomerController {
         log.info("后台端消费者分页查询: {}", pageQueryDTO);
         PageResult pageResult = customerService.pageQuery(pageQueryDTO);
         return Result.success(pageResult);
+    }
+
+    /**
+     * 更新消费者状态 (封禁/解封)
+     *
+     * @param id       消费者ID
+     * @param isBanned 目标状态：例如 0-正常，1-封禁
+     * @return 成功结果
+     */
+    @PostMapping("/status/{isBanned}")
+    public Result updateStatus(@PathVariable Integer isBanned, Long id) {
+        log.info("后台端更新消费者状态，消费者ID: {}, 目标状态: {}", id, isBanned == 0 ? "正常" : "封禁");
+        customerService.updateStatus(id, isBanned);
+        return Result.success();
     }
 
 }

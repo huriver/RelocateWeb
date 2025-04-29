@@ -91,22 +91,18 @@ public class DriverController {
         return Result.success(list);
     }
 
-//
-//    /**
-//     * 启用禁用员工账号
-//     *
-//     * @param status
-//     * @param id
-//     * @return
-//     */
-//    @PostMapping("/status/{status}")
-//    @ApiOperation("启用禁用员工账号")
-//    public Result startOrStop(@PathVariable Integer status, long id) {
-//        log.info("启用禁用员工账号:{},{}", status, id);
-//        employeeService.startOrStop(status, id);
-//        return Result.success();
-//    }
-//
-
+    /**
+     * 封禁/解封司机账号
+     *
+     * @param isBanned 账号状态：0-解封，1-封禁
+     * @param id       司机ID
+     * @return
+     */
+    @PostMapping("/status/{isBanned}")
+    public Result enableOrDisable(@PathVariable Integer isBanned, Long id) {
+        log.info("封禁/解封司机账号：id={}, status={}", id, isBanned == 0 ? "解封" : "封禁");
+        driverService.updateStatus(id, isBanned);
+        return Result.success();
+    }
 
 }
