@@ -39,4 +39,10 @@ public interface OrderService {
     // 管理端分页查询订单列表
     PageResult pageQueryByAdmin(OrdersPageQueryDTO ordersPageQueryDTO);
 
+    // 管理员取消订单
+    void adminCancelOrder(Long id, AdminOrderCancelDTO cancelDTO);
+
+    // 管理员手动更新订单状态 (通用纠错接口)
+//    void updateStatus(Long id, Integer status);
+
 }

@@ -809,4 +809,153 @@ public class OrderServiceImpl implements OrderService {
         return new PageResult(page.getTotal(), page.getResult());
     }
 
+
+    /**
+     * 管理员取消订单
+     *
+     * @param id        订单ID
+     * @param cancelDTO 包含取消原因的DTO
+     */
+    @Override
+    @Transactional
+    public void adminCancelOrder(Long id, AdminOrderCancelDTO cancelDTO) {
+        // Controller 层的 @Validated 会校验 cancelDTO 的非空和原因非空，这里可以简化部分检查
+        // 1. 查找订单
+        MovingOrder order = orderMapper.getMovingOrderById(id);
+
+        // 2. 校验订单是否存在
+        if (order == null) {
+            log.error("管理员取消订单失败，订单不存在：ID {}", id);
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        // 3. 校验订单当前状态是否允许管理员取消 (通常允许从所有非终态取消: 0, 1, 2, 3)
+        Integer currentOrderStatus = order.getOrderStatus();
+        if (currentOrderStatus.equals(OrderStatusConstant.COMPLETED) ||
+                currentOrderStatus.equals(OrderStatusConstant.CANCELLED)) {
+            log.error("管理员取消订单失败，订单状态 {} 已是终态，不允许取消：订单ID {}", currentOrderStatus, id);
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_NOT_ALLOW_CANCEL);
+        }
+
+        // 4. 更新订单状态为已取消，设置取消信息和审计字段
+        MovingOrder updateOrder = MovingOrder.builder()
+                .id(id)
+                .orderStatus(OrderStatusConstant.CANCELLED) // 状态设为已取消
+                .cancelReason(cancelDTO.getCancelReason()) // 设置管理员提供的取消原因
+                .cancelTime(LocalDateTime.now()) // 设置取消时间
+                .build();
+
+        // --- 5. 处理支付状态：如果订单已支付，标记为已退款 ---
+        if (order.getIsPaid().equals(PaymentStatusConstant.PAID)) {
+            updateOrder.setIsPaid(PaymentStatusConstant.REFUNDED);
+            // 实际应用中，这里需要调用第三方支付平台的退款接口
+            // 模拟场景下，直接更新状态即可
+            log.info("订单已支付，模拟标记为已退款：订单ID {}", id);
+        }
+
+        // --- 6. 处理资源解除关联 ---
+        // 订单在状态 1, 2, 3 时可能关联有司机和搬运工，取消时需要解除
+        // (在状态 0 时没有资源关联，所以只需在状态 1, 2, 3 时执行解除关联逻辑)
+        if (currentOrderStatus.equals(OrderStatusConstant.DRIVER_ACCEPTED_WAITING_MOVERS) ||
+                currentOrderStatus.equals(OrderStatusConstant.ACCEPTED) ||
+                currentOrderStatus.equals(OrderStatusConstant.IN_PROGRESS)) {
+
+            log.info("订单在状态 {} 已关联资源，解除司机和搬运工人关联：订单ID {}", currentOrderStatus, id);
+
+            // 6.1 删除 order_mover 表中关联该订单的记录
+            // 假设 OrderMoverMapper 有 deleteByOrderId 方法
+            orderMoverMapper.deleteByOrderId(id);
+            log.info("已删除订单 {} 的搬运工人关联记录", id);
+
+            // 6.2 清空 moving_order 表中的 driver_id 和 vehicle_id
+            // 假设 MovingOrderMapper 有 clearOrderDriverVehicle 方法将 driver_id 和 vehicle_id 设为 NULL
+            orderMapper.clearOrderDriverVehicle(id);
+            log.info("已清除订单 {} 的司机和车辆关联", id);
+
+            // (可选) 通知司机和搬运工人订单已取消
+            // WebSocket 通知逻辑可以在这里触发
+        }
+
+        // --- 7. 处理状态特定的复杂业务逻辑 (重点在状态 3 进行中) ---
+        if (currentOrderStatus.equals(OrderStatusConstant.IN_PROGRESS)) {
+            log.info("订单在进行中状态被管理员取消，触发复杂业务处理：订单ID {}", id);
+            // !!! 在这里实现复杂的业务判断和处理逻辑 !!!
+            // 例如：
+            // - 触发部分费用计算，根据已完成的工作量确定结算金额
+            // - 触发司机和搬运工的部分报酬计算和补偿逻辑
+            // - 记录现场物品状态（可能需要额外的数据结构或人工流程）
+            // - 如果订单已支付，触发退款流程（可能只退还一部分）
+            // ... 这部分是核心业务难点，需要根据具体规则实现 ...
+        }
+        // 对于状态 0, 1, 2 的取消，逻辑相对简单，主要就是取消和释放资源。可能需要考虑取消政策（如罚金）
+
+        // --- 8. 调用 Mapper 更新数据库 ---
+        orderMapper.update(updateOrder); // 更新状态、取消信息、审计字段
+        log.info("订单取消成功，订单ID：{}，新状态：{}", id, updateOrder.getOrderStatus());
+
+        // --- 9. (可选) 发送 WebSocket 消息给相关方 ---
+        // 通知用户、司机、搬运工订单已取消
+        // if (webSocketServer != null) { ... 通知逻辑 ... }
+
+        log.info("管理员取消订单处理完成，订单ID：{}", id);
+    }
+
+
+/**
+ * 管理员手动更新订单状态 (通用纠错接口)
+ * 仅用于状态修正，不触发伴随复杂业务操作，包含状态流转校验
+ *
+ * @param id     订单ID
+ * @param status 目标状态值
+ */
+//    @Override
+//    @Transactional
+//    public void updateStatus(Long id, Integer status) {
+//        // 1. 校验参数完整性
+//        if (id == null || status == null) {
+//            throw new BusinessException(MessageConstant.INVALID_PARAMETER); // 假设无效参数消息
+//        }
+//
+//        // 2. 校验目标状态值的有效性
+//        if (!OrderStatusConstant.VALID_STATUSES.contains(status)) {
+//            throw new BusinessException(MessageConstant.INVALID_PARAMETER + ": 无效的订单状态值");
+//        }
+//
+//        // 3. 查找订单是否存在
+//        MovingOrder order = orderMapper.getMovingOrderById(id);
+//        if (order == null) {
+//            throw new BusinessException(MessageConstant.ORDER_NOT_FOUND);
+//        }
+//
+//        // 4. 增加状态流转校验
+//        Integer currentStatus = order.getOrderStatus();
+//
+//        // 规则1: 检查当前状态是否为终态 (已完成 或 已取消)
+//        if (currentStatus.equals(OrderStatusConstant.COMPLETED) || currentStatus.equals(OrderStatusConstant.CANCELLED)) {
+//            // 如果当前已经是终态，只允许目标状态与当前状态相同 (即不允许跳出终态)
+//            if (!status.equals(currentStatus)) {
+//                throw new OrderBusinessException("已完成或已取消的订单状态不允许修改。当前状态: " + OrderStatusConstant.getDescription(currentStatus));
+//            }
+//            log.info("订单 {} 状态已是目标终态 {}，仅更新审计字段", id, OrderStatusConstant.getDescription(currentStatus));
+//        } else { // 当前状态不是终态 (是 0, 1, 2, 3)
+//            // 规则2: 检查目标状态是否在当前状态的允许跳转列表里
+//            List<Integer> allowedTargetStatuses = OrderStatusConstant.ALLOWED_TRANSITIONS_MAP.get(currentStatus);
+//
+//            // 如果当前状态没有定义任何允许的跳转 或者 目标状态不在允许的列表中
+//            if (allowedTargetStatuses == null || !allowedTargetStatuses.contains(status)) {
+//                throw new OrderBusinessException("不允许从当前状态 [" + OrderStatusConstant.getDescription(currentStatus) + "] 手动变更为目标状态 [" + OrderStatusConstant.getDescription(status) + "]");
+//            }
+//            log.info("状态流转校验通过：从 [" + OrderStatusConstant.getDescription(currentStatus) + "] 到 [" + OrderStatusConstant.getDescription(status) + "]");
+//        }
+//
+//        // 5. 更新订单状态和相关信息
+//        MovingOrder updateOrder = MovingOrder.builder()
+//                .id(id) // 根据ID更新
+//                .orderStatus(status) // 设置新的状态
+//                .build();
+//
+//        // 调用 Mapper 更新订单
+//        orderMapper.update(updateOrder);
+//    }
+
 }

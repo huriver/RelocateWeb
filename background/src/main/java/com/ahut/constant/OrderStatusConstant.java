@@ -1,5 +1,10 @@
 package com.***REMOVED***.constant;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * 订单状态常量
  */
@@ -21,8 +26,56 @@ public class OrderStatusConstant {
     public static final Integer COMPLETED = 4; // 已完成
     public static final Integer CANCELLED = 5; // 已取消
 
+    /**
+     * 所有有效的订单状态值列表
+     */
+    public static final List<Integer> VALID_STATUSES = Arrays.asList(
+            PENDING_ACCEPTANCE,
+            DRIVER_ACCEPTED_WAITING_MOVERS,
+            ACCEPTED,
+            IN_PROGRESS,
+            COMPLETED,
+            CANCELLED
+    );
 
-    // 可以在这里添加一个根据 int 值获取文字描述的方法，方便日志或VO封装
+    /**
+     * 定义合法的状态流转规则
+     * Map<当前状态, List<允许的目标状态>>
+     * 这是根据我们之前的讨论确定的流转，反映了让主状态动态反映团队完整性的设计
+     */
+    public static final Map<Integer, List<Integer>> ALLOWED_TRANSITIONS_MAP = new HashMap<>();
+
+    static {
+        // 从 [待接单 (0)]
+        ALLOWED_TRANSITIONS_MAP.put(PENDING_ACCEPTANCE, Arrays.asList(DRIVER_ACCEPTED_WAITING_MOVERS, CANCELLED));
+
+        // 从 [司机已接单 (1)]
+        // 可以回退到 待接单 (司机取消接单)
+        // 可以推进到 已接单 (搬运工人数达标)
+        // 可以到 已取消 (用户/管理员取消)
+        ALLOWED_TRANSITIONS_MAP.put(DRIVER_ACCEPTED_WAITING_MOVERS, Arrays.asList(PENDING_ACCEPTANCE, ACCEPTED, CANCELLED));
+
+        // 从 [已接单 (2)]
+        // 可以回退到 司机已接单 (某个搬运工取消)
+        // 可以推进到 进行中 (开始服务)
+        // 可以到 已取消 (用户/管理员取消)
+        ALLOWED_TRANSITIONS_MAP.put(ACCEPTED, Arrays.asList(DRIVER_ACCEPTED_WAITING_MOVERS, IN_PROGRESS, CANCELLED));
+
+        // 从 [进行中 (3)]
+        // 可以到 已完成 (完成服务)
+        // 可以到 已取消 (管理员取消进行中订单)
+        ALLOWED_TRANSITIONS_MAP.put(IN_PROGRESS, Arrays.asList(COMPLETED, CANCELLED));
+
+        // [已完成 (4)] 和 [已取消 (5)] 是终态，不允许流转到其他状态。
+        // 终态到自身的流转通常没有业务意义，由校验逻辑处理即可。
+    }
+
+    /**
+     * 根据 int 值获取文字描述
+     *
+     * @param status 订单状态 int 值
+     * @return 订单状态文字描述
+     */
     public static String getDescription(Integer status) {
         switch (status) {
             case 0:
@@ -41,4 +94,5 @@ public class OrderStatusConstant {
                 return "未知状态";
         }
     }
+
 }
