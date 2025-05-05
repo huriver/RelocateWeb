@@ -10,10 +10,29 @@
             <if test="password != null and password != ''">password = #{password},</if>
             <if test="name != null and name != ''">name = #{name},</if>
             <if test="photoUrl != null and photoUrl != ''">photo_url = #{photoUrl},</if>
+            <if test="isBanned != null">is_banned = #{isBanned},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
             <if test="updateUser != null">update_user = #{updateUser},</if>
         </set>
         where id = #{id}
     </update>
+
+    <select id="pageQuery" resultType="Admin">
+        SELECT id, username, name, photo_url, is_banned,
+        create_time, update_time, create_user, update_user
+        FROM admin
+        <where>
+            <if test="username != null and username != ''">
+                and username like concat('%', #{username}, '%')
+            </if>
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%')
+            </if>
+            <if test="isBanned != null">
+                and is_banned = #{isBanned}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
 
 </mapper>

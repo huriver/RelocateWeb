@@ -2,10 +2,12 @@ package com.***REMOVED***.controller.back;
 
 import com.***REMOVED***.context.BaseContext;
 import com.***REMOVED***.dto.AdminDTO;
+import com.***REMOVED***.dto.AdminPageQueryDTO;
 import com.***REMOVED***.dto.ChangePasswordDTO;
-import com.***REMOVED***.entity.Admin;
+import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.AdminService;
+import com.***REMOVED***.vo.AdminDetailVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -22,28 +24,27 @@ public class AdminController {
     private AdminService adminService;
 
     /**
-     * 根据id查询管理员信息
+     * 根据 ID 查询某个管理员账号的详细信息
      *
-     * @return
+     * @param id 管理员账号ID (从路径变量获取)
+     * @return 包含管理员详细信息的 Result<AdminDetailVO>
      */
-    @GetMapping
-    public Result<Admin> getById() {
-        long id = BaseContext.getCurrentId();
-        log.info("根据id查询管理员信息:{}", id);
-        Admin admin = adminService.getById(id);
-        return Result.success(admin);
+    @GetMapping("/{id}")
+    public Result<AdminDetailVO> getById(@PathVariable Long id) {
+        log.info("查询管理员账号详细信息，管理员 {} 操作，查询ID：{}", BaseContext.getCurrentId(), id);
+        AdminDetailVO detailVO = adminService.getById(id);
+        return Result.success(detailVO);
     }
 
-
     /**
-     * 编辑管理员信息
+     * 更新管理员账号基本信息 (姓名，照片URL等)
      *
      * @param adminDTO
      * @return
      */
     @PutMapping
     public Result update(@RequestBody AdminDTO adminDTO) {
-        log.info("编辑管理员信息:{}", adminDTO);
+        log.info("编辑管理员基本信息:{}", adminDTO);
         adminService.update(adminDTO);
         return Result.success();
     }
@@ -62,85 +63,43 @@ public class AdminController {
     }
 
     /**
-     * 退出
+     * 重置管理员账号密码为固定默认值
      *
+     * @param id 要重置密码的管理员账号ID
      * @return
      */
-//    @PostMapping("/logout")
-//    @ApiOperation("员工退出")
-//    public Result<String> logout() {
-//        return Result.success();
-//    }
-//
-//    /**
-//     * 新增员工
-//     *
-//     * @param employeeDTO
-//     * @return
-//     */
-//    @PostMapping
-//    @ApiOperation("新增员工")
-//    public Result save(@RequestBody EmployeeDTO employeeDTO) {
-//        log.info("新增员工:{}", employeeDTO);
-//        System.out.println("当前线程id：" + Thread.currentThread().getId());
-//        employeeService.save(employeeDTO);
-//        return Result.success();
-//    }
-//
-//    /**
-//     * 员工分页查询
-//     *
-//     * @param employeePageQueryDTO
-//     * @return
-//     */
-//    @GetMapping("/page")
-//    @ApiOperation("员工分页查询")
-//    public Result<PageResult> page(EmployeePageQueryDTO employeePageQueryDTO) {
-//        log.info("员工分页查询，参数为:{}", employeePageQueryDTO);
-//        PageResult pageResult = employeeService.pageQuery(employeePageQueryDTO);
-//        return Result.success(pageResult);
-//    }
-//
-//    /**
-//     * 启用禁用员工账号
-//     *
-//     * @param status
-//     * @param id
-//     * @return
-//     */
-//    @PostMapping("/status/{status}")
-//    @ApiOperation("启用禁用员工账号")
-//    public Result startOrStop(@PathVariable Integer status, long id) {
-//        log.info("启用禁用员工账号:{},{}", status, id);
-//        employeeService.startOrStop(status, id);
-//        return Result.success();
-//    }
-//
-//    /**
-//     * 根据id查询员工信息
-//     *
-//     * @param id
-//     * @return
-//     */
-//    @GetMapping("/{id}")
-//    @ApiOperation("根据id查询员工信息")
-//    public Result<Employee> getById(@PathVariable long id) {
-//        Employee employee = employeeService.getById(id);
-//        return Result.success(employee);
-//    }
-//
-//    /**
-//     * 编辑员工信息
-//     *
-//     * @param employeeDTO
-//     * @return
-//     */
-//    @PutMapping
-//    @ApiOperation("编辑员工信息")
-//    public Result update(@RequestBody EmployeeDTO employeeDTO) {
-//        log.info("编辑员工信息:{}", employeeDTO);
-//        employeeService.update(employeeDTO);
-//        return Result.success();
-//    }
+    @PutMapping("/passwordReset/{id}")
+    public Result resetAdminPasswordToDefault(@PathVariable Long id) {
+        log.info("管理员 {} 重置管理员账号 {} 密码为默认值", BaseContext.getCurrentId(), id);
+        adminService.resetAdminPassword(id);
+        return Result.success();
+    }
+
+    /**
+     * 分页查询管理员列表
+     *
+     * @param pageQueryDTO
+     * @return
+     */
+    @GetMapping("/page")
+    public Result<PageResult> page(AdminPageQueryDTO pageQueryDTO) {
+        log.info("后台端管理员分页查询: {}", pageQueryDTO);
+        PageResult pageResult = adminService.pageQuery(pageQueryDTO);
+        return Result.success(pageResult);
+    }
+
+    /**
+     * 封禁/解封管理员账号
+     *
+     * @param isBanned 账号状态：0-解封，1-封禁
+     * @param id       管理员ID
+     * @return
+     */
+    @PostMapping("/status/{isBanned}")
+    public Result enableOrDisable(@PathVariable Integer isBanned, Long id) {
+        log.info("封禁/解封管理员账号：id={}, status={}", id, isBanned == 0 ? "解封" : "封禁");
+        adminService.updateStatus(id, isBanned);
+        return Result.success();
+    }
 
 }

@@ -17,6 +17,8 @@ public class Admin {
     private String password;
     private String name;
     private String photoUrl;
+    private Boolean isBanned;
+
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private Long createUser;

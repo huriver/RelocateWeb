@@ -17,6 +17,7 @@ CREATE TABLE `admin` (
   `password` varchar(100) NOT NULL COMMENT '密码',
   `name` varchar(200) NOT NULL COMMENT '管理员姓名',
   `photo_url` varchar(200) COMMENT '照片URL',
+  `is_banned` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否被禁用，0-否，1-是',
   `create_time` datetime COMMENT '创建时间',
   `update_time` datetime COMMENT '修改时间',
   `create_user` bigint(20) COMMENT '创建用户ID',
@@ -317,9 +318,9 @@ CREATE TABLE `moving_tips` (
 -- ----------------------------
 -- Data for table admin
 -- ----------------------------
-INSERT INTO `admin` (`id`, `username`, `password`, `name`, `photo_url`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
-(1, 'admin1', '81dc9bdb52d04dc20036dbd8313ed055', '超级管理员', '/uploads/admin/admin1_avatar.jpg', NOW(), NOW(), NULL, NULL),
-(2, 'manager2', '81dc9bdb52d04dc20036dbd8313ed055', '运营经理', '/uploads/admin/manager2_avatar.png', NOW(), NOW(), 1, 1);
+INSERT INTO `admin` (`id`, `username`, `password`, `name`, `photo_url`, `is_banned`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
+(1, 'admin1', '81dc9bdb52d04dc20036dbd8313ed055', '超级管理员', '/uploads/admin/admin1_avatar.jpg', 0, NOW(), NOW(), NULL, NULL),
+(2, 'manager2', '81dc9bdb52d04dc20036dbd8313ed055', '运营经理', '/uploads/admin/manager2_avatar.png', 0, NOW(), NOW(), 1, 1);
 
 -- ----------------------------
 -- Data for table configuration

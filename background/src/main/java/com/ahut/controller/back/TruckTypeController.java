@@ -22,7 +22,6 @@ public class TruckTypeController {
     @Autowired
     private TruckTypeService truckTypeService;
 
-
     /**
      * 分页查询货车类型列表 (带条件查询)
      *

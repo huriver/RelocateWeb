@@ -1,22 +1,29 @@
 package com.***REMOVED***.service.impl;
 
 import com.***REMOVED***.constant.MessageConstant;
+import com.***REMOVED***.constant.PasswordConstant;
 import com.***REMOVED***.context.BaseContext;
-import com.***REMOVED***.dto.AdminDTO;
-import com.***REMOVED***.dto.ChangePasswordDTO;
-import com.***REMOVED***.dto.UserLoginDTO;
-import com.***REMOVED***.dto.UserRegisterDTO;
+import com.***REMOVED***.dto.*;
 import com.***REMOVED***.entity.Admin;
 import com.***REMOVED***.exception.AccountNotFoundException;
+import com.***REMOVED***.exception.BaseException;
+import com.***REMOVED***.exception.BusinessException;
 import com.***REMOVED***.exception.PasswordErrorException;
 import com.***REMOVED***.mapper.AdminMapper;
+import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.service.AdminService;
+import com.***REMOVED***.vo.AdminDetailVO;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 
 @Service
+@Slf4j
 public class AdminServiceImpl implements AdminService {
 
     @Autowired
@@ -50,7 +57,12 @@ public class AdminServiceImpl implements AdminService {
             throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
         }
 
-        //3、返回实体对象
+        //3. 增加账号禁用状态检查
+        if (admin.getIsBanned() != null && admin.getIsBanned()) {
+            throw new BusinessException(MessageConstant.ACCOUNT_LOCKED);
+        }
+
+        //4、返回实体对象
         return admin;
     }
 
@@ -62,20 +74,62 @@ public class AdminServiceImpl implements AdminService {
         // 对密码进行加密
         admin.setPassword(DigestUtils.md5DigestAsHex(userRegisterDTO.getPassword().getBytes()));
         admin.setName(admin.getUsername());
+        admin.setIsBanned(false); // 默认账号未禁用
         admin.setCreateUser(BaseContext.getCurrentId());
         admin.setUpdateUser(BaseContext.getCurrentId());
         adminMapper.insert(admin);
     }
 
+    /**
+     * 根据ID查询管理员详细信息 (返回 VO)
+     *
+     * @param id 管理员账号ID
+     * @return AdminDetailVO (不包含密码)
+     */
     @Override
-    public Admin getById(long id) {
+    public AdminDetailVO getById(Long id) {
+        // 1. 调用 Mapper 查询主管理员实体
         Admin admin = adminMapper.getById(id);
-        admin.setPassword("****");
-        return admin;
+
+        // 2. 校验查询结果是否存在
+        if (admin == null) {
+            throw new BaseException(MessageConstant.ACCOUNT_NOT_FOUND);
+        }
+
+        // 3. 将 Admin 实体转换为 AdminDetailVO (排除敏感字段，例如密码)
+        AdminDetailVO detailVO = new AdminDetailVO();
+        BeanUtils.copyProperties(admin, detailVO);
+
+        // 4. 根据 createUser 和 updateUser 的 ID 查询创建者和更新者的姓名
+        if (admin.getCreateUser() != null) {
+            Admin creator = adminMapper.getById(admin.getCreateUser()); // 根据 ID 查询创建者实体
+            if (creator != null) {
+                detailVO.setCreateUserName(creator.getName()); // 将创建者姓名设置到 VO
+            }
+        }
+
+        if (admin.getUpdateUser() != null) {
+            Admin updater = adminMapper.getById(admin.getUpdateUser()); // 根据 ID 查询更新者实体
+            if (updater != null) {
+                detailVO.setUpdateUserName(updater.getName()); // 将更新者姓名设置到 VO
+            }
+        }
+
+        return detailVO;
     }
 
+    /**
+     * 更新管理员账号基本信息 (姓名，照片URL等)
+     *
+     * @param adminDTO
+     */
     @Override
     public void update(AdminDTO adminDTO) {
+        Admin existingAdmin = adminMapper.getById(adminDTO.getId());
+        if (existingAdmin == null) {
+            throw new BusinessException(MessageConstant.ACCOUNT_NOT_FOUND);
+        }
+
         Admin admin = new Admin();
         BeanUtils.copyProperties(adminDTO, admin);
         admin.setUpdateUser(BaseContext.getCurrentId());
@@ -113,5 +167,94 @@ public class AdminServiceImpl implements AdminService {
 
         adminMapper.update(admin);
     }
+
+    /**
+     * 重置管理员账号密码为固定默认值
+     *
+     * @param id 管理员账号ID
+     */
+    @Override
+    @Transactional
+    public void resetAdminPassword(Long id) {
+        // 需要检查不能重置自己的账号
+        if (id.equals(BaseContext.getCurrentId())) {
+            throw new BusinessException(MessageConstant.CANNOT_RESET_SELF_PASSWORD);
+        }
+
+        // 1. 查找账号是否存在
+        Admin admin = adminMapper.getById(id);
+        if (admin == null) {
+            log.error("重置密码失败，账号不存在：ID {}", id);
+            throw new BaseException(MessageConstant.ACCOUNT_NOT_FOUND);
+        }
+
+        // 2. 对固定的默认明文密码进行安全的哈希
+        String hashedDefaultPassword = DigestUtils.md5DigestAsHex(PasswordConstant.DEFAULT_PASSWORD.getBytes());
+
+        // 3. 更新账号的密码字段和审计字段
+        Admin updateAdmin = Admin.builder()
+                .id(id)
+                .password(hashedDefaultPassword) // 设置加密后的默认密码
+                .updateUser(BaseContext.getCurrentId()) // 设置更新者为当前管理员ID
+                .build();
+
+        adminMapper.update(updateAdmin);
+    }
+
+
+    /**
+     * 分页查询管理员列表
+     *
+     * @param queryDTO
+     * @return
+     */
+    @Override
+    public PageResult pageQuery(AdminPageQueryDTO queryDTO) {
+        PageHelper.startPage(queryDTO.getPage(), queryDTO.getPageSize());
+        Page<Admin> page = adminMapper.pageQuery(queryDTO);
+        return new PageResult(page.getTotal(), page.getResult());
+    }
+
+    /**
+     * 更新管理员账号状态 (封禁/解封)
+     *
+     * @param id       管理员账号ID
+     * @param isBanned 目标状态 (0: 解封, 1: 封禁)
+     */
+    @Override
+    @Transactional
+    public void updateStatus(Long id, Integer isBanned) {
+        // 1. 查找账号是否存在
+        Admin admin = adminMapper.getById(id);
+        if (admin == null) {
+            throw new BaseException(MessageConstant.ACCOUNT_NOT_FOUND);
+        }
+
+        // 2. 检查更新的账号ID不是当前登录管理员的ID
+        if (id.equals(BaseContext.getCurrentId())) {
+            throw new BusinessException(MessageConstant.CANNOT_MODIFY_SELF_STATUS);
+        }
+
+        // 3. 将传入的 Integer 状态转换为 Boolean，以便与 Admin 实体中的 Boolean 字段比较和设置
+        Boolean newIsBannedBoolean = (isBanned != null && isBanned == 1); // 1 -> true (封禁), 其他 -> false (解封)
+
+        // 4. 如果新的状态与当前状态相同，则无需更新
+        // 检查 admin.getIsBanned() 是否非空是防御性的，如果数据库 default 是 0 (false)，通常不会为 null
+        if (admin.getIsBanned() != null && admin.getIsBanned().equals(newIsBannedBoolean)) {
+            log.info("账号 {} 状态已经是 {}，无需更新", id, newIsBannedBoolean ? "禁用" : "启用");
+            return; // 直接返回成功
+        }
+
+        // 5. 更新账号状态和审计字段
+        Admin updateAdmin = Admin.builder()
+                .id(id)
+                .isBanned(newIsBannedBoolean) // 设置新的禁用状态
+                .updateUser(BaseContext.getCurrentId()) // 设置更新者为当前管理员ID
+                .build();
+
+        adminMapper.update(updateAdmin);
+        // 5. (可选) 通知被修改状态的管理员 (例如，如果被禁用，通知TA无法登录)
+    }
+
 
 }

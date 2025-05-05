@@ -90,4 +90,7 @@ public class MessageConstant {
 
     public static final String DRIVER_HAS_PENDING_ORDERS_BLOCKED_BAN = "司机有未完成订单时，不允许禁用";
     public static String Mover_HAS_PENDING_ORDERS_BLOCKED_BAN = "搬运工人有未完成订单时，不允许禁用";
+
+    public static final String CANNOT_MODIFY_SELF_STATUS = "不能修改自己状态";
+    public static final String CANNOT_RESET_SELF_PASSWORD = "不能重置自己密码";
 }

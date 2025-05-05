@@ -167,7 +167,6 @@ public class AuthController {
         return Result.success();
     }
 
-
     private Long getId(Object user) {
         if (user instanceof Admin) return ((Admin) user).getId();
         if (user instanceof Driver) return ((Driver) user).getId();
