@@ -42,7 +42,7 @@ public interface OrderService {
     // 管理员取消订单
     void adminCancelOrder(Long id, AdminOrderCancelDTO cancelDTO);
 
-    // 管理员手动更新订单状态 (通用纠错接口)
-//    void updateStatus(Long id, Integer status);
+    // 管理员强制完成订单
+    void forceComplete(Long id);
 
 }

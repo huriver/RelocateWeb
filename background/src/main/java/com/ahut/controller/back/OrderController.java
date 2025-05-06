@@ -88,21 +88,17 @@ public class OrderController {
         return Result.success();
     }
 
-//    /**
-//     * 管理员手动更新订单状态 (通用纠错接口)
-//     * 仅用于状态修正，不触发伴随复杂业务操作，包含状态流转校验
-//     *
-//     * @param status 订单要更新到的目标状态值
-//     * @param id     要更新状态的订单ID
-//     * @return
-//     */
-//    @PostMapping("/status/{status}")
-//    public Result updateOrderStatus(@PathVariable Integer status, Long id) {
-//        // 订单状态： 0-待接单 1-司机已接单，等待搬运工人 2-已接单 (司机和搬运工人团队已确认) 3-进行中 4-已完成 5-已取消
-//        log.info("管理员 {} 手动更新订单状态：订单ID={}, 目标状态={}", BaseContext.getCurrentId(), id, status == 0 ? "待接单" : status == 1 ? "司机已接单，等待搬运工人" : status == 2 ? "已接单 (团队确认)" : status == 3 ? "进行中" : status == 4 ? "已完成" : "已取消");
-//        orderService.updateStatus(id, status);
-//        return Result.success();
-//    }
-
+    /**
+     * 管理员强制完成订单
+     *
+     * @param id 订单ID
+     * @return Result
+     */
+    @PutMapping("/force-complete/{id}")
+    public Result forceCompleteOrder(@PathVariable Long id) {
+        log.info("管理员{}强制完成订单,订单号为：{}", BaseContext.getCurrentId(), id);
+        orderService.forceComplete(id);
+        return Result.success();
+    }
 
 }

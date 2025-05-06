@@ -855,7 +855,6 @@ public class OrderServiceImpl implements OrderService {
 
         // --- 6. 处理资源解除关联 ---
         // 订单在状态 1, 2, 3 时可能关联有司机和搬运工，取消时需要解除
-        // (在状态 0 时没有资源关联，所以只需在状态 1, 2, 3 时执行解除关联逻辑)
         if (currentOrderStatus.equals(OrderStatusConstant.DRIVER_ACCEPTED_WAITING_MOVERS) ||
                 currentOrderStatus.equals(OrderStatusConstant.ACCEPTED) ||
                 currentOrderStatus.equals(OrderStatusConstant.IN_PROGRESS)) {
@@ -868,7 +867,7 @@ public class OrderServiceImpl implements OrderService {
             log.info("已删除订单 {} 的搬运工人关联记录", id);
 
             // 6.2 清空 moving_order 表中的 driver_id 和 vehicle_id
-            // 假设 MovingOrderMapper 有 clearOrderDriverVehicle 方法将 driver_id 和 vehicle_id 设为 NULL
+            // 假设 orderMapper 有 clearOrderDriverVehicle 方法将 driver_id 和 vehicle_id 设为 NULL
             orderMapper.clearOrderDriverVehicle(id);
             log.info("已清除订单 {} 的司机和车辆关联", id);
 
@@ -900,62 +899,38 @@ public class OrderServiceImpl implements OrderService {
         log.info("管理员取消订单处理完成，订单ID：{}", id);
     }
 
+    /**
+     * 管理员强制完成订单
+     *
+     * @param id 订单ID
+     */
+    @Transactional
+    @Override
+    public void forceComplete(Long id) {
+        // 1. 校验订单是否存在
+        MovingOrder order = orderMapper.getMovingOrderById(id);
+        if (order == null) {
+            throw new BusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
 
-/**
- * 管理员手动更新订单状态 (通用纠错接口)
- * 仅用于状态修正，不触发伴随复杂业务操作，包含状态流转校验
- *
- * @param id     订单ID
- * @param status 目标状态值
- */
-//    @Override
-//    @Transactional
-//    public void updateStatus(Long id, Integer status) {
-//        // 1. 校验参数完整性
-//        if (id == null || status == null) {
-//            throw new BusinessException(MessageConstant.INVALID_PARAMETER); // 假设无效参数消息
-//        }
-//
-//        // 2. 校验目标状态值的有效性
-//        if (!OrderStatusConstant.VALID_STATUSES.contains(status)) {
-//            throw new BusinessException(MessageConstant.INVALID_PARAMETER + ": 无效的订单状态值");
-//        }
-//
-//        // 3. 查找订单是否存在
-//        MovingOrder order = orderMapper.getMovingOrderById(id);
-//        if (order == null) {
-//            throw new BusinessException(MessageConstant.ORDER_NOT_FOUND);
-//        }
-//
-//        // 4. 增加状态流转校验
-//        Integer currentStatus = order.getOrderStatus();
-//
-//        // 规则1: 检查当前状态是否为终态 (已完成 或 已取消)
-//        if (currentStatus.equals(OrderStatusConstant.COMPLETED) || currentStatus.equals(OrderStatusConstant.CANCELLED)) {
-//            // 如果当前已经是终态，只允许目标状态与当前状态相同 (即不允许跳出终态)
-//            if (!status.equals(currentStatus)) {
-//                throw new OrderBusinessException("已完成或已取消的订单状态不允许修改。当前状态: " + OrderStatusConstant.getDescription(currentStatus));
-//            }
-//            log.info("订单 {} 状态已是目标终态 {}，仅更新审计字段", id, OrderStatusConstant.getDescription(currentStatus));
-//        } else { // 当前状态不是终态 (是 0, 1, 2, 3)
-//            // 规则2: 检查目标状态是否在当前状态的允许跳转列表里
-//            List<Integer> allowedTargetStatuses = OrderStatusConstant.ALLOWED_TRANSITIONS_MAP.get(currentStatus);
-//
-//            // 如果当前状态没有定义任何允许的跳转 或者 目标状态不在允许的列表中
-//            if (allowedTargetStatuses == null || !allowedTargetStatuses.contains(status)) {
-//                throw new OrderBusinessException("不允许从当前状态 [" + OrderStatusConstant.getDescription(currentStatus) + "] 手动变更为目标状态 [" + OrderStatusConstant.getDescription(status) + "]");
-//            }
-//            log.info("状态流转校验通过：从 [" + OrderStatusConstant.getDescription(currentStatus) + "] 到 [" + OrderStatusConstant.getDescription(status) + "]");
-//        }
-//
-//        // 5. 更新订单状态和相关信息
-//        MovingOrder updateOrder = MovingOrder.builder()
-//                .id(id) // 根据ID更新
-//                .orderStatus(status) // 设置新的状态
-//                .build();
-//
-//        // 调用 Mapper 更新订单
-//        orderMapper.update(updateOrder);
-//    }
+        // 2. 校验订单状态是否为进行中 (3)
+        if (!OrderStatusConstant.IN_PROGRESS.equals(order.getOrderStatus())) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_NOT_ALLOW_FORCE_COMPLETE);
+        }
+
+        // 3. 更新订单状态为已完成 (4)
+        MovingOrder updateOrder = MovingOrder.builder()
+                .id(id)
+                .orderStatus(OrderStatusConstant.COMPLETED)
+                .movingEndTime(LocalDateTime.now())
+                .build();
+
+        // 更新数据库
+        orderMapper.update(updateOrder);
+
+        // 6. 触发后续业务流程（关键步骤，需要根据你的具体设计实现）
+        // 通知客户订单已完成，请进行评价（如果适用）
+        // notifyCustomerOrderCompleted(order);
+    }
 
 }
