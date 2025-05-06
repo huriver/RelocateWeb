@@ -8,6 +8,9 @@ import com.***REMOVED***.vo.OrderVO;
 import com.github.pagehelper.Page;
 import org.apache.ibatis.annotations.*;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Mapper
 public interface OrderMapper {
 
@@ -88,8 +91,18 @@ public interface OrderMapper {
     @Select("SELECT COUNT(*) FROM moving_order WHERE customer_id = #{customerId} AND order_status IN (0, 1, 2, 3)")
     Integer countPendingOrdersByCustomerId(Long customerId);
 
-    // Future: 定时任务需要的方法 (例如根据状态和时间查询订单)
-    /*
-    List<MovingOrder> getByStatusAndOrderTimeLT(@Param("status") Integer status, @Param("orderTime") LocalDateTime orderTime);
-     */
+    // 统计关联到指定搬运工的未完成订单数量 (例如: 状态为 2, 3)
+    @Select("SELECT count(DISTINCT mo.id) FROM moving_order mo JOIN order_mover om ON mo.id = om.order_id " +
+            "WHERE om.mover_id = #{moverId} AND mo.order_status IN (2, 3)")
+    int countPendingOrdersByMoverId(Long moverId);
+
+    // 查询支付超时的未支付订单     条件：状态为待接单(0)，未支付(0)，创建时间早于指定阈值
+    @Select("SELECT id, customer_id, order_number, service_id, truck_type_id, driver_id, vehicle_id, " +
+            "order_status, reservation_time, moving_origin, moving_destination, moving_price, mileage_cost, " +
+            "helper_cost, category_price_multiplier, is_paid, payment_time, pay_method, cancel_reason, " +
+            "cancel_time, moving_start_time, moving_end_time, number_of_helpers, notes, is_reviewed, " +
+            "create_time, update_time " +
+            "FROM moving_order WHERE order_status = 0 AND is_paid = 0 AND create_time < #{timeoutThreshold}")
+    List<MovingOrder> getTimeoutUnpaidOrders(LocalDateTime timeoutThreshold);
+
 }

@@ -10,7 +10,7 @@ import com.***REMOVED***.exception.AccountNotFoundException;
 import com.***REMOVED***.exception.BusinessException;
 import com.***REMOVED***.exception.PasswordErrorException;
 import com.***REMOVED***.mapper.MoverMapper;
-import com.***REMOVED***.mapper.MovingOrderMapper;
+import com.***REMOVED***.mapper.OrderMapper;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.service.MoverService;
 import com.github.pagehelper.Page;
@@ -28,7 +28,7 @@ public class MoverServiceImpl implements MoverService {
     private MoverMapper moverMapper;
 
     @Autowired
-    private MovingOrderMapper movingOrderMapper;
+    private OrderMapper orderMapper;
 
     @Override
     public Mover login(UserLoginDTO userLoginDTO) {
@@ -106,7 +106,7 @@ public class MoverServiceImpl implements MoverService {
 
         // 业务校验: 如果是封禁操作，检查是否有未完成订单
         if (isBanned == 1) {
-            int activeOrderCount = movingOrderMapper.countPendingOrdersByMoverId(id);
+            int activeOrderCount = orderMapper.countPendingOrdersByMoverId(id);
             if (activeOrderCount > 0) {
                 // 存在未完成订单，抛出异常阻止封禁
                 throw new BusinessException(MessageConstant.Mover_HAS_PENDING_ORDERS_BLOCKED_BAN);

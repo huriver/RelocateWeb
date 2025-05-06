@@ -933,4 +933,43 @@ public class OrderServiceImpl implements OrderService {
         // notifyCustomerOrderCompleted(order);
     }
 
+    /**
+     * 处理订单取消
+     *
+     * @param orderId 订单ID
+     * @param reason  取消原因
+     */
+    @Transactional
+    @Override
+    public void processOrderCancellation(Long orderId, String reason) {
+        // 再次获取订单信息，防止在查询和处理之间订单状态被改变 (解决并发问题)
+        MovingOrder order = orderMapper.getMovingOrderById(orderId);
+
+        // 校验订单当前状态是否仍然满足取消条件
+        // 检查状态是否仍为待接单(0)，且未支付(0)，且未被手动取消(5)或完成(4)
+        if (order == null ||
+                !OrderStatusConstant.PENDING_ACCEPTANCE.equals(order.getOrderStatus()) || // 确保状态仍是待接单
+                (order.getIsPaid() != null && order.getIsPaid().equals(PaymentStatusConstant.PAID)) || // 确保未支付
+                OrderStatusConstant.CANCELLED.equals(order.getOrderStatus()) || // 确保未被手动取消
+                OrderStatusConstant.COMPLETED.equals(order.getOrderStatus()) // 确保未完成
+        ) {
+            // 订单不存在、状态已改变（如已支付、已接单、已取消、已完成），不执行自动取消操作
+            log.info("订单不存在或状态已改变，不执行自动取消操作：订单ID={}, 当前状态={}, 支付状态={}", orderId, order != null ? order.getOrderStatus() : "null", order != null ? order.getIsPaid() : "null");
+            return;
+        }
+
+        // 如果通过了以上校验，说明订单确实支付超时且未被其他方式处理，可以进行自动取消
+        MovingOrder updateOrder = MovingOrder.builder()
+                .id(orderId)
+                .orderStatus(OrderStatusConstant.CANCELLED)
+                .cancelTime(LocalDateTime.now())
+                .cancelReason(reason)
+                .build();
+
+        orderMapper.update(updateOrder);
+
+        // TODO: 释放可能占用的资源（例如，通知司机/搬运工该订单已取消，如果订单曾被司机接单到状态1/2）
+        // releaseOrderResources(orderId);
+    }
+
 }
