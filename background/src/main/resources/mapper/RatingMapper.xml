@@ -49,4 +49,45 @@
         ORDER BY r.rating_time DESC
     </select>
 
+    <select id="pageQuery" resultType="RatingListVO">
+        SELECT r.id, r.order_id, o.order_number AS orderNumber,
+        r.customer_id, c.name AS customerName,
+        r.ratee_id, r.rating_type, r.rating_value, r.comment, r.rating_time,
+        CASE r.rating_type
+        WHEN 'DRIVER' THEN d.name
+        WHEN 'MOVER' THEN m.name
+        WHEN 'SERVICE' THEN s.service_name
+        ELSE '未知被评分者'
+        END AS rateeName
+
+        FROM rating r
+        JOIN moving_order o ON r.order_id = o.id
+        JOIN customer c ON r.customer_id = c.id
+        LEFT JOIN driver d ON r.rating_type = 'Driver' AND r.ratee_id = d.id
+        LEFT JOIN mover m ON r.rating_type = 'Mover' AND r.ratee_id = m.id
+        LEFT JOIN service s ON r.rating_type = 'Service' AND r.ratee_id = s.id
+        <where>
+            <if test="ratingValueMin != null">
+                and r.rating_value &gt;= #{ratingValueMin}
+            </if>
+            <if test="ratingValueMax != null">
+                and r.rating_value &lt;= #{ratingValueMax}
+            </if>
+            <if test="orderNumber != null and orderNumber != ''">
+                and o.order_number like concat('%', #{orderNumber}, '%')
+            </if>
+            <if test="ratingType != null and ratingType != ''">
+                and r.rating_type = #{ratingType}
+            </if>
+            <if test="rateeName != null and rateeName != ''">
+                AND (
+                (r.rating_type = 'Driver' AND d.name like concat('%', #{rateeName}, '%'))
+                OR (r.rating_type = 'Mover' AND m.name like concat('%', #{rateeName}, '%'))
+                OR (r.rating_type = 'Service' AND s.service_name like concat('%', #{rateeName}, '%'))
+                )
+            </if>
+        </where>
+        ORDER BY r.rating_time DESC
+    </select>
+
 </mapper>

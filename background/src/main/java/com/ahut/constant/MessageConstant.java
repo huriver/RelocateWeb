@@ -93,4 +93,6 @@ public class MessageConstant {
 
     public static final String CANNOT_MODIFY_SELF_STATUS = "不能修改自己状态";
     public static final String CANNOT_RESET_SELF_PASSWORD = "不能重置自己密码";
+
+    public static final String RATING_NOT_FOUND = "评分记录不存在";
 }

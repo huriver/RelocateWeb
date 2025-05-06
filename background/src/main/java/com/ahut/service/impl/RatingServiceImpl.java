@@ -5,17 +5,22 @@ import com.***REMOVED***.constant.OrderStatusConstant;
 import com.***REMOVED***.constant.RatingTypeConstant;
 import com.***REMOVED***.context.BaseContext;
 import com.***REMOVED***.dto.OverallRatingSubmitDTO;
+import com.***REMOVED***.dto.RatingPageQueryDTO;
 import com.***REMOVED***.dto.SingleRatingDTO;
-import com.***REMOVED***.entity.Driver;
-import com.***REMOVED***.entity.Mover;
-import com.***REMOVED***.entity.MovingOrder;
-import com.***REMOVED***.entity.Rating;
+import com.***REMOVED***.entity.*;
+import com.***REMOVED***.exception.BusinessException;
 import com.***REMOVED***.exception.OrderBusinessException;
 import com.***REMOVED***.mapper.*;
+import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.service.RatingService;
 import com.***REMOVED***.vo.CustomerRatingVO;
+import com.***REMOVED***.vo.RatingDetailVO;
+import com.***REMOVED***.vo.RatingListVO;
 import com.***REMOVED***.vo.ServiceRatingVO;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +47,9 @@ public class RatingServiceImpl implements RatingService {
 
     @Autowired
     private OrderMoverMapper orderMoverMapper;
+
+    @Autowired
+    private CustomerMapper customerMapper;
 
     @Autowired
     private DriverMapper driverMapper;
@@ -280,5 +288,101 @@ public class RatingServiceImpl implements RatingService {
         return ratingMapper.getServiceRatingsByServiceId(serviceId);
     }
 
+    /**
+     * 分页查询评分列表
+     *
+     * @param queryDTO
+     * @return
+     */
+    @Override
+    public PageResult pageQuery(RatingPageQueryDTO queryDTO) {
+        PageHelper.startPage(queryDTO.getPage(), queryDTO.getPageSize());
+        Page<RatingListVO> page = ratingMapper.pageQuery(queryDTO);
+        return new PageResult(page.getTotal(), page.getResult());
+    }
+
+    /**
+     * 根据ID查询单个评分详细信息 (返回 VO，包含关联基本信息)
+     *
+     * @param id 评分记录ID
+     * @return RatingDetailVO (包含关联基本信息)
+     */
+    @Override
+    public RatingDetailVO getById(Long id) {
+        // 1. 调用 Mapper 查询评分记录实体本身
+        Rating rating = ratingMapper.getById(id);
+
+        // 2. 校验查询结果是否存在
+        if (rating == null) {
+            log.error("查询评分详细信息失败，评分记录不存在：ID {}", id);
+            throw new BusinessException(MessageConstant.RATING_NOT_FOUND);
+        }
+
+        // 3. 将 Rating 实体转换为 RatingDetailVO (排除敏感字段，填充评分表自身的字段)
+        RatingDetailVO detailVO = new RatingDetailVO();
+        BeanUtils.copyProperties(rating, detailVO);
+
+        // 4. 额外查询关联对象的基本信息（姓名/订单号）并填充到 VO
+        // 根据 rating 实体中的关联 ID 和类型进行查询
+        // 查询订单号
+        if (rating.getOrderId() != null) {
+            MovingOrder order = orderMapper.getMovingOrderById(rating.getOrderId());
+            if (order != null) {
+                detailVO.setOrderNumber(order.getOrderNumber()); // 假设 Order 实体有 getOrderNumber 方法
+            } else {
+                detailVO.setOrderNumber("订单不存在");
+            }
+        } else {
+            detailVO.setOrderNumber("无关联订单");
+        }
+
+        // 查询消费者姓名
+        if (rating.getCustomerId() != null) {
+            Customer customer = customerMapper.getById(rating.getCustomerId());
+            if (customer != null) {
+                detailVO.setCustomerName(customer.getName());
+            } else {
+                detailVO.setCustomerName("消费者不存在");
+            }
+        } else {
+            detailVO.setCustomerName("无关联消费者");
+        }
+
+        // 查询被评分者姓名（根据 ratingType）
+        if (rating.getRateeId() != null && rating.getRatingType() != null) {
+            switch (rating.getRatingType()) {
+                case "DRIVER":
+                    Driver driver = driverMapper.getById(rating.getRateeId());
+                    if (driver != null) {
+                        detailVO.setRateeName(driver.getName());
+                    } else {
+                        detailVO.setRateeName("司机不存在"); // 处理关联司机不存在的情况
+                    }
+                    break;
+                case "MOVER":
+                    Mover mover = moverMapper.getById(rating.getRateeId());
+                    if (mover != null) {
+                        detailVO.setRateeName(mover.getName());
+                    } else {
+                        detailVO.setRateeName("搬运工不存在"); // 处理关联搬运工不存在的情况
+                    }
+                    break;
+                case "SERVICE":
+                    com.***REMOVED***.entity.Service service = serviceMapper.getById(rating.getRateeId());
+                    if (service != null) {
+                        detailVO.setRateeName(service.getServiceName());
+                    } else {
+                        detailVO.setRateeName("服务项不存在"); // 处理关联服务项不存在的情况
+                    }
+                    break;
+                default:
+                    detailVO.setRateeName("未知被评分类型"); // 处理未知评分类型
+            }
+        } else {
+            detailVO.setRateeName("无关联被评分者"); // 处理 rateeId 或 ratingType 为 NULL 的情况
+        }
+
+        return detailVO;
+    }
 
 }

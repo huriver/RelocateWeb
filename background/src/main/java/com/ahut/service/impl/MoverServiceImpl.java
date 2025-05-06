@@ -61,7 +61,6 @@ public class MoverServiceImpl implements MoverService {
         return mover;
     }
 
-
     @Override
     public void save(UserRegisterDTO userRegisterDTO) {
         Mover mover = new Mover();

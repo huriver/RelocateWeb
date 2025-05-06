@@ -1,7 +1,10 @@
 package com.***REMOVED***.service;
 
 import com.***REMOVED***.dto.OverallRatingSubmitDTO;
+import com.***REMOVED***.dto.RatingPageQueryDTO;
+import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.vo.CustomerRatingVO;
+import com.***REMOVED***.vo.RatingDetailVO;
 import com.***REMOVED***.vo.ServiceRatingVO;
 
 import java.util.List;
@@ -16,5 +19,11 @@ public interface RatingService {
 
     // 根据服务项ID获取用户评价列表，包含评价人姓名
     List<ServiceRatingVO> getServiceRatings(Long serviceId);
+
+    // 分页查询评分列表
+    PageResult pageQuery(RatingPageQueryDTO queryDTO);
+
+    // 根据ID查询单个评分详细信息 (返回 VO，包含关联基本信息)
+    RatingDetailVO getById(Long id);
 
 }

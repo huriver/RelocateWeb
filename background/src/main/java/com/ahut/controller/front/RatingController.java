@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * 用户端评价接口
  */
-@RestController
+@RestController("frontRatingController")
 @RequestMapping("/front/rating")
 @Slf4j
 public class RatingController {
