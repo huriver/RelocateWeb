@@ -12,6 +12,7 @@ import com.***REMOVED***.exception.*;
 import com.***REMOVED***.mapper.*;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.PriceCalculationResult;
+import com.***REMOVED***.service.CustomerService;
 import com.***REMOVED***.service.EmailService;
 import com.***REMOVED***.service.OrderService;
 import com.***REMOVED***.utils.HttpClientUtil;
@@ -60,6 +61,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private CustomerService customerService;
 
     @Value("${relocate.baidu.ak}")
     private String baiduAk;
@@ -366,6 +370,15 @@ public class OrderServiceImpl implements OrderService {
         if (orderSubmitDTO.getReservationTime().isBefore(LocalDateTime.now()) ||
                 orderSubmitDTO.getReservationTime().isAfter(LocalDateTime.now().plusWeeks(2))) {
             throw new OrderBusinessException(MessageConstant.RESERVATION_TIME_INVALID);
+        }
+
+        // --- 1.5 校验客户邮箱是否存在和基本格式 ---
+        Long currentUserId = BaseContext.getCurrentId();
+        Customer customer = customerService.getById(currentUserId);
+        if (customer == null || customer.getEmail() == null || customer.getEmail().isEmpty()) {
+            log.error("用户ID {} 无效或邮箱为空，无法发送订单通知邮件。", currentUserId);
+            // 根据你的业务需求决定是否抛出异常阻止下单
+            throw new OrderBusinessException(MessageConstant.CANNOT_SEND_ORDER_NOTIFICATION_EMAIL);
         }
 
         // --- 2. 后端**再次计算**订单最终价格 ---

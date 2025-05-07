@@ -96,4 +96,8 @@ public class MessageConstant {
 
     public static final String RATING_NOT_FOUND = "评分记录不存在";
     public static final String ORDER_STATUS_NOT_ALLOW_FORCE_COMPLETE = "订单当前状态不允许强制完成";
+
+    public static final String CUSTOMER_INFO_INCOMPLETE = "用户信息不完整";
+    public static final String CUSTOMER_EMAIL_INVALID = "邮箱格式不正确";
+    public static final String CANNOT_SEND_ORDER_NOTIFICATION_EMAIL = "用户邮箱为空或无效，无法发送订单通知邮件";
 }

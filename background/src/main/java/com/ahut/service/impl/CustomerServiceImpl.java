@@ -18,7 +18,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @Slf4j
@@ -30,6 +34,10 @@ public class CustomerServiceImpl implements CustomerService {
     @Autowired
     private OrderMapper orderMapper;
 
+    // 定义一个静态 final 的 Pattern 对象，用于邮箱格式校验的正则表达式
+    // 这是一个常用的基本邮箱格式正则表达式，可以根据需要调整
+    private static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$";
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(EMAIL_REGEX);
 
     @Override
     public Customer login(UserLoginDTO userLoginDTO) {
@@ -81,10 +89,31 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @Transactional
     public void update(CustomerDTO customerDTO) {
-        Customer customer = new Customer();
-        BeanUtils.copyProperties(customerDTO, customer);
-        customerMapper.update(customer);
+        // 1. 基本校验客户DTO
+        if (customerDTO == null || customerDTO.getId() == null) {
+            throw new BusinessException(MessageConstant.CUSTOMER_INFO_INCOMPLETE);
+        }
+
+        // 2. 校验 email 格式 (如果提供了 email)
+        // 如果 DTO 中包含 email 字段且不为空
+        if (customerDTO.getEmail() != null && !customerDTO.getEmail().isEmpty()) {
+            // 使用正则表达式进行格式校验
+            Matcher matcher = EMAIL_PATTERN.matcher(customerDTO.getEmail());
+            if (!matcher.matches()) {
+                // 如果格式不匹配，记录错误并抛出业务异常
+                log.error("用户ID {} 提供的邮箱格式无效：{}", customerDTO.getId(), customerDTO.getEmail());
+                throw new BusinessException(MessageConstant.CUSTOMER_EMAIL_INVALID);
+            }
+        }
+
+        // 3. 复制 DTO 属性到实体并调用 Mapper 更新
+        Customer updateCustomer = new Customer();
+        BeanUtils.copyProperties(customerDTO, updateCustomer);
+
+        // 调用 Mapper 更新数据库
+        customerMapper.update(updateCustomer);
     }
 
     @Override
