@@ -13,6 +13,24 @@ spring:
       max-request-size: -1
       enabled: true
 
+  mail:
+    host: smtp.qq.com # QQ邮箱的 SMTP 服务器地址
+    port: 587 # QQ邮箱推荐的 SMTP 端口（配合 STARTTLS）
+    username: 2195445402@qq.com # 你的QQ邮箱账号
+    password: ***REMOVED*** # 这里填写你的授权码
+    properties:
+      mail:
+        smtp:
+          auth: true # 需要SMTP认证
+          starttls:
+            enable: true # 启用 STARTTLS 加密
+            # 如果你选择端口 465 并使用 SSL，则可以这样配置：
+            # starttls:
+            #   enable: false
+            # ssl:
+            #   enable: true
+            debug: true # 开发阶段可以开启，查看详细的邮件发送日志
+
 relocate:
   jwt:
     # 设置jwt签名加密时使用的秘钥

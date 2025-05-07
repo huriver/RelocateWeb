@@ -83,7 +83,7 @@ public class OrderStatusConstant {
             case 1:
                 return "司机已接单，等待搬运工人";
             case 2:
-                return "已接单";
+                return "已接单（团队已确认）";
             case 3:
                 return "进行中";
             case 4:

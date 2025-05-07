@@ -38,7 +38,7 @@ public class OrderTask {
             log.info("发现 " + timeoutOrders.size() + " 个支付超时订单，准备自动取消。");
             // 遍历并取消订单
             for (MovingOrder order : timeoutOrders) {
-                movingOrderService.processOrderCancellation(order.getId(), "支付超时，自动取消");
+                movingOrderService.processPaymentTimeoutCancellation(order.getId(), "支付超时，自动取消");
                 log.info("订单 " + order.getId() + " 已自动取消。");
             }
         } else {

@@ -32,7 +32,6 @@ public class CustomerController {
         return Result.success(customer);
     }
 
-
     /**
      * 编辑消费者信息
      *

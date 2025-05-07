@@ -45,7 +45,7 @@ public interface OrderService {
     // 管理员强制完成订单
     void forceComplete(Long id);
 
-    // 处理订单取消（可供用户、管理员、系统调用）
-    void processOrderCancellation(Long orderId, String reason);
+    // 处理订单自动取消 (支付超时)
+    void processPaymentTimeoutCancellation(Long orderId, String reason);
 
 }

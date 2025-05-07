@@ -7,14 +7,12 @@ import com.***REMOVED***.constant.PayMethodConstant;
 import com.***REMOVED***.constant.PaymentStatusConstant;
 import com.***REMOVED***.context.BaseContext;
 import com.***REMOVED***.dto.*;
-import com.***REMOVED***.entity.Configuration;
-import com.***REMOVED***.entity.MovingOrder;
-import com.***REMOVED***.entity.ServiceCategory;
-import com.***REMOVED***.entity.TruckType;
+import com.***REMOVED***.entity.*;
 import com.***REMOVED***.exception.*;
 import com.***REMOVED***.mapper.*;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.PriceCalculationResult;
+import com.***REMOVED***.service.EmailService;
 import com.***REMOVED***.service.OrderService;
 import com.***REMOVED***.utils.HttpClientUtil;
 import com.***REMOVED***.vo.*;
@@ -60,12 +58,11 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private ConfigurationMapper configurationMapper;
 
-    //    @Autowired(required = false) // 如果 WebSocketServer 不是必须的依赖，可以设置为 false
-    //    private WebSocketServer webSocketServer;
+    @Autowired
+    private EmailService emailService;
 
     @Value("${relocate.baidu.ak}")
     private String baiduAk;
-
 
     /**
      * 估算搬家订单价格
@@ -104,7 +101,6 @@ public class OrderServiceImpl implements OrderService {
         log.info("估算价格结果：{}", priceEstimationResultVO);
         return priceEstimationResultVO;
     }
-
 
     /**
      * 计算订单估算价格的核心方法
@@ -221,7 +217,6 @@ public class OrderServiceImpl implements OrderService {
         // --- 8. 返回包含所有结果的结果对象 ---
         return new PriceCalculationResult(totalEstimatedPrice, mileageCost, helperCost, categoryPriceMultiplier);
     }
-
 
     /**
      * 调用百度地图API计算距离 (公里)
@@ -346,15 +341,14 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-
     /**
      * 用户提交订单
      *
-     * @param orderSubmitDTO
-     * @return
+     * @param orderSubmitDTO 订单提交数据
+     * @return 订单提交结果 VO
      */
     @Override
-    @Transactional // 保证事务的原子性
+    @Transactional
     public OrderSubmitVO submitOrder(OrderSubmitDTO orderSubmitDTO) {
         log.info("用户提交订单，参数：{}", orderSubmitDTO);
 
@@ -388,19 +382,18 @@ public class OrderServiceImpl implements OrderService {
         // --- 3. 构建 MovingOrder 实体对象 ---
         MovingOrder order = new MovingOrder();
         BeanUtils.copyProperties(orderSubmitDTO, order);
-
         order.setCustomerId(BaseContext.getCurrentId());
-
         // 生成唯一订单号
         order.setOrderNumber(generateUniqueOrderNumber());
 
         // 设置服务项ID和关联的货车类型ID
+        // 假设 serviceMapper.getById 方法存在
         com.***REMOVED***.entity.Service service = serviceMapper.getById(orderSubmitDTO.getServiceId());
         order.setTruckTypeId(service.getTruckTypeId()); // 设置关联的货车类型ID
 
         // 设置初始订单状态和支付状态
-        order.setOrderStatus(OrderStatusConstant.PENDING_ACCEPTANCE); // 初始状态：待接单
-        order.setIsPaid(PaymentStatusConstant.UN_PAID); // 初始支付状态：未支付
+        order.setOrderStatus(OrderStatusConstant.PENDING_ACCEPTANCE); // 初始状态：待接单 (0)
+        order.setIsPaid(PaymentStatusConstant.UN_PAID); // 初始支付状态：未支付 (0)
         order.setIsReviewed(false); // 初始评价状态：未评价
 
         // 设置计算出的最终价格和费用明细
@@ -412,32 +405,23 @@ public class OrderServiceImpl implements OrderService {
         // --- 4. 插入订单主表 ---
         orderMapper.insert(order);
 
-        // --- 5. 封装返回结果 OrderSubmitVO ---
+        log.info("订单创建成功，订单号：{}，ID：{}", order.getOrderNumber(), order.getId());
+
+        // --- 5. 调用邮件服务发送订单提交成功通知 ---
+        // 新状态是待接单 (0),  不需要传递搬运工列表，传递一个空的搬运工列表
+        List<Mover> assignedMovers = new ArrayList<>(); // 创建一个空的搬运工列表
+        // 调用统一的邮件发送方法，传递刚刚创建并插入数据库的 order 对象，新状态，和空列表
+        emailService.sendOrderStatusEmailToCustomer(order, OrderStatusConstant.PENDING_ACCEPTANCE, assignedMovers);
+
+        // --- 6. 封装返回结果 OrderSubmitVO ---
         OrderSubmitVO submitResultVO = OrderSubmitVO.builder()
                 .id(order.getId())
                 .orderNumber(order.getOrderNumber())
                 .orderAmount(finalOrderPrice)
-                .orderTime(order.getCreateTime())
+                .orderTime(order.getCreateTime()) // 返回创建时间
                 .build();
 
-        // --- 6. (可选) 发送 WebSocket 消息给商家/司机端，提示有新订单 ---
-        // if (webSocketServer != null) {
-        //     Map<String, Object> message = new HashMap<>();
-        //     message.put("type", 1); // 消息类型：新订单
-        //     message.put("orderId", order.getId());
-        //     message.put("content", "有新的搬家订单：" + order.getOrderNumber());
-        //     try {
-        //         webSocketServer.sendToAllClient(JSON.toJSONString(message));
-        //         log.info("已发送新订单WebSocket通知：{}", order.getOrderNumber());
-        //     } catch (Exception e) {
-        //         log.error("发送新订单WebSocket通知失败", e);
-        //         // 发送通知失败通常不应该影响订单创建成功，只记录日志即可
-        //     }
-        // }
-
-
-        log.info("订单创建成功，订单号：{}，ID：{}", order.getOrderNumber(), order.getId());
-        return submitResultVO;
+        return submitResultVO; // 返回结果 VO
     }
 
     /**
@@ -641,16 +625,15 @@ public class OrderServiceImpl implements OrderService {
     /**
      * 用户端取消订单
      *
-     * @param id
-     * @param cancelDTO
+     * @param id        订单ID
+     * @param cancelDTO 包含取消原因的DTO
      */
     @Override
     @Transactional
     public void cancelOrder(Long id, OrderCancelDTO cancelDTO) {
         log.info("用户端取消订单，订单ID：{}，原因：{}", id, cancelDTO != null ? cancelDTO.getCancelReason() : "无原因");
 
-        // 1. 查找订单 (获取 MovingOrder 实体，以便更新)
-        // 需要一个方法根据 ID 查询 MovingOrder 实体，而不是 OrderVO (OrderVO 是为了展示更多关联信息)
+        // 1. 查找订单
         MovingOrder order = orderMapper.getMovingOrderById(id);
 
         // 2. 校验订单是否存在
@@ -666,9 +649,8 @@ public class OrderServiceImpl implements OrderService {
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_BELONG_TO_CURRENT_USER);
         }
 
-        // 4. 校验订单状态是否允许取消
+        // 4. 校验订单状态是否允许用户取消
         // 假设只有在待接单 (0)、司机已接单等待搬运工人 (1)、已接单 (2) 状态下用户可以自主取消
-        // 一旦进入进行中 (3) 或已完成 (4) 状态，通常不允许用户自主取消
         Integer currentOrderStatus = order.getOrderStatus();
         if (currentOrderStatus.equals(OrderStatusConstant.IN_PROGRESS) ||
                 currentOrderStatus.equals(OrderStatusConstant.COMPLETED) ||
@@ -677,60 +659,73 @@ public class OrderServiceImpl implements OrderService {
             throw new OrderBusinessException(MessageConstant.ORDER_STATUS_NOT_ALLOW_CANCEL);
         }
 
-        // --- 5. 更新订单状态为已取消 ---
-        MovingOrder updateOrder = MovingOrder.builder()
-                .id(id)
-                .orderStatus(OrderStatusConstant.CANCELLED)
-                .cancelReason(cancelDTO != null ? cancelDTO.getCancelReason() : null)
-                .cancelTime(LocalDateTime.now())
-                .build();
-
-        // --- 6. 处理支付状态：如果订单已支付，标记为已退款 ---
-        if (order.getIsPaid().equals(PaymentStatusConstant.PAID)) {
-            updateOrder.setIsPaid(PaymentStatusConstant.REFUNDED);
-            // 实际应用中，这里需要调用第三方支付平台的退款接口
-            // 模拟场景下，直接更新状态即可
-            log.info("订单已支付，模拟标记为已退款：订单ID {}", id);
-        }
-
-        // --- 7. 处理司机和搬运工人分配：如果订单已分配，解除分配 ---
+        // 5. 处理资源解除关联 (先处理这些，因为它们修改了数据库)
         // 只有在状态 1 或 2 时才需要解除分配
-        if (currentOrderStatus.equals(OrderStatusConstant.DRIVER_ACCEPTED_WAITING_MOVERS) ||
-                currentOrderStatus.equals(OrderStatusConstant.ACCEPTED)) {
+        if (OrderStatusConstant.DRIVER_ACCEPTED_WAITING_MOVERS.equals(currentOrderStatus) ||
+                OrderStatusConstant.ACCEPTED.equals(currentOrderStatus)) {
             log.info("订单已分配，解除司机和搬运工人关联：订单ID {}", id);
-
-            // 7.1 删除 order_mover 表中关联该订单的记录
+            // 5.1 删除 order_mover 表中关联该订单的记录
             orderMoverMapper.deleteByOrderId(id);
             log.info("已删除订单 {} 的搬运工人关联记录", id);
 
-            // 7.2 清空 moving_order 表中的 driver_id 和 vehicle_id (调用新的方法)
+            // 5.2 清空 moving_order 表中的 driver_id 和 vehicle_id
             orderMapper.clearOrderDriverVehicle(id);
-            log.info("已清除订单 {} 的司机和车辆关联", id);
-
-            // (可选) 通知司机和搬运工人订单已取消
-            // WebSocket 通知逻辑可以在这里触发，告知相关的司机和搬运工人
+            log.info("已清除订单 {} 的司机和车辆关联 (通过单独方法)", id);
         }
 
-        // --- 8. 调用 Mapper 更新数据库 ---
+        // 6. 创建最小化的 updateOrder 实体，包含要更新的字段和 ID
+        // 获取原始取消原因
+        String originalReason = cancelDTO != null ? cancelDTO.getCancelReason() : null;
+        String finalCancelReason = originalReason;
+
+        // *** 在原因前面加上 "消费者：" 前缀，如果原因不为空 ***
+        if (originalReason != null && !originalReason.isEmpty()) {
+            finalCancelReason = "消费者：" + originalReason;
+        }
+
+        MovingOrder updateOrder = MovingOrder.builder()
+                .id(id)
+                .orderStatus(OrderStatusConstant.CANCELLED) // 状态设为已取消 (5)
+                .cancelReason(finalCancelReason) // 设置取消原因 (从DTO获取)
+                .cancelTime(LocalDateTime.now()) // 设置取消时间为当前时间
+                .build();
+
+        // 6.1 处理支付状态：如果订单已支付，在 updateOrder 中标记为已退款
+        if (order.getIsPaid() != null && order.getIsPaid().equals(PaymentStatusConstant.PAID)) {
+            updateOrder.setIsPaid(PaymentStatusConstant.REFUNDED); // 在 updateOrder 中设置支付状态
+            // !!! 实际应用中，这里需要调用第三方支付平台的退款接口 !!!
+            // !!! 模拟场景下，直接更新状态即可 !!!
+            log.info("订单已支付，模拟标记为已退款：订单ID {}", id);
+        }
+
+        // 7. 调用 Mapper 更新 moving_order 表 (使用 updateOrder)
         orderMapper.update(updateOrder);
-        log.info("订单取消成功，订单ID：{}，新状态：{}", id, updateOrder.getOrderStatus());
+        log.info("订单主要信息更新成功，订单ID：{}，新状态：{}", id, updateOrder.getOrderStatus());
 
+        // 8. 将 updateOrder 中的更新字段值手动复制到原始的 order 对象上
+        order.setOrderStatus(updateOrder.getOrderStatus()); // 复制状态 (5)
+        order.setCancelTime(updateOrder.getCancelTime()); // 复制取消时间
+        order.setCancelReason(updateOrder.getCancelReason()); // 复制取消原因
+        order.setUpdateTime(updateOrder.getUpdateTime()); // 复制 updateTime
+        // 如果更新了 isPaid，也要复制：
+        if (updateOrder.getIsPaid() != null) {
+            order.setIsPaid(updateOrder.getIsPaid());
+        }
 
-        // --- (可选) 发送 WebSocket 消息给司机/商家，提示订单已取消 ---
-        // if (webSocketServer != null) {
-        //     Map<String, Object> message = new HashMap<>();
-        //     message.put("type", 2); // 消息类型：2表示订单取消
-        //     message.put("orderId", id);
-        //     message.put("orderNumber", order.getOrderNumber()); // 通知中包含订单号
-        //     // 可以根据业务需要添加更多信息，如取消原因
-        //     try {
-        //         webSocketServer.sendToAllClient(JSON.toJSONString(message));
-        //         log.info("已发送订单取消WebSocket通知：{}", order.getOrderNumber());
-        //     } catch (Exception e) {
-        //         log.error("发送订单取消WebSocket通知失败", e);
-        //         // 发送通知失败不影响订单取消成功，只记录日志
-        //     }
-        // }
+        // 9. 在内存中更新 order 对象，反映 driver_id 和 vehicle_id 已清除
+        if (OrderStatusConstant.DRIVER_ACCEPTED_WAITING_MOVERS.equals(currentOrderStatus) ||
+                OrderStatusConstant.ACCEPTED.equals(currentOrderStatus)) {
+            order.setDriverId(null);
+            order.setVehicleId(null);
+            log.info("订单对象内存更新完成，反映司机和车辆关联已清除");
+        }
+
+        // 10. 调用邮件服务发送通知
+        // 状态 5 (已取消)，不需要传递搬运工列表，传递一个空列表
+        List<Mover> assignedMovers = new ArrayList<>(); // 创建一个空的搬运工列表
+        // 调用统一的邮件发送方法，传递 修改后并在内存中反映了所有更新的 order 对象，新状态，和空列表
+        // 注意：这里传递的 order 对象应包含最终的状态、取消信息、支付状态、以及设置为 null 的 driverId/vehicleId
+        emailService.sendOrderStatusEmailToCustomer(order, OrderStatusConstant.CANCELLED, assignedMovers);
 
         log.info("订单取消处理完成，订单ID：{}", id);
     }
@@ -809,7 +804,6 @@ public class OrderServiceImpl implements OrderService {
         return new PageResult(page.getTotal(), page.getResult());
     }
 
-
     /**
      * 管理员取消订单
      *
@@ -819,7 +813,6 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public void adminCancelOrder(Long id, AdminOrderCancelDTO cancelDTO) {
-        // Controller 层的 @Validated 会校验 cancelDTO 的非空和原因非空，这里可以简化部分检查
         // 1. 查找订单
         MovingOrder order = orderMapper.getMovingOrderById(id);
 
@@ -831,70 +824,78 @@ public class OrderServiceImpl implements OrderService {
 
         // 3. 校验订单当前状态是否允许管理员取消 (通常允许从所有非终态取消: 0, 1, 2, 3)
         Integer currentOrderStatus = order.getOrderStatus();
-        if (currentOrderStatus.equals(OrderStatusConstant.COMPLETED) ||
-                currentOrderStatus.equals(OrderStatusConstant.CANCELLED)) {
+        if (OrderStatusConstant.COMPLETED.equals(currentOrderStatus) ||
+                OrderStatusConstant.CANCELLED.equals(currentOrderStatus)) {
             log.error("管理员取消订单失败，订单状态 {} 已是终态，不允许取消：订单ID {}", currentOrderStatus, id);
             throw new OrderBusinessException(MessageConstant.ORDER_STATUS_NOT_ALLOW_CANCEL);
         }
 
-        // 4. 更新订单状态为已取消，设置取消信息和审计字段
-        MovingOrder updateOrder = MovingOrder.builder()
-                .id(id)
-                .orderStatus(OrderStatusConstant.CANCELLED) // 状态设为已取消
-                .cancelReason(cancelDTO.getCancelReason()) // 设置管理员提供的取消原因
-                .cancelTime(LocalDateTime.now()) // 设置取消时间
-                .build();
-
-        // --- 5. 处理支付状态：如果订单已支付，标记为已退款 ---
-        if (order.getIsPaid().equals(PaymentStatusConstant.PAID)) {
-            updateOrder.setIsPaid(PaymentStatusConstant.REFUNDED);
-            // 实际应用中，这里需要调用第三方支付平台的退款接口
-            // 模拟场景下，直接更新状态即可
-            log.info("订单已支付，模拟标记为已退款：订单ID {}", id);
-        }
-
-        // --- 6. 处理资源解除关联 ---
+        // 4. 处理资源解除关联 (先处理这些，因为它们修改了数据库) ---
         // 订单在状态 1, 2, 3 时可能关联有司机和搬运工，取消时需要解除
-        if (currentOrderStatus.equals(OrderStatusConstant.DRIVER_ACCEPTED_WAITING_MOVERS) ||
-                currentOrderStatus.equals(OrderStatusConstant.ACCEPTED) ||
-                currentOrderStatus.equals(OrderStatusConstant.IN_PROGRESS)) {
+        if (OrderStatusConstant.DRIVER_ACCEPTED_WAITING_MOVERS.equals(currentOrderStatus) ||
+                OrderStatusConstant.ACCEPTED.equals(currentOrderStatus) ||
+                OrderStatusConstant.IN_PROGRESS.equals(currentOrderStatus)) {
 
             log.info("订单在状态 {} 已关联资源，解除司机和搬运工人关联：订单ID {}", currentOrderStatus, id);
 
-            // 6.1 删除 order_mover 表中关联该订单的记录
-            // 假设 OrderMoverMapper 有 deleteByOrderId 方法
+            // 4.1 删除 order_mover 表中关联该订单的记录
             orderMoverMapper.deleteByOrderId(id);
             log.info("已删除订单 {} 的搬运工人关联记录", id);
 
-            // 6.2 清空 moving_order 表中的 driver_id 和 vehicle_id
+            // 4.2 清空 moving_order 表中的 driver_id 和 vehicle_id
             // 假设 orderMapper 有 clearOrderDriverVehicle 方法将 driver_id 和 vehicle_id 设为 NULL
-            orderMapper.clearOrderDriverVehicle(id);
-            log.info("已清除订单 {} 的司机和车辆关联", id);
-
-            // (可选) 通知司机和搬运工人订单已取消
-            // WebSocket 通知逻辑可以在这里触发
+            orderMapper.clearOrderDriverVehicle(id); // 这个方法直接更新数据库
+            log.info("已清除订单 {} 的司机和车辆关联 (通过单独方法)", id);
         }
 
-        // --- 7. 处理状态特定的复杂业务逻辑 (重点在状态 3 进行中) ---
-        if (currentOrderStatus.equals(OrderStatusConstant.IN_PROGRESS)) {
+        // 5. 处理状态特定的复杂业务逻辑 (重点在状态 3 进行中) ---
+        if (OrderStatusConstant.IN_PROGRESS.equals(currentOrderStatus)) {
             log.info("订单在进行中状态被管理员取消，触发复杂业务处理：订单ID {}", id);
             // !!! 在这里实现复杂的业务判断和处理逻辑 !!!
-            // 例如：
-            // - 触发部分费用计算，根据已完成的工作量确定结算金额
-            // - 触发司机和搬运工的部分报酬计算和补偿逻辑
-            // - 记录现场物品状态（可能需要额外的数据结构或人工流程）
-            // - 如果订单已支付，触发退款流程（可能只退还一部分）
-            // ... 这部分是核心业务难点，需要根据具体规则实现 ...
         }
-        // 对于状态 0, 1, 2 的取消，逻辑相对简单，主要就是取消和释放资源。可能需要考虑取消政策（如罚金）
 
-        // --- 8. 调用 Mapper 更新数据库 ---
-        orderMapper.update(updateOrder); // 更新状态、取消信息、审计字段
-        log.info("订单取消成功，订单ID：{}，新状态：{}", id, updateOrder.getOrderStatus());
+        // 6. 创建最小化的 updateOrder 实体，包含要更新的字段和 ID (不包含 driverId 和 vehicleId) ---
+        MovingOrder updateOrder = MovingOrder.builder()
+                .id(id)
+                .orderStatus(OrderStatusConstant.CANCELLED) // 新状态设为 5 (已取消)
+                .cancelReason(cancelDTO.getCancelReason()) // 设置管理员提供的取消原因
+                .cancelTime(LocalDateTime.now()) // 设置取消时间为当前时间
+                .build();
 
-        // --- 9. (可选) 发送 WebSocket 消息给相关方 ---
-        // 通知用户、司机、搬运工订单已取消
-        // if (webSocketServer != null) { ... 通知逻辑 ... }
+        // 6.1 处理支付状态：如果订单已支付，在 updateOrder 中标记为已退款
+        if (order.getIsPaid() != null && order.getIsPaid().equals(PaymentStatusConstant.PAID)) {
+            updateOrder.setIsPaid(PaymentStatusConstant.REFUNDED); // 在 updateOrder 中设置支付状态
+            // !!! 实际应用中，这里需要调用第三方支付平台的退款接口 !!!
+            // !!! 模拟场景下，直接更新状态即可 !!!
+            log.info("订单已支付，模拟标记为已退款：订单ID {}", id);
+        }
+
+        // 7. 调用 Mapper 更新 moving_order 表 (使用 updateOrder) ---
+        orderMapper.update(updateOrder);
+        log.info("订单主要信息更新成功，订单ID：{}，新状态：{}", id, updateOrder.getOrderStatus());
+
+        // 8. 将 updateOrder 中的更新字段值手动复制到原始的 order 对象上 ---
+        order.setOrderStatus(updateOrder.getOrderStatus()); // 复制状态 (5)
+        order.setCancelTime(updateOrder.getCancelTime()); // 复制取消时间
+        order.setCancelReason(updateOrder.getCancelReason()); // 复制取消原因
+        order.setUpdateTime(updateOrder.getUpdateTime()); // 复制 updateTime
+        // 如果更新了 isPaid，也要复制：
+        if (updateOrder.getIsPaid() != null) {
+            order.setIsPaid(updateOrder.getIsPaid());
+        }
+
+        // 9. 在内存中更新 order 对象，反映 driver_id 和 vehicle_id 已清除 ***
+        // 这是因为 driver_id 和 vehicle_id 是通过单独的方法清空的 (步骤 4.2)，不在 updateOrder 中
+        // 必须在内存中的 order 对象上反映这个变化，否则 emailService 拿到的 order 对象 driverId/vehicleId 还是旧值
+        order.setDriverId(null);
+        order.setVehicleId(null);
+        log.info("订单对象内存更新完成，反映司机和车辆关联已清除");
+
+        // 10. 调用邮件服务发送通知 ---
+        // 状态 5 (已取消)，不需要传递搬运工列表，传递一个空列表
+        List<Mover> assignedMovers = new ArrayList<>(); // 创建一个空的搬运工列表
+        // 调用统一的邮件发送方法，传递 修改后并在内存中反映了所有更新的 order 对象，新状态，和空列表
+        emailService.sendOrderStatusEmailToCustomer(order, OrderStatusConstant.CANCELLED, assignedMovers);
 
         log.info("管理员取消订单处理完成，订单ID：{}", id);
     }
@@ -918,58 +919,77 @@ public class OrderServiceImpl implements OrderService {
             throw new OrderBusinessException(MessageConstant.ORDER_STATUS_NOT_ALLOW_FORCE_COMPLETE);
         }
 
-        // 3. 更新订单状态为已完成 (4)
+        // 3. 创建最小化的 updateOrder 实体，只包含要更新的字段和 ID
         MovingOrder updateOrder = MovingOrder.builder()
                 .id(id)
-                .orderStatus(OrderStatusConstant.COMPLETED)
-                .movingEndTime(LocalDateTime.now())
+                .orderStatus(OrderStatusConstant.COMPLETED) // 新状态
+                .movingEndTime(LocalDateTime.now()) // 结束时间
                 .build();
 
-        // 更新数据库
+        // 4. 更新数据库，使用最小化的 updateOrder
         orderMapper.update(updateOrder);
 
-        // 6. 触发后续业务流程（关键步骤，需要根据你的具体设计实现）
-        // 通知客户订单已完成，请进行评价（如果适用）
-        // notifyCustomerOrderCompleted(order);
+        // 5. 将 updateOrder 中的更新字段值手动复制到原始的 order 对象上
+        order.setOrderStatus(OrderStatusConstant.COMPLETED); // 复制状态
+        order.setMovingEndTime(LocalDateTime.now()); // 复制结束时间
+        order.setUpdateTime(LocalDateTime.now()); // 复制 updateTime
+
+        // 6. 调用邮件服务发送通知
+        // 对于状态 4 (已完成)，不需要传递搬运工列表，传递一个空列表
+        List<Mover> assignedMovers = new ArrayList<>(); // 创建一个空的搬运工列表
+        // 调用统一的邮件发送方法，传递修改后的 order 对象，新状态，和空列表
+        emailService.sendOrderStatusEmailToCustomer(order, OrderStatusConstant.COMPLETED, assignedMovers);
     }
 
     /**
-     * 处理订单取消
+     * 处理订单自动取消 (支付超时)
      *
      * @param orderId 订单ID
      * @param reason  取消原因
      */
     @Transactional
     @Override
-    public void processOrderCancellation(Long orderId, String reason) {
-        // 再次获取订单信息，防止在查询和处理之间订单状态被改变 (解决并发问题)
+    public void processPaymentTimeoutCancellation(Long orderId, String reason) {
+        // 1. 获取订单信息，用于后续校验和更新
         MovingOrder order = orderMapper.getMovingOrderById(orderId);
 
-        // 校验订单当前状态是否仍然满足取消条件
-        // 检查状态是否仍为待接单(0)，且未支付(0)，且未被手动取消(5)或完成(4)
+        // 2. 校验订单当前状态是否满足【支付超时自动取消】的条件
+        // 条件：订单存在，状态为待接单(0)，未支付(0)，且未被手动取消(5)或已完成(4)
         if (order == null ||
-                !OrderStatusConstant.PENDING_ACCEPTANCE.equals(order.getOrderStatus()) || // 确保状态仍是待接单
-                (order.getIsPaid() != null && order.getIsPaid().equals(PaymentStatusConstant.PAID)) || // 确保未支付
-                OrderStatusConstant.CANCELLED.equals(order.getOrderStatus()) || // 确保未被手动取消
-                OrderStatusConstant.COMPLETED.equals(order.getOrderStatus()) // 确保未完成
+                !OrderStatusConstant.PENDING_ACCEPTANCE.equals(order.getOrderStatus()) || // 确保状态仍是待接单(0)
+                (order.getIsPaid() != null && order.getIsPaid().equals(PaymentStatusConstant.PAID)) || // 确保未支付(0)
+                // 以下两项确保订单没有被其他流程先处理掉
+                OrderStatusConstant.CANCELLED.equals(order.getOrderStatus()) || // 确保不是已取消(5)
+                OrderStatusConstant.COMPLETED.equals(order.getOrderStatus()) // 确保不是已完成(4)
         ) {
-            // 订单不存在、状态已改变（如已支付、已接单、已取消、已完成），不执行自动取消操作
-            log.info("订单不存在或状态已改变，不执行自动取消操作：订单ID={}, 当前状态={}, 支付状态={}", orderId, order != null ? order.getOrderStatus() : "null", order != null ? order.getIsPaid() : "null");
-            return;
+            // 如果不满足支付超时自动取消条件，记录信息并返回
+            log.info("订单不满足支付超时自动取消条件：订单ID={}, 当前状态={}, 支付状态={}",
+                    orderId, order != null ? order.getOrderStatus() : "null", order != null ? order.getIsPaid() : "null");
+            return; // 不符合自动取消条件，直接返回
         }
 
-        // 如果通过了以上校验，说明订单确实支付超时且未被其他方式处理，可以进行自动取消
+        // 3. 创建最小化的 updateOrder 实体，只包含要更新的字段和 ID
         MovingOrder updateOrder = MovingOrder.builder()
                 .id(orderId)
-                .orderStatus(OrderStatusConstant.CANCELLED)
-                .cancelTime(LocalDateTime.now())
-                .cancelReason(reason)
+                .orderStatus(OrderStatusConstant.CANCELLED) // 新状态设为 5 (已取消)
+                .cancelTime(LocalDateTime.now()) // 设置取消时间为当前时间
+                .cancelReason(reason) // 设置取消原因 (由调用方传入，如"支付超时自动取消")
                 .build();
 
+        // 4. 更新数据库，使用最小化的 updateOrder
         orderMapper.update(updateOrder);
 
-        // TODO: 释放可能占用的资源（例如，通知司机/搬运工该订单已取消，如果订单曾被司机接单到状态1/2）
-        // releaseOrderResources(orderId);
+        // 5. 将 updateOrder 中的更新字段值手动复制到原始的 order 对象上
+        order.setOrderStatus(updateOrder.getOrderStatus()); // 复制状态
+        order.setCancelTime(updateOrder.getCancelTime()); // 复制取消时间
+        order.setCancelReason(updateOrder.getCancelReason()); // 复制取消原因
+        order.setUpdateTime(updateOrder.getUpdateTime()); // 复制 updateTime
+
+        // 6. 调用邮件服务发送通知
+        // 对于状态 5 (已取消)，不需要传递搬运工列表，传递一个空列表
+        List<Mover> assignedMovers = new ArrayList<>(); // 创建一个空的搬运工列表
+        // 调用统一的邮件发送方法，传递修改后的 order 对象，新状态，和空列表
+        emailService.sendOrderStatusEmailToCustomer(order, OrderStatusConstant.CANCELLED, assignedMovers);
     }
 
 }
