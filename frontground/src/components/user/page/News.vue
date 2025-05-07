@@ -1,6 +1,8 @@
 <script setup>
 import { queryNewsApi } from '@/api/common.js'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 
 const newsForm = ref({
   page: 1,
@@ -23,15 +25,15 @@ onMounted(() => queryNews())
 const reset = () => {
   newsForm.value = {
     page: 1,
-    pageSize: 1,
+    pageSize: 10,
     title: '',
     content: '',
   }
   queryNews()
 }
-const gotoDetail = (item) => {
+const gotoDetail = (id) => {
   router.push({
-    path: `${props.routeLink}/${encodeURIComponent(JSON.stringify(item))}`
+    path: `/userHome/news/${id}`
   })
 }
 </script>
@@ -53,7 +55,7 @@ const gotoDetail = (item) => {
       </el-form>
     </div>
     <div class="box">
-      <div class="data-item" v-for="item in newsData" :key="item.id" @click="gotoDetail(item)">
+      <div class="data-item" v-for="item in newsData" :key="item.id" @click="gotoDetail(item.id)">
         <div class="title">{{ item.title }}</div>
         <div class="content">
           {{ item.content }}

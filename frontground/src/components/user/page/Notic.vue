@@ -1,10 +1,12 @@
 <script setup>
 import { queryNoticApi } from '@/api/common.js'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 
 const noticForm = ref({
-  page: 10,
-  pageSize: 1,
+  page: 1,
+  pageSize: 10,
   title: '',
   content: '',
   category: '',
@@ -23,16 +25,16 @@ onMounted(() => queryNotic())
 const reset = () => {
   noticForm.value = {
     page: 1,
-    pageSize: 1,
+    pageSize: 10,
     title: '',
     content: '',
     category: '',
   }
   queryNotic()
 }
-const gotoDetail = (item) => {
+const gotoDetail = (id) => {
   router.push({
-    path: `${props.routeLink}/${encodeURIComponent(JSON.stringify(item))}`
+    path: `/userHome/notic/${id}`
   })
 }
 </script>
@@ -57,7 +59,7 @@ const gotoDetail = (item) => {
       </el-form>
     </div>
     <div class="box">
-      <div class="data-item" v-for="item in noticData" :key="item.id" @click="gotoDetail(item)">
+      <div class="data-item" v-for="item in noticData" :key="item.id" @click="gotoDetail(item.id)">
         <div class="title">{{ item.title }}</div>
         <div class="content">
           {{ item.content }}

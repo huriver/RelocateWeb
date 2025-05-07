@@ -3,9 +3,7 @@
 </script>
 
 <template>
-  <div class="my-container home-container">
-
-  </div>
+  111
 </template>
 
 <style scoped></style>

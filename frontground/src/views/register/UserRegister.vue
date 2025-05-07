@@ -43,7 +43,7 @@ const login = (formEl) => {
       <!-- 头部 -->
       <template #header>
         <div class="card-header">
-          搬家系统注册
+          欢迎注册易搬家
         </div>
       </template>
       <!-- 主体内容 -->

@@ -15,16 +15,20 @@ const request = axios.create({
 let loading = null;
 request.interceptors.request.use(
   function (config) {
-    loading = ElLoading.service({
-      lock: true,
-      text: "加载中...",
-      background: "rgba(0, 0, 0, 0.7)",
-    });
+    if (
+      !config.url.includes("/front/service") &&
+      !config.url.includes("/front/rating")
+    ) {
+      loading = ElLoading.service({
+        lock: true,
+        text: "加载中...",
+        background: "rgba(0, 0, 0, 0.7)",
+      });
+    }
     // 获取token
     const { token } = localStorage.getItem("userInfo")
       ? JSON.parse(localStorage.getItem("userInfo"))
       : "";
-    console.log(token);
     if (token) config.headers["authentication"] = token;
     return config;
   },
@@ -64,6 +68,12 @@ request.interceptors.response.use(
     nextTick(() => {
       loading.close();
     });
+    console.log(error.response.status == 401);
+    if (error.response.status == 401) {
+      ElMessage.error("登录过期，请重新登录");
+      router.push("/userLogin");
+      return;
+    }
     ElMessage.error("请求失败");
     return Promise.reject(error);
   }

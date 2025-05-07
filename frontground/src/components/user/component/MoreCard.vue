@@ -16,9 +16,9 @@ const props = defineProps({
     required: true
   }
 })
-const gotoDetail = (item) => {
+const gotoDetail = (id) => {
   router.push({
-    path: `${props.routeLink}/${encodeURIComponent(JSON.stringify(item))}`
+    path: `${props.routeLink}/${id}`
   })
 }
 </script>
@@ -30,7 +30,7 @@ const gotoDetail = (item) => {
       <el-button type="primary" style="width: 60px;" @click="router.push(routeLink)">更多</el-button>
     </div>
     <div class="box">
-      <div class="data-item" v-for="item in data" :key="item.id" @click="gotoDetail(item)">
+      <div class="data-item" v-for="item in data" :key="item.id" @click="gotoDetail(item.id)">
         <div class="title">{{ item.title }}</div>
         <div class="content">
           {{ item.content }}

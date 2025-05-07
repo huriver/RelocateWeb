@@ -1,11 +1,12 @@
 <!-- UserHome.vue 修改后 -->
 <script setup>
 import { ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { myStore } from '@/stores/store.js'
 
 const store = myStore()
 const route = useRoute()
+const router = useRouter()
 
 // 使用 ref 创建响应式变量
 const activeRouter = ref(store.routePath || "/userHome/front")
@@ -25,6 +26,7 @@ watch(
   <div class="home-page">
     <el-container>
       <el-header>
+        <img class="logo" src="../../assets/img/logo.png" @click="router.push('/userHome/front')">
         <el-menu :default-active="activeRouter" mode="horizontal" router :ellipsis="false">
           <el-menu-item index="/userHome/front">首页</el-menu-item>
           <el-menu-item index="/userHome/service">搬家服务</el-menu-item>
@@ -41,6 +43,13 @@ watch(
 </template>
 
 <style lang='less' scoped>
+.logo {
+  width: 80px;
+  position: absolute;
+  left: 20px;
+  cursor: pointer;
+}
+
 .el-header {
   width: 100%;
   padding: 0;

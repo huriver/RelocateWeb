@@ -44,7 +44,7 @@ const login = (formEl) => {
       <!-- 头部 -->
       <template #header>
         <div class="card-header">
-          搬家系统登录
+          欢迎登录易搬家
         </div>
       </template>
       <!-- 主体内容 -->
