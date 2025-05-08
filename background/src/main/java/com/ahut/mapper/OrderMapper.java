@@ -1,9 +1,12 @@
 package com.***REMOVED***.mapper;
 
 import com.***REMOVED***.annotation.AutoFill;
+import com.***REMOVED***.dto.DriverAvailableOrderPageQueryDTO;
 import com.***REMOVED***.dto.OrdersPageQueryDTO;
 import com.***REMOVED***.entity.MovingOrder;
 import com.***REMOVED***.enumeration.OperationType;
+import com.***REMOVED***.vo.DriverAvailableOrderDetailVO;
+import com.***REMOVED***.vo.DriverAvailableOrderSummaryVO;
 import com.***REMOVED***.vo.OrderVO;
 import com.github.pagehelper.Page;
 import org.apache.ibatis.annotations.*;
@@ -104,5 +107,13 @@ public interface OrderMapper {
             "create_time, update_time " +
             "FROM moving_order WHERE order_status = 0 AND is_paid = 0 AND create_time < #{timeoutThreshold}")
     List<MovingOrder> getTimeoutUnpaidOrders(LocalDateTime timeoutThreshold);
+
+    // 分页查询待接订单列表 (已根据司机能力过滤，并应用可选筛选)
+    Page<DriverAvailableOrderSummaryVO> driverPageQueryAvailable(
+            @Param("dto") DriverAvailableOrderPageQueryDTO pageQueryDTO, // 使用 @Param 给 DTO 起别名
+            @Param("currentDriverId") Long currentDriverId); // 使用 @Param 给司机ID起别名
+
+    // 司机端根据订单ID和司机ID查询待接订单详情
+    DriverAvailableOrderDetailVO driverGetAvailableDetail(Long orderId, Long currentDriverId);
 
 }

@@ -253,4 +253,137 @@
         ORDER BY mo.create_time DESC
     </select>
 
+    <resultMap id="driverAvailableOrderSummaryResultMap" type="com.***REMOVED***.vo.DriverAvailableOrderSummaryVO">
+        <id column="id" property="orderId"/>
+        <result column="order_number" property="orderNumber"/>
+        <result column="truck_type_id" property="requiredTruckTypeId"/>
+        <result column="moving_origin" property="movingOrigin"/>
+        <result column="moving_destination" property="movingDestination"/>
+        <result column="reservation_time" property="reservationTime"/>
+        <result column="moving_price" property="movingPrice"/>
+        <result column="number_of_helpers" property="numberOfHelpers"/>
+
+        <result column="type_name" property="truckTypeName"/>
+        <result column="capacity" property="truckTypeCapacity"/>
+    </resultMap>
+
+    <select id="driverPageQueryAvailable" resultMap="driverAvailableOrderSummaryResultMap">
+        SELECT mo.id, mo.order_number, mo.truck_type_id,
+        mo.moving_origin, mo.moving_destination,
+        mo.reservation_time, mo.moving_price, mo.number_of_helpers,
+        tt.type_name, tt.capacity
+        FROM moving_order mo
+        JOIN truck_type tt ON mo.truck_type_id = tt.id
+        LEFT JOIN service s ON mo.service_id = s.id
+        LEFT JOIN service_category sc ON s.category_id = sc.id
+        WHERE
+        mo.order_status = 0 AND mo.is_paid = 1 AND mo.truck_type_id IN (
+        SELECT truck_type_id
+        FROM driver_truck_type
+        WHERE driver_id = #{currentDriverId}
+        )
+        <if test="dto.startDate != null and dto.endDate != null">
+            AND mo.reservation_time BETWEEN #{dto.startDate} AND #{dto.endDate}
+        </if>
+        <if test="dto.startDate != null and dto.endDate == null">
+            AND mo.reservation_time >= #{dto.startDate}
+        </if>
+        <if test="dto.startDate == null and dto.endDate != null">
+            AND mo.reservation_time <![CDATA[<=]]> #{dto.endDate}
+        </if>
+        <if test="dto.truckTypeId != null">
+            AND mo.truck_type_id = #{dto.truckTypeId}
+        </if>
+        <if test="dto.serviceCategoryId != null">
+            AND sc.id = #{dto.serviceCategoryId}
+        </if>
+        ORDER BY mo.reservation_time ASC
+    </select>
+
+    <resultMap id="driverAvailableOrderDetailResultMap" type="com.***REMOVED***.vo.DriverAvailableOrderDetailVO">
+        <id column="order_id" property="orderId"/>
+        <result column="order_number" property="orderNumber"/>
+        <result column="order_status" property="orderStatus"/>
+        <result column="reservation_time" property="reservationTime"/>
+        <result column="moving_origin" property="movingOrigin"/>
+        <result column="moving_destination" property="movingDestination"/>
+        <result column="number_of_helpers" property="numberOfHelpers"/>
+        <result column="notes" property="notes"/>
+        <result column="create_time" property="createTime"/>
+        <result column="is_paid" property="isPaid"/>
+        <result column="moving_price" property="movingPrice"/>
+        <result column="mileage_cost" property="mileageCost"/>
+        <result column="helper_cost" property="helperCost"/>
+        <result column="category_price_multiplier" property="categoryPriceMultiplier"/>
+
+        <result column="customer_id" property="customerId"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="customer_phone" property="customerPhone"/>
+
+        <result column="service_id" property="serviceId"/>
+        <result column="service_name" property="serviceName"/>
+        <result column="service_short_description" property="serviceShortDescription"/>
+        <result column="service_loading_capacity_description" property="serviceLoadingCapacityDescription"/>
+
+        <result column="service_category_id" property="serviceCategoryId"/>
+        <result column="service_category_name" property="serviceCategoryName"/>
+
+        <result column="truck_type_id" property="requiredTruckTypeId"/>
+        <result column="type_name" property="truckTypeName"/>
+        <result column="capacity" property="truckTypeCapacity"/>
+        <result column="description" property="truckTypeDescription"/>
+        <result column="base_fare" property="truckTypeBaseFare"/>
+
+    </resultMap>
+
+    <select id="driverGetAvailableDetail" resultMap="driverAvailableOrderDetailResultMap">
+        SELECT mo.id                          AS order_id,
+               mo.order_number,
+               mo.order_status,
+               mo.reservation_time,
+               mo.moving_origin,
+               mo.moving_destination,
+               mo.number_of_helpers,
+               mo.notes,
+               mo.create_time,
+               mo.is_paid,
+
+               mo.moving_price,
+               mo.mileage_cost,
+               mo.helper_cost,
+               mo.category_price_multiplier,
+
+               c.id                           AS customer_id,
+               c.name                         AS customer_name,
+               c.phone                        AS customer_phone,
+
+               s.id                           AS service_id,
+               s.service_name,
+               s.short_description            AS service_short_description,
+               s.loading_capacity_description AS service_loading_capacity_description,
+
+               sc.id                          AS service_category_id,
+               sc.type_name                   AS service_category_name,
+
+               tt.id                          AS truck_type_id,
+               tt.type_name,
+               tt.capacity,
+               tt.description,
+               tt.base_fare
+
+        FROM moving_order mo
+                 JOIN customer c ON mo.customer_id = c.id
+                 JOIN service s ON mo.service_id = s.id
+                 JOIN service_category sc ON s.category_id = sc.id
+                 JOIN truck_type tt ON mo.truck_type_id = tt.id
+        WHERE mo.id = #{orderId}
+          AND mo.order_status = 0
+          AND mo.is_paid = 1
+          AND mo.truck_type_id IN (
+            SELECT truck_type_id
+            FROM driver_truck_type
+            WHERE driver_id = #{currentDriverId}
+        )
+    </select>
+
 </mapper>

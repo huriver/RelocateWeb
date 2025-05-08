@@ -2,10 +2,12 @@ package com.***REMOVED***.controller.back;
 
 import com.***REMOVED***.context.BaseContext;
 import com.***REMOVED***.dto.AdminOrderCancelDTO;
+import com.***REMOVED***.dto.DriverAvailableOrderPageQueryDTO;
 import com.***REMOVED***.dto.OrdersPageQueryDTO;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.OrderService;
+import com.***REMOVED***.vo.DriverAvailableOrderDetailVO;
 import com.***REMOVED***.vo.OrderStatusVO;
 import com.***REMOVED***.vo.OrderVO;
 import com.***REMOVED***.vo.PaymentStatusVO;
@@ -98,6 +100,34 @@ public class OrderController {
         log.info("管理员{}强制完成订单,订单号为：{}", BaseContext.getCurrentId(), id);
         orderService.forceComplete(id);
         return Result.success();
+    }
+
+    // --- 司机相关订单查询接口 ---
+
+    /**
+     * 司机端分页查询待接订单列表
+     *
+     * @param pageQueryDTO 分页及筛选条件 DTO，接收 Query 参数
+     * @return 包含待接订单分页结果的统一返回结果
+     */
+    @GetMapping("/driver/available-orders")
+    public Result<PageResult> driverPageQueryAvailableOrders(DriverAvailableOrderPageQueryDTO pageQueryDTO) {
+        log.info("司机{}，分页查询待接订单, 参数: {}", BaseContext.getCurrentId(), pageQueryDTO);
+        PageResult pageResult = orderService.driverPageQueryAvailable(pageQueryDTO);
+        return Result.success(pageResult);
+    }
+
+    /**
+     * 查询司机端待接订单详情
+     *
+     * @param orderId 从路径中获取的订单ID
+     * @return 包含订单详情的统一返回结果
+     */
+    @GetMapping("/driver/available-orders/{orderId}")
+    public Result<DriverAvailableOrderDetailVO> driverGetAvailableOrderDetail(@PathVariable Long orderId) {
+        log.info("司机{}，查询待接订单详情, 订单ID: {}", BaseContext.getCurrentId(), orderId);
+        DriverAvailableOrderDetailVO orderDetail = orderService.driverGetAvailableDetail(orderId);
+        return Result.success(orderDetail);
     }
 
 }

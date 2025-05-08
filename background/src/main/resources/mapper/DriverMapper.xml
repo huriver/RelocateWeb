@@ -83,4 +83,31 @@
         ORDER BY name
     </select>
 
+    <resultMap id="driverTypeVehicleResultMap" type="DriverTypeVehicleVO">
+        <id column="truck_type_id" property="truckTypeId"/>
+        <result column="type_name" property="truckTypeName"/>
+        <result column="capacity" property="truckTypeCapacity"/>
+        <result column="description" property="truckTypeDescription"/>
+        <result column="base_fare" property="truckTypeBaseFare"/>
+
+        <association property="assignedVehicle" javaType="com.***REMOVED***.vo.AssignedVehicleVO" autoMapping="true">
+        </association>
+    </resultMap>
+
+    <select id="findDriverTypeVehiclesByDriverId" resultMap="driverTypeVehicleResultMap">
+        SELECT dt.truck_type_id,
+               tt.type_name,
+               tt.capacity,
+               tt.description,
+               tt.base_fare,
+
+               v.id AS vehicle_id,
+               v.license_plate_number,
+               v.vehicle_brand
+        FROM driver_truck_type dt
+                 JOIN truck_type tt ON dt.truck_type_id = tt.id
+                 LEFT JOIN vehicle v ON dt.driver_id = v.driver_id AND dt.truck_type_id = v.truck_type_id
+        WHERE dt.driver_id = #{driverId}
+    </select>
+
 </mapper>

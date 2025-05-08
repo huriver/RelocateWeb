@@ -4,6 +4,7 @@ import com.***REMOVED***.annotation.AutoFill;
 import com.***REMOVED***.dto.DriverPageQueryDTO;
 import com.***REMOVED***.entity.Driver;
 import com.***REMOVED***.enumeration.OperationType;
+import com.***REMOVED***.vo.DriverTypeVehicleVO;
 import com.github.pagehelper.Page;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -44,5 +45,8 @@ public interface DriverMapper {
 
     // 根据姓名模糊查询司机列表 (供搜索下拉框使用)
     List<Driver> listByName(String name);
+
+    // 根据司机ID查询其可驾驭的货车类型及对应的被分配车辆列表
+    List<DriverTypeVehicleVO> findDriverTypeVehiclesByDriverId(Long driverId);
 
 }

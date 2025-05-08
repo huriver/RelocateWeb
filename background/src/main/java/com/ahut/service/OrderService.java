@@ -48,4 +48,11 @@ public interface OrderService {
     // 处理订单自动取消 (支付超时)
     void processPaymentTimeoutCancellation(Long orderId, String reason);
 
+    // --- 司机相关订单查询方法 ---
+    // 司机端分页查询待接订单列表
+    PageResult driverPageQueryAvailable(DriverAvailableOrderPageQueryDTO pageQueryDTO);
+
+    // 司机端根据订单ID查询待接订单详情
+    DriverAvailableOrderDetailVO driverGetAvailableDetail(Long orderId);
+
 }

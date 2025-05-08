@@ -12,6 +12,7 @@ import com.***REMOVED***.mapper.DriverMapper;
 import com.***REMOVED***.mapper.OrderMapper;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.service.DriverService;
+import com.***REMOVED***.vo.DriverTypeVehicleVO;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
@@ -194,6 +195,18 @@ public class DriverServiceImpl implements DriverService {
                 .isBanned(isBanned == 1)
                 .build();
         driverMapper.update(updateDriver);
+    }
+
+    /**
+     * 获取当前登录司机的可驾驾货车类型及对应的被分配车辆列表
+     *
+     * @return 司机能力与车辆组合列表
+     */
+    @Override
+    @Transactional(readOnly = true) // 读取操作通常设置为 readOnly = true
+    public List<DriverTypeVehicleVO> getDriverTypeVehicles() {
+        Long currentDriverId = BaseContext.getCurrentId();
+        return driverMapper.findDriverTypeVehiclesByDriverId(currentDriverId);
     }
 
 }

@@ -1005,4 +1005,44 @@ public class OrderServiceImpl implements OrderService {
         emailService.sendOrderStatusEmailToCustomer(order, OrderStatusConstant.CANCELLED, assignedMovers);
     }
 
+    // --- 司机相关订单查询方法实现 ---
+
+    /**
+     * 司机端分页查询待接订单列表
+     *
+     * @param pageQueryDTO 分页及筛选条件
+     * @return 待接订单分页结果
+     */
+    @Override
+    @Transactional(readOnly = true) // 只读事务
+    public PageResult driverPageQueryAvailable(DriverAvailableOrderPageQueryDTO pageQueryDTO) {
+        PageHelper.startPage(pageQueryDTO.getPage(), pageQueryDTO.getPageSize());
+        Page<DriverAvailableOrderSummaryVO> page = orderMapper.driverPageQueryAvailable(pageQueryDTO, BaseContext.getCurrentId());
+        return new PageResult(page.getTotal(), page.getResult());
+    }
+
+    /**
+     * 司机端根据订单ID查询待接订单详情
+     *
+     * @param orderId 订单ID
+     * @return 订单详情 VO
+     */
+    @Override
+    @Transactional(readOnly = true) // 只读事务
+    public DriverAvailableOrderDetailVO driverGetAvailableDetail(Long orderId) {
+        Long currentDriverId = BaseContext.getCurrentId(); // 获取当前司机ID
+
+        // OrderMapper 的 SQL 会强制过滤 order_status=0, is_paid=1, 并校验司机能力
+        // 如果 Mapper 返回 null，表示该订单不存在、非待接单、未支付、或司机无权限查看
+        DriverAvailableOrderDetailVO orderDetail = orderMapper.driverGetAvailableDetail(orderId, currentDriverId);
+
+        if (orderDetail == null) {
+            log.warn("司机{} 查询订单详情失败，订单ID：{}，订单不存在、非待接单、未支付或无权限", currentDriverId, orderId);
+            throw new BusinessException("订单不存在或无权限");
+        }
+
+        log.info("成功查询待接订单详情，订单ID：{}", orderId);
+        return orderDetail;
+    }
+
 }

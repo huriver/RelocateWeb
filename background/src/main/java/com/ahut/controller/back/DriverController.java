@@ -8,6 +8,7 @@ import com.***REMOVED***.entity.Driver;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.DriverService;
+import com.***REMOVED***.vo.DriverTypeVehicleVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -102,6 +103,18 @@ public class DriverController {
         log.info("封禁/解封司机账号：id={}, status={}", id, isBanned == 0 ? "解封" : "封禁");
         driverService.updateStatus(id, isBanned);
         return Result.success();
+    }
+
+    /**
+     * 获取当前登录司机的可驾驭货车类型及对应的被分配车辆列表
+     *
+     * @return 包含司机能力与车辆组合列表的统一返回结果
+     */
+    @GetMapping("/type-vehicles")
+    public Result<List<DriverTypeVehicleVO>> getDriverTypeVehicles() {
+        log.info("司机{}，获取当前登录司机的可驾驭货车类型及对应的被分配车辆列表", BaseContext.getCurrentId());
+        List<DriverTypeVehicleVO> capabilities = driverService.getDriverTypeVehicles();
+        return Result.success(capabilities);
     }
 
 }
