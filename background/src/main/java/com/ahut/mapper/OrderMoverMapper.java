@@ -23,6 +23,10 @@ public interface OrderMoverMapper {
             "WHERE om.order_id = #{orderId}")
     List<MoverVO> getAssignedMoversByOrderId(Long orderId);
 
+    // 根据订单ID统计关联的搬运工人数量
+    @Select("SELECT COUNT(*) FROM order_mover WHERE order_id = #{orderId}")
+    int countByOrderId(Long orderId);
+
     // Future: 可以添加其他操作 order_mover 表的方法，例如：
     // @Insert("insert into order_mover (order_id, mover_id) values (#{orderId}, #{moverId})")
     // void insert(@Param("orderId") Long orderId, @Param("moverId") Long moverId);

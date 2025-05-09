@@ -73,6 +73,18 @@ public interface OrderService {
     // 后台司机端根据订单ID查询历史订单详情
     DriverHistoricalOrderDetailVO driverGetHistoricalOrderDetail(Long orderId);
 
+    // 后台司机端接单
+    void driverAcceptOrder(DriverAcceptOrderDTO driverAcceptOrderDTO);
+
+    // 后台司机端取消订单
+    void driverCancelOrder(DriverCancelOrderDTO driverCancelOrderDTO);
+
+    // 后台司机端开始搬运服务
+    void driverStartMoving(Long orderId);
+
+    // 后台司机端完成搬运服务
+    void driverCompleteMoving(Long orderId);
+
     /**
      * 获取适用于搬家工人端“我的订单”列表筛选的状态列表
      *

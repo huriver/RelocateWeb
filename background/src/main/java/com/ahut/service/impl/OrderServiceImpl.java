@@ -60,6 +60,15 @@ public class OrderServiceImpl implements OrderService {
     private CustomerService customerService;
 
     @Autowired
+    private DriverMapper driverMapper;
+
+    @Autowired
+    private DriverTruckTypeMapper driverTruckTypeMapper;
+
+    @Autowired
+    private VehicleMapper vehicleMapper;
+
+    @Autowired
     private RatingMapper ratingMapper;
 
     @Value("${relocate.baidu.ak}")
@@ -548,24 +557,6 @@ public class OrderServiceImpl implements OrderService {
             // 支付已成功，但更新数据库失败是严重问题，需要报警和人工干预
             throw new OrderBusinessException(MessageConstant.UPDATE_ORDER_PAY_STATUS_FAILED);
         }
-
-        // 5. (可选) 通过WebSocket实现来单提醒，向客户端浏览器或司机端推送消息
-        // if (webSocketServer != null) {
-        //     Map<String, Object> message = new HashMap<>();
-        //     message.put("type", 1); // 消息类型：1表示来单提醒
-        //     message.put("orderId", order.getId()); // 通知中包含订单ID
-        //     message.put("orderNumber", order.getOrderNumber()); // 通知中包含订单号
-        //     // 可以根据业务需要添加更多信息，如服务类型，起止地址简要信息等
-        //     // message.put("content", "新的搬家订单：" + order.getOrderNumber()); // 消息内容示例
-        //
-        //     try {
-        //         webSocketServer.sendToAllClient(JSON.toJSONString(message));
-        //         log.info("已发送新订单WebSocket通知：{}", orderNumber);
-        //     } catch (Exception e) {
-        //         log.error("发送新订单WebSocket通知失败：{}", orderNumber, e);
-        //         // 发送通知失败不影响支付成功和订单状态，只记录日志
-        //     }
-        // }
 
         log.info("订单支付成功处理完成，订单号：{}", orderNumber);
     }
@@ -1212,6 +1203,286 @@ public class OrderServiceImpl implements OrderService {
         detailVO.setRatings(ratings);
 
         return detailVO;
+    }
+
+    /**
+     * 后台司机端接单
+     *
+     * @param driverAcceptOrderDTO 包含订单ID的请求DTO
+     */
+    @Transactional // 事务管理
+    @Override
+    public void driverAcceptOrder(DriverAcceptOrderDTO driverAcceptOrderDTO) {
+        Long orderId = driverAcceptOrderDTO.getOrderId();
+        Long currentDriverId = BaseContext.getCurrentId();
+
+        // 1. 获取并锁定订单记录 (在事务中)
+        // 使用 getMovingOrderById 查询，支持 SELECT ... FOR UPDATE
+        MovingOrder order = orderMapper.getMovingOrderById(orderId);
+
+        // 2. 基础业务检查
+        // 检查订单是否存在
+        if (order == null) {
+            log.warn("接单失败: 订单不存在或已删除, orderId={}", orderId);
+            throw new BusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        // 检查订单状态是否可接 (必须是待接单 - 0)
+        if (!order.getOrderStatus().equals(OrderStatusConstant.PENDING_ACCEPTANCE)) {
+            log.warn("接单失败: 订单状态错误, orderId={}, currentStatus={}", orderId, order.getOrderStatus());
+            throw new BusinessException(MessageConstant.ORDER_STATUS_ERROR + ", 订单已被接走或已取消");
+        }
+
+        // 检查司机账号状态 (是否被禁用)
+        Integer isBanned = driverMapper.getIsBannedById(currentDriverId);
+        if (isBanned != null && isBanned == 1) {
+            log.warn("接单失败: 司机账号被禁用, driverId={}", currentDriverId);
+            throw new BusinessException(MessageConstant.ACCOUNT_DISABLED);
+        }
+
+        // 检查司机是否有资格驾驶该订单所需车型
+        Integer countDriverTruckType = driverTruckTypeMapper.countByDriverIdAndTruckTypeId(currentDriverId, order.getTruckTypeId());
+        if (countDriverTruckType == null || countDriverTruckType == 0) {
+            log.warn("接单失败: 司机没有订单所需车型权限, driverId={}, truckTypeId={}", currentDriverId, order.getTruckTypeId());
+            throw new BusinessException(MessageConstant.DRIVER_TRUCK_TYPE_PERMISSION_MISMATCH);
+        }
+
+        // 4. 分配车辆
+        // 根据司机ID和订单车型ID查询车辆ID (根据“每个汽车类型下，司机只有一个汽车”的规则)
+        Long assignedVehicleId = vehicleMapper.getIdByDriverAndTruckType(currentDriverId, order.getTruckTypeId()); // 假设 VehicleMapper 有此方法
+        if (assignedVehicleId == null) {
+            log.warn("接单失败: 未找到司机符合车型要求的车辆, driverId={}, truckTypeId={}", currentDriverId, order.getTruckTypeId());
+            throw new BusinessException(MessageConstant.DRIVER_TRUCK_TYPE_NOT_AVAILABLE);
+        }
+
+        // 5. 更新订单记录 (在事务中)
+        // 设置要更新的字段值
+        MovingOrder updateOrder = MovingOrder.builder()
+                .id(orderId)
+                .orderStatus(OrderStatusConstant.DRIVER_ACCEPTED_WAITING_MOVERS)
+                .driverId(currentDriverId)
+                .vehicleId(assignedVehicleId)
+                .build();
+
+        orderMapper.update(updateOrder);
+        log.info("订单 {} 已成功分配给司机 {}, 车辆 {}", orderId, currentDriverId, assignedVehicleId);
+
+        order.setOrderStatus(OrderStatusConstant.DRIVER_ACCEPTED_WAITING_MOVERS);
+        order.setDriverId(currentDriverId);
+        order.setVehicleId(assignedVehicleId);
+        order.setUpdateTime(LocalDateTime.now());
+
+        // 7. 后续操作 (在事务提交后触发，例如发送通知，启动搬运工分配流程)
+        // **发送客户通知邮件**
+        // 调用 EmailService 发送通知。传递更新后的 order 对象，新的状态，以及搬运工列表 (状态1不需要，传 null)
+        emailService.sendOrderStatusEmailToCustomer(order, OrderStatusConstant.DRIVER_ACCEPTED_WAITING_MOVERS, null);
+        log.info("已触发订单 {} 状态变更邮件通知 (新状态: {})", orderId, OrderStatusConstant.DRIVER_ACCEPTED_WAITING_MOVERS);
+    }
+
+    /**
+     * 后台司机端取消已接订单
+     * 业务规则：司机只能取消状态为 1 且没有搬运工接单的订单，取消后状态回退为 0。
+     *
+     * @param driverCancelOrderDTO 包含订单ID和取消原因的请求DTO
+     */
+    @Transactional
+    @Override
+    public void driverCancelOrder(DriverCancelOrderDTO driverCancelOrderDTO) {
+        // 从 DTO 中获取订单ID和取消原因
+        Long orderId = driverCancelOrderDTO.getOrderId();
+        String cancelReason = driverCancelOrderDTO.getCancelReason();
+
+        // 获取当前司机ID
+        Long currentDriverId = BaseContext.getCurrentId();
+
+        // 1. 获取并锁定订单记录 (在事务中)
+        // 使用 getMovingOrderById 查询，支持 SELECT ... FOR UPDATE
+        MovingOrder order = orderMapper.getMovingOrderById(orderId);
+
+        // 2. 业务检查 (严格按照业务规则)
+        // 检查订单是否存在
+        if (order == null) {
+            log.warn("取消订单失败: 订单不存在或已删除, orderId={}", orderId);
+            throw new BusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        // 检查订单是否分配给当前司机
+        if (order.getDriverId() == null || !order.getDriverId().equals(currentDriverId)) {
+            log.warn("取消订单失败: 订单未分配给当前司机, orderId={}, currentDriverId={}, assignedDriverId={}",
+                    orderId, currentDriverId, order.getDriverId());
+            throw new BusinessException(MessageConstant.NO_PERMISSION + ", 您无权取消此订单");
+        }
+        // 检查订单状态是否可取消 (必须是状态 1)
+        if (!order.getOrderStatus().equals(OrderStatusConstant.DRIVER_ACCEPTED_WAITING_MOVERS)) {
+            log.warn("取消订单失败: 订单状态错误，非司机已接单状态, orderId={}, currentStatus={}", orderId, order.getOrderStatus());
+            throw new BusinessException(MessageConstant.ORDER_STATUS_ERROR + ", 订单状态错误，无法取消");
+        }
+        // 检查是否有搬运工人接单 (必须没有搬运工人)
+        int moverCount = orderMoverMapper.countByOrderId(orderId);
+        if (moverCount > 0) {
+            log.warn("取消订单失败: 已有搬运工人接单, orderId={}, moverCount={}", orderId, moverCount);
+            throw new BusinessException(MessageConstant.MOVER_ALREADY_ASSIGNED + ", 已有搬运工人接单，无法取消");
+        }
+
+        // 3. 更新订单记录 (在事务中)
+        // 在查询到的 order 对象上设置要更新的字段
+        order.setOrderStatus(OrderStatusConstant.PENDING_ACCEPTANCE); // 状态回退为 0
+        order.setCancelReason(cancelReason); // 设置取消原因
+        order.setCancelTime(LocalDateTime.now()); // 记录取消时间
+        order.setDriverId(null); // 解除司机分配
+        order.setVehicleId(null); // 解除车辆分配
+        order.setUpdateTime(LocalDateTime.now());
+        // AutoFill 会自动为 order 对象填充 update_time 和 update_user
+
+        MovingOrder updateOrder = MovingOrder.builder()
+                .id(orderId)
+                .orderStatus(OrderStatusConstant.PENDING_ACCEPTANCE)
+                .cancelReason(cancelReason)
+                .cancelTime(LocalDateTime.now())
+                .driverId(null)
+                .vehicleId(null)
+                .build();
+
+        orderMapper.update(updateOrder);
+        orderMapper.clearOrderDriverVehicle(orderId);
+        log.info("订单 {} 已成功被司机 {} 取消，状态回退至 {}", orderId, currentDriverId, OrderStatusConstant.PENDING_ACCEPTANCE);
+
+        // 5. 后续操作 (在事务提交后触发)
+        // 通知客户订单状态变更
+        // 取消状态是 0，emailService 的 generateEmailBody 对于状态 0 有相应内容
+        emailService.sendOrderStatusEmailToCustomer(order, OrderStatusConstant.PENDING_ACCEPTANCE, null); // 传递更新后的 order 对象和新状态
+        log.info("已触发订单 {} 状态变更邮件通知 (新状态: {})", orderId, OrderStatusConstant.PENDING_ACCEPTANCE);
+    }
+
+    // --- 司机开始搬运服务 ---
+
+    /**
+     * 后台司机端开始搬运服务
+     * 业务规则：司机标记搬家服务正式开始，记录开始时间并将订单状态更新为“进行中”。
+     * 订单必须是状态 2 (已接单，团队确认)，并且如果需要搬运工，实际分配数量要匹配。
+     *
+     * @param orderId 要开始搬运的订单ID
+     */
+    @Transactional
+    @Override
+    public void driverStartMoving(Long orderId) {
+        // 获取当前司机ID
+        Long currentDriverId = BaseContext.getCurrentId();
+
+        // 1. 获取并锁定订单记录 (在事务中)
+        // 使用 getMovingOrderById 查询，支持 SELECT ... FOR UPDATE
+        MovingOrder order = orderMapper.getMovingOrderById(orderId); // 查询完整的订单对象
+
+        // 2. 业务检查
+        // 检查订单是否存在
+        if (order == null) {
+            log.warn("开始搬运失败: 订单不存在或已删除, orderId={}", orderId);
+            throw new BusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        // 检查订单是否分配给当前司机
+        if (order.getDriverId() == null || !order.getDriverId().equals(currentDriverId)) {
+            log.warn("开始搬运失败: 订单未分配给当前司机, orderId={}, currentDriverId={}, assignedDriverId={}",
+                    orderId, currentDriverId, order.getDriverId());
+            throw new BusinessException(MessageConstant.NO_PERMISSION + ", 您无权操作此订单");
+        }
+        // 检查订单状态是否可开始 (必须是状态 2)
+        if (!order.getOrderStatus().equals(OrderStatusConstant.ACCEPTED)) {
+            log.warn("开始搬运失败: 订单状态错误，非已接单状态, orderId={}, currentStatus={}", orderId, order.getOrderStatus());
+            throw new BusinessException(MessageConstant.ORDER_STATUS_ERROR + ", 订单状态错误，无法开始搬运");
+        }
+        // （可选）检查搬运工是否已分配到位（如果订单需要搬运工）
+        if (order.getNumberOfHelpers() != null && order.getNumberOfHelpers() > 0) {
+            int assignedMoverCount = orderMoverMapper.countByOrderId(orderId); // 假设 OrderMoverMapper 有 countByOrderId 方法
+            if (assignedMoverCount != order.getNumberOfHelpers()) {
+                log.warn("开始搬运失败: 搬运工人数量不匹配, orderId={}, required={}, assigned={}",
+                        orderId, order.getNumberOfHelpers(), assignedMoverCount);
+                throw new BusinessException(MessageConstant.MOVER_COUNT_MISMATCH + ", 搬运工人团队尚未就位，无法开始");
+            }
+        }
+
+        // 3. 更新订单记录 (在事务中)
+        // 在查询到的 order 对象上设置要更新的字段
+        order.setOrderStatus(OrderStatusConstant.IN_PROGRESS); // 状态修改为 3 (进行中)
+        order.setMovingStartTime(LocalDateTime.now()); // 设置搬家开始时间
+        order.setUpdateTime(LocalDateTime.now());
+        // AutoFill 会自动为 order 对象填充 update_time 和 update_user
+
+        MovingOrder updateOrder = MovingOrder.builder()
+                .id(orderId)
+                .orderStatus(OrderStatusConstant.IN_PROGRESS)
+                .movingStartTime(LocalDateTime.now())
+                .build();
+
+        orderMapper.update(updateOrder);
+        log.info("订单 {} 已成功开始搬运，状态更新为 {}", orderId, OrderStatusConstant.IN_PROGRESS);
+
+        // 5. 后续操作 (在事务提交后触发)
+        // 通知客户订单状态变更，传递更新后的 order 对象 和订单的新状态 (3) 给 EmailService
+        // 由于方法第三个参数在底层实现中，没有用到，所以传 null
+        emailService.sendOrderStatusEmailToCustomer(order, OrderStatusConstant.IN_PROGRESS, null); // 传递 order 对象，新状态，搬运工列表传 null (状态3不需要)
+        log.info("已触发订单 {} 状态变更邮件通知 (新状态: {})", orderId, OrderStatusConstant.IN_PROGRESS);
+    }
+
+    /**
+     * 后台司机端完成搬运服务
+     * 业务规则：司机标记搬家服务正式结束，记录结束时间并将订单状态更新为“已完成”。
+     * 订单必须是状态 3 (进行中)，且开始时间已记录。
+     *
+     * @param orderId 要完成搬运的订单ID
+     */
+    @Transactional
+    @Override
+    public void driverCompleteMoving(Long orderId) {
+        // 获取当前司机ID
+        Long currentDriverId = BaseContext.getCurrentId();
+
+        // 1. 获取并锁定订单记录 (在事务中)
+        // 使用 getMovingOrderById 查询，支持 SELECT ... FOR UPDATE
+        MovingOrder order = orderMapper.getMovingOrderById(orderId); // 查询完整的订单对象
+
+        // 2. 业务检查
+        // 检查订单是否存在
+        if (order == null) {
+            log.warn("完成搬运失败: 订单不存在或已删除, orderId={}", orderId);
+            throw new RuntimeException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        // 检查订单是否分配给当前司机
+        if (order.getDriverId() == null || !order.getDriverId().equals(currentDriverId)) {
+            log.warn("完成搬运失败: 订单未分配给当前司机, orderId={}, currentDriverId={}, assignedDriverId={}",
+                    orderId, currentDriverId, order.getDriverId());
+            throw new RuntimeException(MessageConstant.NO_PERMISSION + ", 您无权操作此订单");
+        }
+        // 检查订单状态是否可完成 (必须是状态 3)
+        if (!order.getOrderStatus().equals(OrderStatusConstant.IN_PROGRESS)) {
+            log.warn("完成搬运失败: 订单状态错误，非进行中状态, orderId={}, currentStatus={}", orderId, order.getOrderStatus());
+            throw new RuntimeException(MessageConstant.ORDER_STATUS_ERROR + ", 订单状态错误，无法完成搬运");
+        }
+        // 检查搬家开始时间是否已记录
+        if (order.getMovingStartTime() == null) {
+            log.warn("完成搬运失败: 搬家开始时间未记录, orderId={}", orderId);
+            throw new RuntimeException(MessageConstant.MOVING_START_TIME_NOT_RECORDED + ", 请先标记开始搬运");
+        }
+
+        // 3. 更新订单记录 (在事务中)
+        // 在查询到的 order 对象上设置要更新的字段
+        order.setOrderStatus(OrderStatusConstant.COMPLETED); // 状态修改为 4 (已完成)
+        order.setMovingEndTime(LocalDateTime.now()); // 设置搬家结束时间
+        order.setUpdateTime(LocalDateTime.now());
+        // AutoFill 会自动为 order 对象填充 update_time 和 update_user
+
+        MovingOrder updateOrder = MovingOrder.builder()
+                .id(orderId)
+                .orderStatus(OrderStatusConstant.COMPLETED)
+                .movingEndTime(LocalDateTime.now())
+                .build();
+
+        orderMapper.update(updateOrder);
+
+        log.info("订单 {} 已成功完成搬运，状态更新为 {}", orderId, OrderStatusConstant.COMPLETED);
+
+        // 5. 后续操作 (在事务提交后触发)
+        // 通知客户订单状态变更，传递更新后的 order 对象 和订单的新状态 (4) 给 EmailService
+        // 由于方法第三个参数在底层实现中，没有用到，所以传 null
+        emailService.sendOrderStatusEmailToCustomer(order, OrderStatusConstant.COMPLETED, null); // 传递 order 对象，新状态，搬运工列表传 null (状态4不需要)
+        log.info("已触发订单 {} 状态变更邮件通知 (新状态: {})", orderId, OrderStatusConstant.COMPLETED);
     }
 
     /**

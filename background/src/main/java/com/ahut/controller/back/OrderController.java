@@ -201,4 +201,56 @@ public class OrderController {
         return Result.success(detailVO);
     }
 
+    /**
+     * 后台司机端接单
+     *
+     * @param driverAcceptOrderDTO 包含订单ID的请求DTO (从请求体中获取)
+     * @return 通用返回对象，表示操作结果
+     */
+    @PutMapping("/driver/available-orders/accept")
+    public Result driverAcceptOrder(@RequestBody DriverAcceptOrderDTO driverAcceptOrderDTO) {
+        log.info("司机{}，司机端接单请求，DTO: {}", BaseContext.getCurrentId(), driverAcceptOrderDTO);
+        orderService.driverAcceptOrder(driverAcceptOrderDTO);
+        return Result.success();
+    }
+
+    /**
+     * 后台司机端取消已接订单
+     *
+     * @param driverCancelOrderDTO 包含订单ID和取消原因的请求DTO (从请求体中获取)
+     * @return 通用返回对象，表示操作结果
+     */
+    @PutMapping("/driver/my-orders/cancel")
+    public Result driverCancelOrder(@RequestBody DriverCancelOrderDTO driverCancelOrderDTO) {
+        log.info("司机{}，司机端取消订单请求，DTO: {}", BaseContext.getCurrentId(), driverCancelOrderDTO);
+        orderService.driverCancelOrder(driverCancelOrderDTO);
+        return Result.success();
+    }
+
+    /**
+     * 后台司机端开始搬运服务
+     *
+     * @param orderId 要开始搬运的订单ID，从路径中获取
+     * @return 通用返回对象，表示操作结果
+     */
+    @PutMapping("/driver/my-orders/start/{orderId}")
+    public Result driverStartMoving(@PathVariable Long orderId) {
+        log.info("司机{}，司机端开始搬运请求，订单ID: {}", BaseContext.getCurrentId(), orderId);
+        orderService.driverStartMoving(orderId);
+        return Result.success();
+    }
+
+    /**
+     * 后台司机端完成搬运服务
+     *
+     * @param orderId 要完成搬运的订单ID，从路径中获取
+     * @return 通用返回对象，表示操作结果
+     */
+    @PutMapping("/driver/my-orders/complete/{orderId}")
+    public Result driverCompleteMoving(@PathVariable Long orderId) {
+        log.info("司机{}，司机端完成搬运请求，订单ID: {}", BaseContext.getCurrentId(), orderId);
+        orderService.driverCompleteMoving(orderId);
+        return Result.success();
+    }
+
 }

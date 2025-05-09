@@ -49,4 +49,8 @@ public interface DriverMapper {
     // 根据司机ID查询其可驾驭的货车类型及对应的被分配车辆列表
     List<DriverTypeVehicleVO> findDriverTypeVehiclesByDriverId(Long driverId);
 
+    // 根据ID查询司机的禁用状态
+    @Select("SELECT is_banned FROM driver WHERE id = #{id}")
+    Integer getIsBannedById(Long id);
+
 }

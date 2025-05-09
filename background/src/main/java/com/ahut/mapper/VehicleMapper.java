@@ -54,4 +54,9 @@ public interface VehicleMapper {
     @Select("SELECT COUNT(*) FROM vehicle WHERE driver_id = #{driverId}")
     Integer countByDriverId(Long driverId);
 
+    // 根据司机ID和货车类型ID查询车辆ID
+    // (根据业务规则“每个汽车类型下，司机只有一个汽车”，期望返回0或1个结果)
+    @Select("SELECT id FROM vehicle WHERE driver_id = #{driverId} AND truck_type_id = #{truckTypeId} LIMIT 1")
+    Long getIdByDriverAndTruckType(Long driverId, Long truckTypeId);
+
 }

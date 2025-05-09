@@ -52,7 +52,7 @@ public interface OrderMapper {
             "reservation_time, moving_origin, moving_destination, moving_price, mileage_cost, helper_cost, " +
             "category_price_multiplier, is_paid, payment_time, pay_method, cancel_reason, cancel_time, " +
             "moving_start_time, moving_end_time, number_of_helpers, notes, is_reviewed, create_time, update_time " +
-            "from moving_order where id = #{id}")
+            "from moving_order where id = #{id} FOR UPDATE")
     MovingOrder getMovingOrderById(Long id);
 
     // 订单取消时，清除订单关联的司机和车辆信息

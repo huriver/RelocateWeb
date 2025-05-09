@@ -89,7 +89,12 @@ public class MessageConstant {
     public static final String CONSUMER_HAS_PENDING_ORDERS_BLOCKED_BAN = "用户有未完成订单时，不允许禁用";
 
     public static final String DRIVER_HAS_PENDING_ORDERS_BLOCKED_BAN = "司机有未完成订单时，不允许禁用";
-    public static String Mover_HAS_PENDING_ORDERS_BLOCKED_BAN = "搬运工人有未完成订单时，不允许禁用";
+    public static final String ACCOUNT_DISABLED = "账号已被禁用";
+
+    public static final String DRIVER_TRUCK_TYPE_PERMISSION_MISMATCH = "司机和货车类型不匹配";
+
+    public static final String DRIVER_TRUCK_TYPE_NOT_AVAILABLE = "司机和货车类型不存在或未关联车辆";
+    public static final String Mover_HAS_PENDING_ORDERS_BLOCKED_BAN = "搬运工人有未完成订单时，不允许禁用";
 
     public static final String CANNOT_MODIFY_SELF_STATUS = "不能修改自己状态";
     public static final String CANNOT_RESET_SELF_PASSWORD = "不能重置自己密码";
@@ -100,4 +105,9 @@ public class MessageConstant {
     public static final String CUSTOMER_INFO_INCOMPLETE = "用户信息不完整";
     public static final String CUSTOMER_EMAIL_INVALID = "邮箱格式不正确";
     public static final String CANNOT_SEND_ORDER_NOTIFICATION_EMAIL = "用户邮箱为空或无效，无法发送订单通知邮件";
+    public static final String NO_PERMISSION = "无权限";
+
+    public static final String MOVER_ALREADY_ASSIGNED = "搬运工人已分配";
+    public static final String MOVER_COUNT_MISMATCH = "搬运工人数量不匹配";
+    public static final String MOVING_START_TIME_NOT_RECORDED = "开始时间未记录";
 }
