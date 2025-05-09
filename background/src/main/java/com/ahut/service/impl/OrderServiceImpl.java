@@ -1041,8 +1041,101 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException("订单不存在或无权限");
         }
 
+        // --- 在Service层设置状态和支付标签 ---
+        orderDetail.setOrderStatusLabel(OrderStatusConstant.getDescription(orderDetail.getOrderStatus()));
+        orderDetail.setIsPaidLabel(orderDetail.getIsPaid() == 1 ? "已支付" : "未支付");
+
         log.info("成功查询待接订单详情，订单ID：{}", orderId);
         return orderDetail;
     }
 
+    /**
+     * 获取适用于司机端“我的订单”列表筛选的状态列表
+     *
+     * @return 包含状态码和描述的 OrderStatusVO 列表
+     */
+    @Override
+    @Transactional(readOnly = true) // 只读事务
+    public List<OrderStatusVO> driverGetMyOrderStatuses() {
+        List<OrderStatusVO> statusList = new ArrayList<>();
+        // 遍历 OrderStatusConstant 中的司机状态列表常量，并使用getDescription方法
+        for (Integer status : OrderStatusConstant.DRIVER_MY_ORDER_STATUSES) {
+            statusList.add(new OrderStatusVO(status, OrderStatusConstant.getDescription(status)));
+        }
+        return statusList; // 返回列表
+    }
+
+
+    /**
+     * 司机端分页查询我的订单列表
+     *
+     * @param pageQueryDTO 分页及筛选条件
+     * @return 我的订单分页结果
+     */
+    @Override
+    @Transactional(readOnly = true) // 只读事务
+    public PageResult driverPageQueryMy(DriverMyOrderPageQueryDTO pageQueryDTO) {
+        Long currentDriverId = BaseContext.getCurrentId(); // 获取当前司机ID
+
+        PageHelper.startPage(pageQueryDTO.getPage(), pageQueryDTO.getPageSize());
+        Page<DriverMyOrderSummaryVO> page = orderMapper.driverPageQueryMy(pageQueryDTO, currentDriverId);
+
+        // --- 在Service层处理 orderStatus 到 orderStatusLabel 的转换 ---
+        List<DriverMyOrderSummaryVO> resultList = page.getResult();
+        if (resultList != null && !resultList.isEmpty()) {
+            for (DriverMyOrderSummaryVO order : resultList) {
+                order.setOrderStatusLabel(OrderStatusConstant.getDescription(order.getOrderStatus()));
+            }
+        }
+
+        return new PageResult(page.getTotal(), resultList);
+    }
+
+    /**
+     * 根据订单ID查询司机端我的订单详情
+     *
+     * @param orderId 订单ID
+     * @return 订单详情 VO
+     */
+    @Override
+    @Transactional(readOnly = true) // 只读事务
+    public DriverMyOrderDetailVO driverGetMyDetail(Long orderId) {
+        Long currentDriverId = BaseContext.getCurrentId(); // 获取当前司机ID
+
+        // OrderMapper 的 SQL 会进行司机归属和状态过滤
+        // 如果 Mapper 返回 null，表示订单不存在、不属于该司机或状态不符
+        DriverMyOrderDetailVO orderDetail = orderMapper.driverGetMyDetail(orderId, currentDriverId);
+
+        // 进行结果校验
+        if (orderDetail == null) {
+            log.warn("司机{} 查询订单详情失败，订单ID：{}，订单不存在、不属于该司机或状态不符", currentDriverId, orderId);
+            throw new BusinessException("订单不存在、不属于该司机或状态不符。");
+        }
+
+        // --- 在Service层设置状态和支付标签 ---
+        orderDetail.setOrderStatusLabel(OrderStatusConstant.getDescription(orderDetail.getOrderStatus()));
+        orderDetail.setIsPaidLabel(orderDetail.getIsPaid() == 1 ? "已支付" : "未支付");
+
+        return orderDetail;
+    }
+
+    /**
+     * 获取适用于搬家工人端“我的订单”列表筛选的状态列表
+     *
+     * @return 包含状态码和描述的 OrderStatusVO 列表
+     */
+//    @Override // *** 实现 OrderService 接口方法 ***
+//    @Transactional(readOnly = true) // 只读事务
+//    public List<OrderStatusVO> moverGetMyOrderStatuses() { // *** 搬家工人方法实现 (现在在此处实现) ***
+//        log.info("搬家工人获取我的订单筛选状态列表");
+//
+//        List<OrderStatusVO> statusList = new ArrayList<>(); // *** 在 Service 方法内部创建列表 ***
+//        // 遍历 OrderStatusConstant 中的搬家工人状态列表常量，并使用getDescription方法
+//        for (Integer status : OrderStatusConstant.MOVER_MY_ORDER_STATUSES) {
+//            statusList.add(new OrderStatusVO(status, OrderStatusConstant.getDescription(status)));
+//        }
+//
+//        log.info("获取到搬家工人我的订单筛选状态列表，数量：{}", statusList.size());
+//        return statusList; // 返回列表
+//    }
 }

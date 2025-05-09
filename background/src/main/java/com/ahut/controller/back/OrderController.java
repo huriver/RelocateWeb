@@ -3,14 +3,12 @@ package com.***REMOVED***.controller.back;
 import com.***REMOVED***.context.BaseContext;
 import com.***REMOVED***.dto.AdminOrderCancelDTO;
 import com.***REMOVED***.dto.DriverAvailableOrderPageQueryDTO;
+import com.***REMOVED***.dto.DriverMyOrderPageQueryDTO;
 import com.***REMOVED***.dto.OrdersPageQueryDTO;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.OrderService;
-import com.***REMOVED***.vo.DriverAvailableOrderDetailVO;
-import com.***REMOVED***.vo.OrderStatusVO;
-import com.***REMOVED***.vo.OrderVO;
-import com.***REMOVED***.vo.PaymentStatusVO;
+import com.***REMOVED***.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -118,7 +116,7 @@ public class OrderController {
     }
 
     /**
-     * 查询司机端待接订单详情
+     * 司机端查询待接订单详情
      *
      * @param orderId 从路径中获取的订单ID
      * @return 包含订单详情的统一返回结果
@@ -127,6 +125,44 @@ public class OrderController {
     public Result<DriverAvailableOrderDetailVO> driverGetAvailableOrderDetail(@PathVariable Long orderId) {
         log.info("司机{}，查询待接订单详情, 订单ID: {}", BaseContext.getCurrentId(), orderId);
         DriverAvailableOrderDetailVO orderDetail = orderService.driverGetAvailableDetail(orderId);
+        return Result.success(orderDetail);
+    }
+
+    /**
+     * 获取适用于司机端“我的订单”列表筛选的状态列表
+     *
+     * @return 包含状态码和描述的 OrderStatusVO 列表的统一返回结果
+     */
+    @GetMapping("/driver/my-orders/statuses")
+    public Result<List<OrderStatusVO>> driverGetMyOrderStatuses() {
+        log.info("司机{}，获取我的订单筛选状态列表", BaseContext.getCurrentId());
+        List<OrderStatusVO> statusList = orderService.driverGetMyOrderStatuses();
+        return Result.success(statusList);
+    }
+
+    /**
+     * 司机端分页查询我的订单列表
+     *
+     * @param pageQueryDTO 分页及筛选条件 DTO，接收 Query 参数
+     * @return 包含我的订单分页结果的统一返回结果
+     */
+    @GetMapping("/driver/my-orders")
+    public Result<PageResult> driverPageQueryMyOrders(DriverMyOrderPageQueryDTO pageQueryDTO) {
+        log.info("司机{}，分页查询我的订单, 参数: {}", BaseContext.getCurrentId(), pageQueryDTO);
+        PageResult pageResult = orderService.driverPageQueryMy(pageQueryDTO);
+        return Result.success(pageResult);
+    }
+
+    /**
+     * 司机端查询我的订单详情
+     *
+     * @param orderId 从路径中获取的订单ID
+     * @return 包含订单详情的统一返回结果
+     */
+    @GetMapping("/driver/my-orders/{orderId}")
+    public Result<DriverMyOrderDetailVO> driverGetMyOrderDetail(@PathVariable Long orderId) {
+        log.info("司机{}，查询我的订单详情, 订单ID: {}", BaseContext.getCurrentId(), orderId);
+        DriverMyOrderDetailVO orderDetail = orderService.driverGetMyDetail(orderId);
         return Result.success(orderDetail);
     }
 

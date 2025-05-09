@@ -55,4 +55,20 @@ public interface OrderService {
     // 司机端根据订单ID查询待接订单详情
     DriverAvailableOrderDetailVO driverGetAvailableDetail(Long orderId);
 
+    // 获取适用于司机端“我的订单”列表筛选的状态列表
+    List<OrderStatusVO> driverGetMyOrderStatuses();
+
+    // 司机端分页查询我的订单列表
+    PageResult driverPageQueryMy(DriverMyOrderPageQueryDTO pageQueryDTO);
+
+    // 司机端根据订单ID查询我的订单详情
+    DriverMyOrderDetailVO driverGetMyDetail(Long orderId);
+
+    /**
+     * 获取适用于搬家工人端“我的订单”列表筛选的状态列表
+     *
+     * @return 包含状态码和描述的 OrderStatusVO 列表
+     */
+//    List<OrderStatusVO> moverGetMyOrderStatuses(); // *** 搬家工人我的订单状态列表方法 ***
+
 }

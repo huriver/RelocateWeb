@@ -39,6 +39,23 @@ public class OrderStatusConstant {
     );
 
     /**
+     * 适用于司机端“我的订单”列表的状态值
+     */
+    public static final List<Integer> DRIVER_MY_ORDER_STATUSES = Arrays.asList(
+            DRIVER_ACCEPTED_WAITING_MOVERS, // 1
+            ACCEPTED, // 2
+            IN_PROGRESS // 3
+    );
+
+    /**
+     * 适用于搬家工人端“我的订单”列表的状态值
+     */
+    public static final List<Integer> MOVER_MY_ORDER_STATUSES = Arrays.asList(
+            ACCEPTED, // 2
+            IN_PROGRESS // 3
+    );
+
+    /**
      * 定义合法的状态流转规则
      * Map<当前状态, List<允许的目标状态>>
      * 这是根据我们之前的讨论确定的流转，反映了让主状态动态反映团队完整性的设计

@@ -2,12 +2,11 @@ package com.***REMOVED***.mapper;
 
 import com.***REMOVED***.annotation.AutoFill;
 import com.***REMOVED***.dto.DriverAvailableOrderPageQueryDTO;
+import com.***REMOVED***.dto.DriverMyOrderPageQueryDTO;
 import com.***REMOVED***.dto.OrdersPageQueryDTO;
 import com.***REMOVED***.entity.MovingOrder;
 import com.***REMOVED***.enumeration.OperationType;
-import com.***REMOVED***.vo.DriverAvailableOrderDetailVO;
-import com.***REMOVED***.vo.DriverAvailableOrderSummaryVO;
-import com.***REMOVED***.vo.OrderVO;
+import com.***REMOVED***.vo.*;
 import com.github.pagehelper.Page;
 import org.apache.ibatis.annotations.*;
 
@@ -115,5 +114,13 @@ public interface OrderMapper {
 
     // 司机端根据订单ID和司机ID查询待接订单详情
     DriverAvailableOrderDetailVO driverGetAvailableDetail(Long orderId, Long currentDriverId);
+
+    // 司机端分页查询我的订单列表
+    Page<DriverMyOrderSummaryVO> driverPageQueryMy(@Param("dto") DriverMyOrderPageQueryDTO pageQueryDTO,
+                                                   @Param("currentDriverId") Long currentDriverId);
+
+    // 司机端根据订单ID和司机ID查询我的订单详情
+    DriverMyOrderDetailVO driverGetMyDetail(Long orderId, Long currentDriverId);
+
 
 }
