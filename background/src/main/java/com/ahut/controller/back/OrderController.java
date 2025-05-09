@@ -1,10 +1,7 @@
 package com.***REMOVED***.controller.back;
 
 import com.***REMOVED***.context.BaseContext;
-import com.***REMOVED***.dto.AdminOrderCancelDTO;
-import com.***REMOVED***.dto.DriverAvailableOrderPageQueryDTO;
-import com.***REMOVED***.dto.DriverMyOrderPageQueryDTO;
-import com.***REMOVED***.dto.OrdersPageQueryDTO;
+import com.***REMOVED***.dto.*;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.OrderService;
@@ -164,6 +161,44 @@ public class OrderController {
         log.info("司机{}，查询我的订单详情, 订单ID: {}", BaseContext.getCurrentId(), orderId);
         DriverMyOrderDetailVO orderDetail = orderService.driverGetMyDetail(orderId);
         return Result.success(orderDetail);
+    }
+
+    /**
+     * 获取后台司机、搬家工人端历史订单可筛选的状态列表
+     *
+     * @return 封装了订单状态列表的通用返回对象
+     */
+    @GetMapping("/historical-orders/statuses")
+    public Result<List<OrderStatusVO>> getHistoricalOrderStatusOptions() {
+        log.info("获取司机、搬家工人端历史订单可筛选状态列表");
+        List<OrderStatusVO> statusOptions = orderService.getHistoricalOrderStatusOptions();
+        return Result.success(statusOptions);
+    }
+
+    /**
+     * 司机端历史订单分页查询
+     *
+     * @param queryDTO 查询条件，包含分页信息和筛选条件
+     * @return 封装了分页结果的通用返回对象
+     */
+    @GetMapping("/driver/historical-orders")
+    public Result<PageResult> driverPageQueryHistoricalOrders(DriverHistoricalOrderPageQueryDTO queryDTO) {
+        log.info("司机{}，后台司机端历史订单分页查询: {}", BaseContext.getCurrentId(), queryDTO);
+        PageResult pageResult = orderService.driverPageQueryHistoricalOrders(queryDTO);
+        return Result.success(pageResult);
+    }
+
+    /**
+     * 后台司机端根据订单ID查询历史订单详情
+     *
+     * @param orderId 订单ID，从路径中获取
+     * @return 封装了订单详情VO的通用返回对象
+     */
+    @GetMapping("/driver/historical-orders/{orderId}")
+    public Result<DriverHistoricalOrderDetailVO> driverGetHistoricalOrderDetail(@PathVariable Long orderId) {
+        log.info("司机{}，后台司机端历史订单详情查询，订单ID: {}", BaseContext.getCurrentId(), orderId);
+        DriverHistoricalOrderDetailVO detailVO = orderService.driverGetHistoricalOrderDetail(orderId);
+        return Result.success(detailVO);
     }
 
 }

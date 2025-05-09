@@ -1,10 +1,7 @@
 package com.***REMOVED***.service.impl;
 
 
-import com.***REMOVED***.constant.MessageConstant;
-import com.***REMOVED***.constant.OrderStatusConstant;
-import com.***REMOVED***.constant.PayMethodConstant;
-import com.***REMOVED***.constant.PaymentStatusConstant;
+import com.***REMOVED***.constant.*;
 import com.***REMOVED***.context.BaseContext;
 import com.***REMOVED***.dto.*;
 import com.***REMOVED***.entity.*;
@@ -32,10 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -64,6 +58,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private CustomerService customerService;
+
+    @Autowired
+    private RatingMapper ratingMapper;
 
     @Value("${relocate.baidu.ak}")
     private String baiduAk;
@@ -1065,7 +1062,6 @@ public class OrderServiceImpl implements OrderService {
         return statusList; // 返回列表
     }
 
-
     /**
      * 司机端分页查询我的订单列表
      *
@@ -1117,6 +1113,105 @@ public class OrderServiceImpl implements OrderService {
         orderDetail.setIsPaidLabel(orderDetail.getIsPaid() == 1 ? "已支付" : "未支付");
 
         return orderDetail;
+    }
+
+    /**
+     * 获取后台司机、搬家工人端历史订单可筛选的状态列表
+     *
+     * @return 订单状态VO列表
+     */
+    @Override
+    public List<OrderStatusVO> getHistoricalOrderStatusOptions() {
+        List<OrderStatusVO> statusOptions = new ArrayList<>();
+        // 历史订单通常指已完成或已取消的状态
+        List<Integer> historicalStatuses = Arrays.asList(
+                OrderStatusConstant.COMPLETED,  // 4
+                OrderStatusConstant.CANCELLED   // 5
+        );
+
+        for (Integer status : historicalStatuses) {
+            statusOptions.add(new OrderStatusVO(status, OrderStatusConstant.getDescription(status)));
+        }
+
+        return statusOptions;
+    }
+
+    /**
+     * 后台司机端历史订单分页查询
+     *
+     * @param queryDTO 查询条件
+     * @return 分页结果
+     */
+    @Override
+    public PageResult driverPageQueryHistoricalOrders(DriverHistoricalOrderPageQueryDTO queryDTO) {
+        Long currentDriverId = BaseContext.getCurrentId();
+        PageHelper.startPage(queryDTO.getPage(), queryDTO.getPageSize());
+        Page<DriverHistoricalOrderSummaryVO> page = orderMapper
+                .driverPageQueryHistoricalOrders(queryDTO, currentDriverId);
+
+        // 在这里进行数据转换，填充 orderStatusLabel 和 isPaidLabel
+        if (page != null && page.getResult() != null) {
+            for (DriverHistoricalOrderSummaryVO vo : page.getResult()) {
+                // 使用常量类的方法获取文字描述
+                vo.setOrderStatusLabel(OrderStatusConstant.getDescription(vo.getOrderStatus()));
+                vo.setIsPaidLabel(PaymentStatusConstant.getDescription(vo.getIsPaid()));
+            }
+        }
+
+        // 封装分页结果
+        return new PageResult(page.getTotal(), page.getResult());
+    }
+
+    /**
+     * 司机端根据订单ID查询后台历史订单详情
+     *
+     * @param orderId 订单ID
+     * @return 历史订单详情VO
+     */
+    @Override
+    public DriverHistoricalOrderDetailVO driverGetHistoricalOrderDetail(Long orderId) {
+        Long currentDriverId = BaseContext.getCurrentId();
+
+        // 1. 查询订单主体信息和关联的一对一/多对一信息 (包括 vehicle 字段)
+        DriverHistoricalOrderDetailVO detailVO = orderMapper.driverGetHistoricalOrderDetail(orderId, currentDriverId);
+
+        if (detailVO == null) {
+            throw new BusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        // 2. 查询关联的列表信息 (搬家工人、评价)
+        List<MoverVO> assignedMovers = orderMoverMapper.getAssignedMoversByOrderId(orderId);
+        // 调用 RatingMapper，传递评分类型常量值
+        List<RatingVO> ratings = ratingMapper.getRatingsByOrderId(
+                orderId,
+                RatingTypeConstant.RATING_TYPE_DRIVER,
+                RatingTypeConstant.RATING_TYPE_MOVER,
+                RatingTypeConstant.RATING_TYPE_SERVICE
+        );
+
+        // 3. 数据转换和组装
+        // 转换状态码和支付方式为文字描述
+        detailVO.setOrderStatusLabel(OrderStatusConstant.getDescription(detailVO.getOrderStatus()));
+        detailVO.setIsPaidLabel(PaymentStatusConstant.getDescription(detailVO.getIsPaid()));
+        detailVO.setPayMethodLabel(PayMethodConstant.getDescription(detailVO.getPayMethod()));
+
+        // 填充 assignedMovers 列表
+        detailVO.setAssignedMovers(assignedMovers);
+
+        // 填充 ratings 列表，并处理特殊的 rateeName (例如 "您")
+        if (ratings != null) {
+            ratings.forEach(rating -> {
+                // rateeName 和 ratingTypeLabel 已在 Mapper 中填充
+                // 处理司机评价中特殊情况 "您"
+                if (RatingTypeConstant.RATING_TYPE_DRIVER.equals(rating.getRatingType()) &&
+                        rating.getRateeId() != null && rating.getRateeId().equals(currentDriverId)) {
+                    rating.setRateeName("您");
+                }
+            });
+        }
+        detailVO.setRatings(ratings);
+
+        return detailVO;
     }
 
     /**

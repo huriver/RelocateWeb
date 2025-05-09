@@ -64,6 +64,15 @@ public interface OrderService {
     // 司机端根据订单ID查询我的订单详情
     DriverMyOrderDetailVO driverGetMyDetail(Long orderId);
 
+    // 获取后台司机、搬家工人端历史订单可筛选的状态列表
+    List<OrderStatusVO> getHistoricalOrderStatusOptions();
+
+    // 司机端历史订单分页查询
+    PageResult driverPageQueryHistoricalOrders(DriverHistoricalOrderPageQueryDTO queryDTO);
+
+    // 后台司机端根据订单ID查询历史订单详情
+    DriverHistoricalOrderDetailVO driverGetHistoricalOrderDetail(Long orderId);
+
     /**
      * 获取适用于搬家工人端“我的订单”列表筛选的状态列表
      *

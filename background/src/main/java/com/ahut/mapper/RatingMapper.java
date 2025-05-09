@@ -4,6 +4,7 @@ import com.***REMOVED***.dto.RatingPageQueryDTO;
 import com.***REMOVED***.entity.Rating;
 import com.***REMOVED***.vo.CustomerRatingVO;
 import com.***REMOVED***.vo.RatingListVO;
+import com.***REMOVED***.vo.RatingVO;
 import com.***REMOVED***.vo.ServiceRatingVO;
 import com.github.pagehelper.Page;
 import org.apache.ibatis.annotations.Mapper;
@@ -40,5 +41,9 @@ public interface RatingMapper {
     @Select("select id, order_id, customer_id, ratee_id, rating_type, rating_value, comment, rating_time, " +
             "create_time, update_time from rating where id = #{id}")
     Rating getById(Long id);
+
+    // 根据订单ID查询相关的评价列表，在SQL中获取被评价者名称和评价类型标签
+    List<RatingVO> getRatingsByOrderId(Long orderId, String ratingTypeDriver,
+                                       String ratingTypeMover, String ratingTypeService);
 
 }

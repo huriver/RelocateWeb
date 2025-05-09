@@ -1,5 +1,6 @@
 package com.***REMOVED***.mapper;
 
+import com.***REMOVED***.vo.MoverVO;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -16,6 +17,11 @@ public interface OrderMoverMapper {
     // 根据订单ID查询关联的搬运工人ID列表
     @Select("select mover_id from order_mover where order_id = #{orderId}")
     List<Long> getMoverIdsByOrderId(Long orderId);
+
+    // 根据订单ID查询分配的搬家工人列表
+    @Select("SELECT m.id, m.name, m.phone FROM mover m JOIN order_mover om ON m.id = om.mover_id " +
+            "WHERE om.order_id = #{orderId}")
+    List<MoverVO> getAssignedMoversByOrderId(Long orderId);
 
     // Future: 可以添加其他操作 order_mover 表的方法，例如：
     // @Insert("insert into order_mover (order_id, mover_id) values (#{orderId}, #{moverId})")

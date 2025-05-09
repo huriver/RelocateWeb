@@ -1,8 +1,12 @@
 package com.***REMOVED***.vo;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class AssignedVehicleVO {
 
     private Long vehicleId;             // 车辆ID

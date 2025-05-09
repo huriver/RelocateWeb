@@ -90,4 +90,32 @@
         ORDER BY r.rating_time DESC
     </select>
 
+    <select id="getRatingsByOrderId" resultType="com.***REMOVED***.vo.RatingVO">
+        SELECT r.id    AS ratingId,
+               r.ratee_id,
+               r.rating_type,
+               r.rating_value,
+               r.comment,
+               r.rating_time,
+
+               CASE r.rating_type
+                   WHEN #{ratingTypeDriver} THEN d.name
+                   WHEN #{ratingTypeMover} THEN m.name
+                   WHEN #{ratingTypeService} THEN s.service_name
+                   ELSE '未知对象'
+                   END AS rateeName,
+
+               CASE r.rating_type
+                   WHEN #{ratingTypeDriver} THEN '对司机'
+                   WHEN #{ratingTypeMover} THEN '对搬运工'
+                   WHEN #{ratingTypeService} THEN '对服务'
+                   ELSE '未知类型'
+                   END AS ratingTypeLabel
+        FROM rating r
+                 LEFT JOIN driver d ON r.rating_type = #{ratingTypeDriver} AND r.ratee_id = d.id
+                 LEFT JOIN mover m ON r.rating_type = #{ratingTypeMover} AND r.ratee_id = m.id
+                 LEFT JOIN service s ON r.rating_type = #{ratingTypeService} AND r.ratee_id = s.id
+        WHERE r.order_id = #{orderId}
+    </select>
+
 </mapper>

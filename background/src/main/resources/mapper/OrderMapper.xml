@@ -610,5 +610,193 @@
         ORDER BY mo.reservation_time ASC -- 示例排序
     </select>
 
+    <resultMap id="driverHistoricalOrderSummaryVOMap" type="com.***REMOVED***.vo.DriverHistoricalOrderSummaryVO">
+        <id property="orderId" column="id"/>
+        <result property="orderNumber" column="order_number"/>
+        <result property="orderStatus" column="order_status"/>
+        <result property="isPaid" column="is_paid"/>
+        <result property="isReviewed" column="is_reviewed"/>
+        <result property="createTime" column="create_time"/>
+        <result property="reservationTime" column="reservation_time"/>
+        <result property="movingStartTime" column="moving_start_time"/>
+        <result property="movingEndTime" column="moving_end_time"/>
+        <result property="cancelTime" column="cancel_time"/>
+        <result property="movingOrigin" column="moving_origin"/>
+        <result property="movingDestination" column="moving_destination"/>
+        <result property="movingPrice" column="moving_price"/>
+        <result property="serviceName" column="service_name"/>
+        <result property="serviceCategoryName" column="service_category_name"/>
+        <result property="truckTypeName" column="truck_type_name"/>
+        <result property="truckTypeCapacity" column="truck_type_capacity"/>
+        <result property="licensePlateNumber" column="license_plate_number"/>
+        <result property="numberOfHelpers" column="number_of_helpers"/>
+        <result property="customerName" column="customer_name"/>
+    </resultMap>
+
+    <select id="driverPageQueryHistoricalOrders" resultMap="driverHistoricalOrderSummaryVOMap">
+        SELECT
+        mo.id, mo.order_number,
+
+        mo.order_status,
+
+        mo.is_paid,
+
+        mo.is_reviewed,
+
+        mo.create_time,
+        mo.reservation_time,
+        mo.moving_start_time,
+        mo.moving_end_time,
+        mo.cancel_time,
+
+        mo.moving_origin,
+        mo.moving_destination,
+
+        mo.moving_price,
+
+        mo.number_of_helpers,
+
+        s.service_name AS service_name,
+        sc.type_name AS service_category_name,
+        tt.type_name AS truck_type_name,
+        tt.capacity AS truck_type_capacity,
+        v.license_plate_number AS license_plate_number,
+
+        c.name AS customer_name
+        FROM moving_order mo
+        LEFT JOIN service s ON mo.service_id = s.id
+        LEFT JOIN service_category sc ON s.category_id = sc.id
+        LEFT JOIN truck_type tt ON mo.truck_type_id = tt.id
+        LEFT JOIN vehicle v ON mo.vehicle_id = v.id
+        LEFT JOIN customer c ON mo.customer_id = c.id
+        <where>
+            mo.driver_id = #{currentDriverId}
+            AND mo.order_status IN (4, 5)
+            <if test="queryDTO.orderNumber != null and queryDTO.orderNumber != ''">
+                AND mo.order_number LIKE CONCAT('%', #{queryDTO.orderNumber}, '%')
+            </if>
+            <if test="queryDTO.customerName != null and queryDTO.customerName != ''">
+                AND c.name LIKE CONCAT('%', #{queryDTO.customerName}, '%')
+            </if>
+            <if test="queryDTO.beginEndTime != null">
+                AND mo.moving_end_time &gt;= #{queryDTO.beginEndTime}
+            </if>
+            <if test="queryDTO.endEndTime != null">
+                AND mo.moving_end_time &lt;= #{queryDTO.endEndTime}
+            </if>
+            <if test="queryDTO.orderStatus != null">
+                AND mo.order_status = #{queryDTO.orderStatus}
+            </if>
+        </where>
+        ORDER BY mo.moving_end_time DESC
+    </select>
+
+    <resultMap id="HistoricalOrderDetailVOMap" type="com.***REMOVED***.vo.DriverHistoricalOrderDetailVO">
+        <id property="orderId" column="mo_id"/>
+        <result property="orderNumber" column="mo_order_number"/>
+        <result property="orderStatus" column="mo_order_status"/>
+        <result property="isPaid" column="mo_is_paid"/>
+        <result property="paymentTime" column="mo_payment_time"/>
+        <result property="payMethod" column="mo_pay_method"/>
+        <result property="isReviewed" column="mo_is_reviewed"/>
+        <result property="createTime" column="mo_create_time"/>
+        <result property="reservationTime" column="mo_reservation_time"/>
+        <result property="movingStartTime" column="mo_moving_start_time"/>
+        <result property="movingEndTime" column="mo_moving_end_time"/>
+        <result property="cancelTime" column="mo_cancel_time"/>
+        <result property="movingOrigin" column="mo_moving_origin"/>
+        <result property="movingDestination" column="mo_moving_destination"/>
+        <result property="movingPrice" column="mo_moving_price"/>
+        <result property="mileageCost" column="mo_mileage_cost"/>
+        <result property="helperCost" column="mo_helper_cost"/>
+        <result property="categoryPriceMultiplier" column="mo_category_price_multiplier"/>
+        <result property="numberOfHelpers" column="mo_number_of_helpers"/>
+        <result property="notes" column="mo_notes"/>
+        <result property="cancelReason" column="mo_cancel_reason"/>
+
+        <result property="customerId" column="c_id"/>
+        <result property="customerName" column="c_name"/>
+        <result property="customerPhone" column="c_phone"/>
+        <result property="customerEmail" column="c_email"/>
+
+        <result property="serviceId" column="s_id"/>
+        <result property="serviceName" column="s_service_name"/>
+        <result property="serviceShortDescription" column="s_short_description"/>
+        <result property="serviceLoadingCapacityDescription" column="s_loading_capacity_description"/>
+
+        <result property="serviceCategoryId" column="sc_id"/>
+        <result property="serviceCategoryName" column="sc_type_name"/>
+        <result property="requiredTruckTypeId" column="tt_id"/>
+        <result property="truckTypeName" column="tt_type_name"/>
+        <result property="truckTypeCapacity" column="tt_capacity"/>
+        <result property="truckTypeDescription" column="tt_description"/>
+        <result property="truckTypeBaseFare" column="tt_base_fare"/>
+
+        <association property="assignedVehicle" javaType="com.***REMOVED***.vo.AssignedVehicleVO">
+            <result property="vehicleId" column="v_id"/>
+            <result property="licensePlateNumber" column="v_license_plate_number"/>
+            <result property="vehicleBrand" column="v_vehicle_brand"/>
+        </association>
+
+    </resultMap>
+
+
+    <select id="driverGetHistoricalOrderDetail" resultMap="HistoricalOrderDetailVOMap">
+        SELECT mo.id                          AS mo_id,
+               mo.order_number                AS mo_order_number,
+               mo.order_status                AS mo_order_status,
+               mo.is_paid                     AS mo_is_paid,
+               mo.payment_time                AS mo_payment_time,
+               mo.pay_method                  AS mo_pay_method,
+               mo.is_reviewed                 AS mo_is_reviewed,
+               mo.create_time                 AS mo_create_time,
+               mo.reservation_time            AS mo_reservation_time,
+               mo.moving_start_time           AS mo_moving_start_time,
+               mo.moving_end_time             AS mo_moving_end_time,
+               mo.cancel_time                 AS mo_cancel_time,
+               mo.moving_origin               AS mo_moving_origin,
+               mo.moving_destination          AS mo_moving_destination,
+               mo.moving_price                AS mo_moving_price,
+               mo.mileage_cost                AS mo_mileage_cost,
+               mo.helper_cost                 AS mo_helper_cost,
+               mo.category_price_multiplier   AS mo_category_price_multiplier,
+               mo.number_of_helpers           AS mo_number_of_helpers,
+               mo.notes                       AS mo_notes,
+               mo.cancel_reason               AS mo_cancel_reason,
+               mo.update_time                 AS mo_update_time,
+
+               c.id                           AS c_id,
+               c.name                         AS c_name,
+               c.phone                        AS c_phone,
+               c.email                        AS c_email,
+
+               s.id                           AS s_id,
+               s.service_name                 AS s_service_name,
+               s.short_description            AS s_short_description,
+               s.loading_capacity_description AS s_loading_capacity_description,
+
+               sc.id                          AS sc_id,
+               sc.type_name                   AS sc_type_name,
+               sc.description                 AS sc_description,
+
+               tt.id                          AS tt_id,
+               tt.type_name                   AS tt_type_name,
+               tt.capacity                    AS tt_capacity,
+               tt.description                 AS tt_description,
+               tt.base_fare                   AS tt_base_fare,
+
+               v.id                           AS v_id,
+               v.license_plate_number         AS v_license_plate_number,
+               v.vehicle_brand                AS v_vehicle_brand
+
+        FROM moving_order mo
+                 LEFT JOIN customer c ON mo.customer_id = c.id
+                 LEFT JOIN service s ON mo.service_id = s.id
+                 LEFT JOIN service_category sc ON s.category_id = sc.id
+                 LEFT JOIN truck_type tt ON mo.truck_type_id = tt.id
+                 LEFT JOIN vehicle v ON mo.vehicle_id = v.id
+        WHERE mo.id = #{orderId}
+          AND mo.driver_id = #{currentDriverId}
+    </select>
 
 </mapper>

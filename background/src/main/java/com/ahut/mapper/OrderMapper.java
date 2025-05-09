@@ -2,6 +2,7 @@ package com.***REMOVED***.mapper;
 
 import com.***REMOVED***.annotation.AutoFill;
 import com.***REMOVED***.dto.DriverAvailableOrderPageQueryDTO;
+import com.***REMOVED***.dto.DriverHistoricalOrderPageQueryDTO;
 import com.***REMOVED***.dto.DriverMyOrderPageQueryDTO;
 import com.***REMOVED***.dto.OrdersPageQueryDTO;
 import com.***REMOVED***.entity.MovingOrder;
@@ -122,5 +123,10 @@ public interface OrderMapper {
     // 司机端根据订单ID和司机ID查询我的订单详情
     DriverMyOrderDetailVO driverGetMyDetail(Long orderId, Long currentDriverId);
 
+    // 司机端历史订单分页查询
+    Page<DriverHistoricalOrderSummaryVO> driverPageQueryHistoricalOrders(DriverHistoricalOrderPageQueryDTO queryDTO, Long currentDriverId);
+
+    // 司机端历史订单详情查询
+    DriverHistoricalOrderDetailVO driverGetHistoricalOrderDetail(Long orderId, Long currentDriverId);
 
 }
