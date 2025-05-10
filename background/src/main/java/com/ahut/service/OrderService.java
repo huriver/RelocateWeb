@@ -55,8 +55,8 @@ public interface OrderService {
     // 司机端根据订单ID查询待接订单详情
     DriverAvailableOrderDetailVO driverGetAvailableDetail(Long orderId);
 
-    // 获取适用于司机端“我的订单”列表筛选的状态列表
-    List<OrderStatusVO> driverGetMyOrderStatuses();
+    // 获取适用于司机、搬家工人端“我的订单”列表筛选的状态列表
+    List<OrderStatusVO> driverMoverGetMyOrderStatuses();
 
     // 司机端分页查询我的订单列表
     PageResult driverPageQueryMy(DriverMyOrderPageQueryDTO pageQueryDTO);
@@ -84,6 +84,24 @@ public interface OrderService {
 
     // 后台司机端完成搬运服务
     void driverCompleteMoving(Long orderId);
+
+    // 搬家工人端分页查询待接订单列表
+    PageResult moverPageQueryAvailable(MoverAvailableOrderPageQueryDTO pageQueryDTO);
+
+    // 搬家工人端：查询待接订单详情
+    MoverAvailableOrderDetailVO moverGetAvailableDetail(Long orderId);
+
+    // 搬家工人端：分页查询“我的订单”列表
+    PageResult moverPageQueryMy(MoverMyOrderPageQueryDTO dto);
+
+    // 搬家工人端：查询“我的订单”详情 (包含权限校验)
+    MoverMyOrderDetailVO moverGetMyDetail(Long orderId);
+
+    // 搬家工人端：分页查询历史订单
+    PageResult moverPageQueryHistoricalOrders(MoverHistoricalOrderPageQueryDTO dto);
+
+    // 搬家工人端：查询历史订单详情
+    MoverHistoricalOrderDetailVO moverGetHistoricalOrderDetail(Long orderId);
 
     /**
      * 获取适用于搬家工人端“我的订单”列表筛选的状态列表

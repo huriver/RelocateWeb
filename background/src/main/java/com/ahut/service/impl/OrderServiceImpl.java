@@ -71,6 +71,9 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private RatingMapper ratingMapper;
 
+    @Autowired
+    private MoverMapper moverMapper;
+
     @Value("${relocate.baidu.ak}")
     private String baiduAk;
 
@@ -1038,16 +1041,16 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 获取适用于司机端“我的订单”列表筛选的状态列表
+     * 获取适用于司机、搬家工人端“我的订单”列表筛选的状态列表
      *
      * @return 包含状态码和描述的 OrderStatusVO 列表
      */
     @Override
     @Transactional(readOnly = true) // 只读事务
-    public List<OrderStatusVO> driverGetMyOrderStatuses() {
+    public List<OrderStatusVO> driverMoverGetMyOrderStatuses() {
         List<OrderStatusVO> statusList = new ArrayList<>();
-        // 遍历 OrderStatusConstant 中的司机状态列表常量，并使用getDescription方法
-        for (Integer status : OrderStatusConstant.DRIVER_MY_ORDER_STATUSES) {
+        // 遍历 OrderStatusConstant 中的司机、搬家工人状态列表常量，并使用getDescription方法
+        for (Integer status : OrderStatusConstant.DRIVER_Mover_MY_ORDER_STATUSES) {
             statusList.add(new OrderStatusVO(status, OrderStatusConstant.getDescription(status)));
         }
         return statusList; // 返回列表
@@ -1486,22 +1489,121 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 获取适用于搬家工人端“我的订单”列表筛选的状态列表
+     * 搬家工人端分页查询待接订单列表
      *
-     * @return 包含状态码和描述的 OrderStatusVO 列表
+     * @param pageQueryDTO 查询条件
+     * @return 分页结果
      */
-//    @Override // *** 实现 OrderService 接口方法 ***
-//    @Transactional(readOnly = true) // 只读事务
-//    public List<OrderStatusVO> moverGetMyOrderStatuses() { // *** 搬家工人方法实现 (现在在此处实现) ***
-//        log.info("搬家工人获取我的订单筛选状态列表");
-//
-//        List<OrderStatusVO> statusList = new ArrayList<>(); // *** 在 Service 方法内部创建列表 ***
-//        // 遍历 OrderStatusConstant 中的搬家工人状态列表常量，并使用getDescription方法
-//        for (Integer status : OrderStatusConstant.MOVER_MY_ORDER_STATUSES) {
-//            statusList.add(new OrderStatusVO(status, OrderStatusConstant.getDescription(status)));
-//        }
-//
-//        log.info("获取到搬家工人我的订单筛选状态列表，数量：{}", statusList.size());
-//        return statusList; // 返回列表
-//    }
+    @Override
+    public PageResult moverPageQueryAvailable(MoverAvailableOrderPageQueryDTO pageQueryDTO) {
+        PageHelper.startPage(pageQueryDTO.getPage(), pageQueryDTO.getPageSize());
+        Page<MoverAvailableOrderSummaryVO> page = orderMapper.moverPageQueryAvailable(pageQueryDTO);
+        return new PageResult(page.getTotal(), page.getResult());
+    }
+
+    /**
+     * 搬家工人端获取待接订单详情
+     *
+     * @param orderId 订单ID
+     * @return 订单详情
+     */
+    @Override
+    public MoverAvailableOrderDetailVO moverGetAvailableDetail(Long orderId) {
+        return orderMapper.moverGetAvailableDetail(orderId);
+    }
+
+    /**
+     * 搬家工人端分页查询我的订单列表
+     *
+     * @param dto 分页查询条件
+     * @return 分页结果
+     */
+    @Override
+    public PageResult moverPageQueryMy(MoverMyOrderPageQueryDTO dto) {
+        PageHelper.startPage(dto.getPage(), dto.getPageSize());
+        Page<MoverMyOrderSummaryVO> page = orderMapper.moverPageQueryMy(BaseContext.getCurrentId(), dto);
+        return new PageResult(page.getTotal(), page.getResult());
+    }
+
+    /**
+     * 搬家工人端获取我的订单详情
+     *
+     * @param orderId 订单ID
+     * @return 订单详情
+     */
+    @Override
+    public MoverMyOrderDetailVO moverGetMyDetail(Long orderId) {
+        // 1. 获取当前登录的搬家工人ID
+        Long currentMoverId = BaseContext.getCurrentId();
+
+        // 2. 权限校验：检查当前搬家工人是否已分配到该订单
+        Integer assignmentCount = orderMapper.checkMoverOrderAssignment(orderId, currentMoverId);
+        if (assignmentCount == null || assignmentCount == 0) {
+            throw new BusinessException("您无权查看此订单详情或订单不存在");
+        }
+
+        // 3. 调用Mapper查询订单详情
+        MoverMyOrderDetailVO detail = orderMapper.moverGetMyDetail(orderId);
+
+        // 4. 校验查询结果，防止订单被删除或不符合其他条件
+        if (detail == null) {
+            // 理论上，如果权限校验通过，这里不应该为空，除非订单在权限校验后被删除
+            throw new BusinessException("订单不存在或已失效");
+        }
+
+        return detail;
+    }
+
+    /**
+     * 搬家工人端分页查询历史订单列表
+     *
+     * @param dto 分页查询条件
+     * @return 分页结果
+     */
+    @Override
+    public PageResult moverPageQueryHistoricalOrders(MoverHistoricalOrderPageQueryDTO dto) {
+        PageHelper.startPage(dto.getPage(), dto.getPageSize());
+        Page<MoverHistoricalOrderSummaryVO> page = orderMapper
+                .moverPageQueryHistoricalOrders(BaseContext.getCurrentId(), dto);
+        return new PageResult(page.getTotal(), page.getResult());
+    }
+
+    /**
+     * 搬家工人端获取历史订单详情
+     *
+     * @param orderId 订单ID
+     * @return 订单详情
+     */
+    @Override
+    public MoverHistoricalOrderDetailVO moverGetHistoricalOrderDetail(Long orderId) {
+        // 1. 获取当前登录的搬家工人ID
+        Long currentMoverId = BaseContext.getCurrentId();
+
+        // 2. 调用Mapper查询订单详情，包含权限校验
+        MoverHistoricalOrderDetailVO orderDetail = orderMapper.moverGetHistoricalOrderDetail(orderId, currentMoverId);
+
+        // 3. 检查查询结果
+        if (orderDetail == null) {
+            log.warn("搬家工人ID:{} 查询订单ID:{} 详情失败，订单不存在或无权限", currentMoverId, orderId);
+            throw new OrderBusinessException("订单不存在或您无权查看该订单详情");
+        }
+
+        // 4. 填充 RatingVO 中的 rateeName 字段 (业务逻辑处理)
+        List<RatingVO> ratings = orderDetail.getRatings();
+        if (ratings != null && !ratings.isEmpty()) {
+            for (RatingVO rating : ratings) {
+                if (Objects.equals(rating.getRatingType(), "SERVICE")) {
+                    rating.setRateeName(serviceMapper.getById(rating.getRateeId()).getServiceName());
+                } else if (Objects.equals(rating.getRatingType(), "DRIVER")) {
+                    rating.setRateeName(driverMapper.getById(rating.getRateeId()).getName());
+                } else if (Objects.equals(rating.getRatingType(), "MOVER")) {
+                    rating.setRateeName(moverMapper.getById(rating.getRateeId()).getName());
+                }
+            }
+        }
+
+        log.info("搬家工人ID:{} 成功查询订单ID:{} 详情", currentMoverId, orderId);
+        return orderDetail;
+    }
+
 }

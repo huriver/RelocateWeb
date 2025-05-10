@@ -39,9 +39,9 @@ public class OrderStatusConstant {
     );
 
     /**
-     * 适用于司机端“我的订单”列表的状态值
+     * 适用于司机、搬家工人端“我的订单”列表的状态值
      */
-    public static final List<Integer> DRIVER_MY_ORDER_STATUSES = Arrays.asList(
+    public static final List<Integer> DRIVER_Mover_MY_ORDER_STATUSES = Arrays.asList(
             DRIVER_ACCEPTED_WAITING_MOVERS, // 1
             ACCEPTED, // 2
             IN_PROGRESS // 3

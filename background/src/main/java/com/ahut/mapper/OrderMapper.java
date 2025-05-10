@@ -1,10 +1,7 @@
 package com.***REMOVED***.mapper;
 
 import com.***REMOVED***.annotation.AutoFill;
-import com.***REMOVED***.dto.DriverAvailableOrderPageQueryDTO;
-import com.***REMOVED***.dto.DriverHistoricalOrderPageQueryDTO;
-import com.***REMOVED***.dto.DriverMyOrderPageQueryDTO;
-import com.***REMOVED***.dto.OrdersPageQueryDTO;
+import com.***REMOVED***.dto.*;
 import com.***REMOVED***.entity.MovingOrder;
 import com.***REMOVED***.enumeration.OperationType;
 import com.***REMOVED***.vo.*;
@@ -108,7 +105,7 @@ public interface OrderMapper {
             "FROM moving_order WHERE order_status = 0 AND is_paid = 0 AND create_time < #{timeoutThreshold}")
     List<MovingOrder> getTimeoutUnpaidOrders(LocalDateTime timeoutThreshold);
 
-    // 分页查询待接订单列表 (已根据司机能力过滤，并应用可选筛选)
+    // 司机端分页查询待接订单列表
     Page<DriverAvailableOrderSummaryVO> driverPageQueryAvailable(
             @Param("dto") DriverAvailableOrderPageQueryDTO pageQueryDTO, // 使用 @Param 给 DTO 起别名
             @Param("currentDriverId") Long currentDriverId); // 使用 @Param 给司机ID起别名
@@ -128,5 +125,27 @@ public interface OrderMapper {
 
     // 司机端历史订单详情查询
     DriverHistoricalOrderDetailVO driverGetHistoricalOrderDetail(Long orderId, Long currentDriverId);
+
+    // 搬家工人端分页查询待接订单列表， 条件：订单状态为司机已接单并等待搬运工人 (1)，已支付 (1)，且需要搬运工人 (number_of_helpers > 0)
+    Page<MoverAvailableOrderSummaryVO> moverPageQueryAvailable(MoverAvailableOrderPageQueryDTO dto);
+
+    // 搬家工人端：查询待接订单详情
+    MoverAvailableOrderDetailVO moverGetAvailableDetail(Long orderId);
+
+    // 搬家工人端：分页查询“我的订单”列表
+    Page<MoverMyOrderSummaryVO> moverPageQueryMy(Long moverId, MoverMyOrderPageQueryDTO dto);
+
+    // 搬家工人端：查询“我的订单”详情
+    MoverMyOrderDetailVO moverGetMyDetail(Long orderId);
+
+    // 检查搬家工人是否已分配到指定订单
+    @Select("SELECT count(1) FROM order_mover WHERE order_id = #{orderId} AND mover_id = #{moverId}")
+    Integer checkMoverOrderAssignment(Long orderId, Long moverId);
+
+    // 搬家工人端：分页查询历史订单
+    Page<MoverHistoricalOrderSummaryVO> moverPageQueryHistoricalOrders(Long moverId, MoverHistoricalOrderPageQueryDTO dto);
+
+    // 搬家工人端：查询历史订单详情
+    MoverHistoricalOrderDetailVO moverGetHistoricalOrderDetail(Long orderId, Long moverId);
 
 }

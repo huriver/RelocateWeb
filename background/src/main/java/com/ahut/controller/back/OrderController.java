@@ -126,14 +126,14 @@ public class OrderController {
     }
 
     /**
-     * 获取适用于司机端“我的订单”列表筛选的状态列表
+     * 获取适用于司机、搬家工人端“我的订单”列表筛选的状态列表
      *
      * @return 包含状态码和描述的 OrderStatusVO 列表的统一返回结果
      */
-    @GetMapping("/driver/my-orders/statuses")
-    public Result<List<OrderStatusVO>> driverGetMyOrderStatuses() {
-        log.info("司机{}，获取我的订单筛选状态列表", BaseContext.getCurrentId());
-        List<OrderStatusVO> statusList = orderService.driverGetMyOrderStatuses();
+    @GetMapping("/driver-mover/my-orders/statuses")
+    public Result<List<OrderStatusVO>> driverMoverGetMyOrderStatuses() {
+        log.info("获取我的订单筛选状态列表");
+        List<OrderStatusVO> statusList = orderService.driverMoverGetMyOrderStatuses();
         return Result.success(statusList);
     }
 
@@ -200,7 +200,7 @@ public class OrderController {
         DriverHistoricalOrderDetailVO detailVO = orderService.driverGetHistoricalOrderDetail(orderId);
         return Result.success(detailVO);
     }
-
+//11111111
     /**
      * 后台司机端接单
      *
@@ -251,6 +251,86 @@ public class OrderController {
         log.info("司机{}，司机端完成搬运请求，订单ID: {}", BaseContext.getCurrentId(), orderId);
         orderService.driverCompleteMoving(orderId);
         return Result.success();
+    }
+
+    // --- 搬家工人相关订单查询接口 ---
+
+    /**
+     * 搬家工人端：分页查询待接订单列表
+     *
+     * @param pageQueryDTO 查询条件DTO，包含分页参数和筛选条件
+     * @return 封装好的分页结果
+     */
+    @GetMapping("/mover/available-orders")
+    public Result<PageResult> moverPageQueryAvailableOrders(MoverAvailableOrderPageQueryDTO pageQueryDTO) {
+        log.info("搬家工人{}，查询待接订单列表, 参数: {}", BaseContext.getCurrentId(), pageQueryDTO);
+        PageResult pageResult = orderService.moverPageQueryAvailable(pageQueryDTO);
+        return Result.success(pageResult);
+    }
+
+    /**
+     * 搬家工人端：查询待接订单详情
+     *
+     * @param orderId 订单ID
+     * @return 封装好的订单详情
+     */
+    @GetMapping("/mover/available-orders/{orderId}")
+    public Result<MoverAvailableOrderDetailVO> moverGetAvailableOrderDetail(@PathVariable Long orderId) {
+        log.info("搬家工人{}：查询待接订单详情，订单ID：{}", BaseContext.getCurrentId(), orderId);
+        MoverAvailableOrderDetailVO detail = orderService.moverGetAvailableDetail(orderId);
+        return Result.success(detail);
+    }
+
+    /**
+     * 搬家工人端：分页查询“我的订单”列表
+     *
+     * @param dto 查询条件DTO
+     * @return 分页结果对象
+     */
+    @GetMapping("/mover/my-orders")
+    public Result<PageResult> pageQueryMyOrders(MoverMyOrderPageQueryDTO dto) {
+        log.info("搬家工人{}，分页查询我的订单，参数: {}", BaseContext.getCurrentId(), dto);
+        PageResult pageResult = orderService.moverPageQueryMy(dto);
+        return Result.success(pageResult);
+    }
+
+    /**
+     * 搬家工人端：查询“我的订单”详情
+     *
+     * @param orderId 订单ID
+     * @return 封装好的订单详情
+     */
+    @GetMapping("/mover/my-orders/{orderId}")
+    public Result<MoverMyOrderDetailVO> moverGetMyOrderDetail(@PathVariable Long orderId) {
+        log.info("搬家工人{}，查询我的订单详情，订单ID：{}", BaseContext.getCurrentId(), orderId);
+        MoverMyOrderDetailVO detail = orderService.moverGetMyDetail(orderId);
+        return Result.success(detail);
+    }
+
+    /**
+     * 搬家工人端：分页查询历史订单
+     *
+     * @param dto 查询条件 DTO
+     * @return 分页结果
+     */
+    @GetMapping("/mover/historical-orders")
+    public Result<PageResult> moverPageQueryHistoricalOrders(MoverHistoricalOrderPageQueryDTO dto) {
+        log.info("搬家工人{}，分页查询历史订单，查询条件：{}", BaseContext.getCurrentId(), dto);
+        PageResult pageResult = orderService.moverPageQueryHistoricalOrders(dto);
+        return Result.success(pageResult);
+    }
+
+    /**
+     * 搬家工人端：查询历史订单详情
+     *
+     * @param orderId 订单ID
+     * @return 订单详情
+     */
+    @GetMapping("/mover/historical-orders/{orderId}")
+    public Result<MoverHistoricalOrderDetailVO> moverGetHistoricalOrderDetail(@PathVariable Long orderId) {
+        log.info("搬家工人{}，查询历史订单详情，订单ID：{}", BaseContext.getCurrentId(), orderId);
+        MoverHistoricalOrderDetailVO orderDetail = orderService.moverGetHistoricalOrderDetail(orderId);
+        return Result.success(orderDetail);
     }
 
 }
