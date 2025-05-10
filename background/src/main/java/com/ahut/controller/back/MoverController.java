@@ -1,7 +1,10 @@
 package com.***REMOVED***.controller.back;
 
+import com.***REMOVED***.context.BaseContext;
+import com.***REMOVED***.dto.ChangePasswordDTO;
+import com.***REMOVED***.dto.MoverDTO;
 import com.***REMOVED***.dto.MoverPageQueryDTO;
-import com.***REMOVED***.properties.JwtProperties;
+import com.***REMOVED***.entity.Mover;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.MoverService;
@@ -19,8 +22,45 @@ public class MoverController {
 
     @Autowired
     private MoverService moverService;
-    @Autowired
-    private JwtProperties jwtProperties;
+
+    /**
+     * 根据id查询搬家工人信息
+     *
+     * @return
+     */
+    @GetMapping
+    public Result<Mover> getById() {
+        Long id = BaseContext.getCurrentId();
+        log.info("搬家工人{}，后台端根据id查询自己信息", id);
+        Mover driver = moverService.getById(id);
+        return Result.success(driver);
+    }
+
+    /**
+     * 编辑搬家工人信息
+     *
+     * @param moverDTO
+     * @return
+     */
+    @PutMapping
+    public Result update(@RequestBody MoverDTO moverDTO) {
+        log.info("后台端编辑搬家工人信息:{}", moverDTO);
+        moverService.update(moverDTO);
+        return Result.success();
+    }
+
+    /**
+     * 修改密码
+     *
+     * @param changePasswordDTO
+     * @return
+     */
+    @PutMapping("/editPassword")
+    public Result changePassword(@RequestBody ChangePasswordDTO changePasswordDTO) {
+        log.info("后台端搬家工人{}，修改密码：{}", BaseContext.getCurrentId(), changePasswordDTO);
+        moverService.changePassword(changePasswordDTO);
+        return Result.success();
+    }
 
     /**
      * 搬家工人分页查询

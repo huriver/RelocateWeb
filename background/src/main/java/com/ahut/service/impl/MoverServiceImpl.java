@@ -1,9 +1,8 @@
 package com.***REMOVED***.service.impl;
 
 import com.***REMOVED***.constant.MessageConstant;
-import com.***REMOVED***.dto.MoverPageQueryDTO;
-import com.***REMOVED***.dto.UserLoginDTO;
-import com.***REMOVED***.dto.UserRegisterDTO;
+import com.***REMOVED***.context.BaseContext;
+import com.***REMOVED***.dto.*;
 import com.***REMOVED***.entity.Mover;
 import com.***REMOVED***.exception.AccountLockedException;
 import com.***REMOVED***.exception.AccountNotFoundException;
@@ -119,6 +118,67 @@ public class MoverServiceImpl implements MoverService {
                 .isBanned(isBanned == 1)
                 .build();
         moverMapper.update(updateMover);
+    }
+
+    /**
+     * 根据id查询搬家工人
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public Mover getById(Long id) {
+        Mover mover = moverMapper.getById(id);
+        mover.setPassword("****");
+        return mover;
+    }
+
+    /**
+     * 更新搬家工人信息
+     *
+     * @param moverDTO
+     */
+    @Override
+    public void update(MoverDTO moverDTO) {
+        Mover mover = new Mover();
+        BeanUtils.copyProperties(moverDTO, mover);
+        moverMapper.update(mover);
+    }
+
+    /**
+     * 修改密码
+     *
+     * @param changePasswordDTO
+     */
+    @Override
+    public void changePassword(ChangePasswordDTO changePasswordDTO) {
+        // 1. 从 BaseContext 获取当前登录角色的 ID
+        Long currentMoverId = BaseContext.getCurrentId();
+
+        // 2. 从数据库中查询出当前登录角色的密码哈希值
+        String storedPasswordHash = moverMapper.getById(currentMoverId).getPassword();
+
+        // 3. 验证旧密码是否正确
+        String oldPasswordHashed = DigestUtils.md5DigestAsHex(changePasswordDTO.getOldPassword().getBytes());
+        if (!oldPasswordHashed.equals(storedPasswordHash)) {
+            throw new PasswordErrorException(MessageConstant.OLD_PASSWORD_ERROR);
+        }
+
+        // 4. 校验新密码和确认新密码是否一致
+        if (!changePasswordDTO.getNewPassword().equals(changePasswordDTO.getRePassword())) {
+            throw new PasswordErrorException(MessageConstant.PASSWORD_NOT_MATCH);
+        }
+
+        // 6. 加密新密码
+        String newPasswordHashed = DigestUtils.md5DigestAsHex(changePasswordDTO.getNewPassword().getBytes());
+
+        // 7. 更新数据库中的密码
+        Mover mover = Mover.builder()
+                .id(currentMoverId)
+                .password(newPasswordHashed)
+                .build();
+
+        moverMapper.update(mover);
     }
 
 }

@@ -36,7 +36,8 @@ public interface MoverMapper {
     // 分页查询搬家工人
     Page<Mover> pageQuery(MoverPageQueryDTO moverPageQueryDTO);
 
-    @Select("select id, username, name, gender, phone, id_card, photo_url, is_banned, average_rating, " +
+    // 根据id查询搬家工人
+    @Select("select id, username, password, name, gender, phone, id_card, photo_url, is_banned, average_rating, " +
             "rating_count, create_time, update_time " +
             "from mover where id = #{id}")
     Mover getById(Long id);
