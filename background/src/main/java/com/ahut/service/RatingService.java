@@ -1,9 +1,11 @@
 package com.***REMOVED***.service;
 
+import com.***REMOVED***.dto.DriverMyRatingPageQueryDTO;
 import com.***REMOVED***.dto.OverallRatingSubmitDTO;
 import com.***REMOVED***.dto.RatingPageQueryDTO;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.vo.CustomerRatingVO;
+import com.***REMOVED***.vo.DriverMyRatingDetailVO;
 import com.***REMOVED***.vo.RatingDetailVO;
 import com.***REMOVED***.vo.ServiceRatingVO;
 
@@ -25,5 +27,11 @@ public interface RatingService {
 
     // 根据ID查询单个评分详细信息 (返回 VO，包含关联基本信息)
     RatingDetailVO getById(Long id);
+
+    // 司机分页查询收到的评价列表
+    PageResult driverPageQueryMyRatings(DriverMyRatingPageQueryDTO driverMyRatingPageQueryDTO);
+
+    // 司机查询收到的指定评价详情
+    DriverMyRatingDetailVO driverGetMyRatingDetail(Long id);
 
 }

@@ -4,6 +4,7 @@ import com.***REMOVED***.constant.MessageConstant;
 import com.***REMOVED***.constant.OrderStatusConstant;
 import com.***REMOVED***.constant.RatingTypeConstant;
 import com.***REMOVED***.context.BaseContext;
+import com.***REMOVED***.dto.DriverMyRatingPageQueryDTO;
 import com.***REMOVED***.dto.OverallRatingSubmitDTO;
 import com.***REMOVED***.dto.RatingPageQueryDTO;
 import com.***REMOVED***.dto.SingleRatingDTO;
@@ -13,10 +14,7 @@ import com.***REMOVED***.exception.OrderBusinessException;
 import com.***REMOVED***.mapper.*;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.service.RatingService;
-import com.***REMOVED***.vo.CustomerRatingVO;
-import com.***REMOVED***.vo.RatingDetailVO;
-import com.***REMOVED***.vo.RatingListVO;
-import com.***REMOVED***.vo.ServiceRatingVO;
+import com.***REMOVED***.vo.*;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
@@ -382,6 +380,36 @@ public class RatingServiceImpl implements RatingService {
             detailVO.setRateeName("无关联被评分者"); // 处理 rateeId 或 ratingType 为 NULL 的情况
         }
 
+        return detailVO;
+    }
+
+    /**
+     * 司机分页查询收到的评价列表
+     *
+     * @param driverMyRatingPageQueryDTO 查询条件DTO
+     * @return 评价列表分页结果
+     */
+    @Override
+    public PageResult driverPageQueryMyRatings(DriverMyRatingPageQueryDTO driverMyRatingPageQueryDTO) {
+        PageHelper.startPage(driverMyRatingPageQueryDTO.getPage(), driverMyRatingPageQueryDTO.getPageSize());
+        Page<DriverMyRatingListVO> page = ratingMapper
+                .driverPageQueryMyRatings(driverMyRatingPageQueryDTO, BaseContext.getCurrentId());
+        return new PageResult(page.getTotal(), page.getResult());
+    }
+
+    /**
+     * 司机查询收到的指定评价详情
+     *
+     * @param id 评价记录ID
+     * @return 评价详情VO
+     */
+    @Override
+    public DriverMyRatingDetailVO driverGetMyRatingDetail(Long id) {
+        // 调用Mapper查询详情，并进行权限验证：确保该评价属于当前登录司机
+        DriverMyRatingDetailVO detailVO = ratingMapper.driverGetMyRatingDetail(id, BaseContext.getCurrentId());
+        if (detailVO == null) {
+            throw new BusinessException("未找到该评价或您无权查看");
+        }
         return detailVO;
     }
 

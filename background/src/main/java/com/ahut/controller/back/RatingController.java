@@ -2,10 +2,12 @@ package com.***REMOVED***.controller.back;
 
 
 import com.***REMOVED***.context.BaseContext;
+import com.***REMOVED***.dto.DriverMyRatingPageQueryDTO;
 import com.***REMOVED***.dto.RatingPageQueryDTO;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.RatingService;
+import com.***REMOVED***.vo.DriverMyRatingDetailVO;
 import com.***REMOVED***.vo.RatingDetailVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,32 @@ public class RatingController {
     public Result<RatingDetailVO> getRatingDetailsById(@PathVariable Long id) {
         log.info("查询单个评分详细信息，由管理员 {} 操作，查询ID：{}", BaseContext.getCurrentId(), id);
         RatingDetailVO detailVO = ratingService.getById(id);
+        return Result.success(detailVO);
+    }
+
+    /**
+     * 司机分页查询收到的评价列表
+     *
+     * @param driverMyRatingPageQueryDTO 查询条件DTO，作为方法参数接收查询字符串传参
+     * @return 评价列表分页结果
+     */
+    @GetMapping("/driver/my-ratings")
+    public Result<PageResult> driverPageQueryMyRatings(DriverMyRatingPageQueryDTO driverMyRatingPageQueryDTO) {
+        log.info("司机{}，分页查询收到的评价：{}", BaseContext.getCurrentId(), driverMyRatingPageQueryDTO);
+        PageResult pageResult = ratingService.driverPageQueryMyRatings(driverMyRatingPageQueryDTO);
+        return Result.success(pageResult);
+    }
+
+    /**
+     * 司机查询收到的指定评价详情
+     *
+     * @param id 评价记录的ID
+     * @return 评价详情VO
+     */
+    @GetMapping("/driver/my-ratings/{id}")
+    public Result<DriverMyRatingDetailVO> driverGetMyRatingDetail(@PathVariable Long id) {
+        log.info("司机{}，查询司机收到的评价详情，评价ID：{}", BaseContext.getCurrentId(), id);
+        DriverMyRatingDetailVO detailVO = ratingService.driverGetMyRatingDetail(id);
         return Result.success(detailVO);
     }
 

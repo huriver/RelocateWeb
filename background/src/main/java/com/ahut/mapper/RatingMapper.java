@@ -1,11 +1,9 @@
 package com.***REMOVED***.mapper;
 
+import com.***REMOVED***.dto.DriverMyRatingPageQueryDTO;
 import com.***REMOVED***.dto.RatingPageQueryDTO;
 import com.***REMOVED***.entity.Rating;
-import com.***REMOVED***.vo.CustomerRatingVO;
-import com.***REMOVED***.vo.RatingListVO;
-import com.***REMOVED***.vo.RatingVO;
-import com.***REMOVED***.vo.ServiceRatingVO;
+import com.***REMOVED***.vo.*;
 import com.github.pagehelper.Page;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -45,5 +43,11 @@ public interface RatingMapper {
     // 根据订单ID查询相关的评价列表，在SQL中获取被评价者名称和评价类型标签
     List<RatingVO> getRatingsByOrderId(Long orderId, String ratingTypeDriver,
                                        String ratingTypeMover, String ratingTypeService);
+
+    // 司机分页查询收到的评价列表
+    Page<DriverMyRatingListVO> driverPageQueryMyRatings(DriverMyRatingPageQueryDTO dto, Long currentDriverId);
+
+    // 司机查询收到的指定评价详情
+    DriverMyRatingDetailVO driverGetMyRatingDetail(Long ratingId, Long driverId);
 
 }
