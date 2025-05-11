@@ -83,7 +83,7 @@ const selectService = (id) => {
   <div class="service-container home-container">
     <ul v-infinite-scroll="queryService" :infinite-scroll-distance="0" :infinite-scroll-disabled="noMore || loading"
       class="infinite-list">
-      <li v-for="item in data" :key="item.id">
+      <li class="service-item" v-for="item in data" :key="item.id">
         <div class="title">
           <h1 class="name">{{ item.serviceName }}</h1>
           <el-tag class="category">{{ item.categoryName }}</el-tag>
@@ -196,7 +196,7 @@ const selectService = (id) => {
     padding: 0;
     margin: 0;
 
-    li {
+    li.service-item {
       position: relative;
       overflow: hidden;
       list-style: none;
