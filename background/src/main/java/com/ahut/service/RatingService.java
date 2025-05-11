@@ -1,13 +1,11 @@
 package com.***REMOVED***.service;
 
 import com.***REMOVED***.dto.DriverMyRatingPageQueryDTO;
+import com.***REMOVED***.dto.MoverMyRatingPageQueryDTO;
 import com.***REMOVED***.dto.OverallRatingSubmitDTO;
 import com.***REMOVED***.dto.RatingPageQueryDTO;
 import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.vo.CustomerRatingVO;
-import com.***REMOVED***.vo.DriverMyRatingDetailVO;
-import com.***REMOVED***.vo.RatingDetailVO;
-import com.***REMOVED***.vo.ServiceRatingVO;
+import com.***REMOVED***.vo.*;
 
 import java.util.List;
 
@@ -33,5 +31,11 @@ public interface RatingService {
 
     // 司机查询收到的指定评价详情
     DriverMyRatingDetailVO driverGetMyRatingDetail(Long id);
+
+    // 搬家工人端：分页查询自己收到的评价
+    PageResult moverPageQueryMyRatings(MoverMyRatingPageQueryDTO queryDTO);
+
+    // 搬家工人端：查询我的评价详情
+    MoverMyRatingDetailVO moverGetMyRatingDetail(Long ratingId);
 
 }

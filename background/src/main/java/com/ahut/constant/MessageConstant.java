@@ -110,4 +110,9 @@ public class MessageConstant {
     public static final String MOVER_ALREADY_ASSIGNED = "搬运工人已分配";
     public static final String MOVER_COUNT_MISMATCH = "搬运工人数量不匹配";
     public static final String MOVING_START_TIME_NOT_RECORDED = "开始时间未记录";
+
+    public static final String MOVER_ALREADY_ASSIGNED_TO_THIS_ORDER = "搬家工人已分配给此订单";
+    public static final String ORDER_FULL = "订单已满员";
+    public static final String MOVER_NOT_ASSIGNED_TO_THIS_ORDER = "搬运工人未分配给此订单";
+    public static final String SYSTEM_ERROR = "系统错误";
 }

@@ -845,17 +845,24 @@
         LEFT JOIN vehicle v ON mo.vehicle_id = v.id
         LEFT JOIN order_mover om ON mo.id = om.order_id
         WHERE mo.order_status = 1 AND mo.is_paid = 1 AND mo.number_of_helpers > 0
-        <if test="startDate != null">
-            AND mo.reservation_time &gt;= #{startDate}
+        AND mo.driver_id IS NOT NULL
+        AND NOT EXISTS (
+        SELECT 1
+        FROM order_mover om_filter
+        WHERE om_filter.order_id = mo.id
+        AND om_filter.mover_id = #{moverId}
+        )
+        <if test="dto.startDate != null">
+            AND mo.reservation_time &gt;= #{dto.startDate}
         </if>
-        <if test="endDate != null">
-            AND mo.reservation_time &lt;= #{endDate}
+        <if test="dto.endDate != null">
+            AND mo.reservation_time &lt;= #{dto.endDate}
         </if>
-        <if test="numberOfHelpers != null">
-            AND mo.number_of_helpers = #{numberOfHelpers}
+        <if test="dto.numberOfHelpers != null">
+            AND mo.number_of_helpers = #{dto.numberOfHelpers}
         </if>
-        <if test="serviceCategoryId != null">
-            AND sc.id = #{serviceCategoryId}
+        <if test="dto.serviceCategoryId != null">
+            AND sc.id = #{dto.serviceCategoryId}
         </if>
         GROUP BY
         mo.id, mo.order_number, mo.reservation_time, mo.moving_origin, mo.moving_destination,

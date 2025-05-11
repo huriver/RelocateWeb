@@ -4,11 +4,11 @@ package com.***REMOVED***.service.impl;
 import com.***REMOVED***.constant.OrderStatusConstant;
 import com.***REMOVED***.entity.Customer;
 import com.***REMOVED***.entity.Driver;
-import com.***REMOVED***.entity.Mover;
 import com.***REMOVED***.entity.MovingOrder;
 import com.***REMOVED***.mapper.CustomerMapper;
 import com.***REMOVED***.mapper.DriverMapper;
 import com.***REMOVED***.service.EmailService;
+import com.***REMOVED***.vo.MoverVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,7 +52,7 @@ public class EmailServiceImpl implements EmailService {
      */
     @Async // 异步执行
     @Override
-    public void sendOrderStatusEmailToCustomer(MovingOrder updatedOrder, Integer newStatus, List<Mover> assignedMovers) {
+    public void sendOrderStatusEmailToCustomer(MovingOrder updatedOrder, Integer newStatus, List<MoverVO> assignedMovers) {
         try {
             Customer customer = customerMapper.getById(updatedOrder.getCustomerId());
             if (customer == null || customer.getEmail() == null || customer.getEmail().isEmpty()) {
@@ -95,7 +95,7 @@ public class EmailServiceImpl implements EmailService {
      * @param assignedMovers 已指派的搬运工列表 (从调用方传入)
      * @return 邮件正文
      */
-    private String generateEmailBody(MovingOrder order, Integer newStatus, List<Mover> assignedMovers) {
+    private String generateEmailBody(MovingOrder order, Integer newStatus, List<MoverVO> assignedMovers) {
         String statusDescription = OrderStatusConstant.getDescription(newStatus);
 
         StringBuilder bodyBuilder = new StringBuilder();
@@ -143,8 +143,8 @@ public class EmailServiceImpl implements EmailService {
             // *** 使用传入的 assignedMovers 列表 ***
             if (assignedMovers != null && !assignedMovers.isEmpty()) {
                 bodyBuilder.append("搬运工人：\n");
-                for (Mover mover : assignedMovers) { // 遍历传入的列表
-                    bodyBuilder.append("- ").append(mover.getName()).append(" (电话: ").append(mover.getPhone()).append(")\n");
+                for (MoverVO moverVO : assignedMovers) { // 遍历传入的列表
+                    bodyBuilder.append("- ").append(moverVO.getName()).append(" (电话: ").append(moverVO.getPhone()).append(")\n");
                 }
             } else {
                 bodyBuilder.append("搬运工人：暂无信息。\n");

@@ -126,8 +126,8 @@ public interface OrderMapper {
     // 司机端历史订单详情查询
     DriverHistoricalOrderDetailVO driverGetHistoricalOrderDetail(Long orderId, Long currentDriverId);
 
-    // 搬家工人端分页查询待接订单列表， 条件：订单状态为司机已接单并等待搬运工人 (1)，已支付 (1)，且需要搬运工人 (number_of_helpers > 0)
-    Page<MoverAvailableOrderSummaryVO> moverPageQueryAvailable(MoverAvailableOrderPageQueryDTO dto);
+    // 搬家工人端分页查询待接订单列表， 条件：订单状态为司机已接单并等待搬运工人 (1)，已支付 (1)，且需要搬运工人 (number_of_helpers > 0)，未被分配给当前搬运工人
+    Page<MoverAvailableOrderSummaryVO> moverPageQueryAvailable(MoverAvailableOrderPageQueryDTO dto, Long moverId);
 
     // 搬家工人端：查询待接订单详情
     MoverAvailableOrderDetailVO moverGetAvailableDetail(Long orderId);

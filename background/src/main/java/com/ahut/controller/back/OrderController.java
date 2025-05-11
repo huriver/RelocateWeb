@@ -200,7 +200,7 @@ public class OrderController {
         DriverHistoricalOrderDetailVO detailVO = orderService.driverGetHistoricalOrderDetail(orderId);
         return Result.success(detailVO);
     }
-//11111111
+
     /**
      * 后台司机端接单
      *
@@ -331,6 +331,32 @@ public class OrderController {
         log.info("搬家工人{}，查询历史订单详情，订单ID：{}", BaseContext.getCurrentId(), orderId);
         MoverHistoricalOrderDetailVO orderDetail = orderService.moverGetHistoricalOrderDetail(orderId);
         return Result.success(orderDetail);
+    }
+
+    /**
+     * 搬家工人接单
+     *
+     * @param moverAcceptOrderDTO 包含订单ID的请求DTO
+     * @return 通用返回对象
+     */
+    @PutMapping("/mover/available-orders/accept")
+    public Result moverAcceptOrder(@RequestBody MoverAcceptOrderDTO moverAcceptOrderDTO) {
+        log.info("搬家工人{}，接单请求，DTO: {}", BaseContext.getCurrentId(), moverAcceptOrderDTO);
+        orderService.moverAcceptOrder(moverAcceptOrderDTO);
+        return Result.success();
+    }
+
+    /**
+     * 搬家工人取消订单
+     *
+     * @param moverCancelOrderDTO 取消订单请求DTO
+     * @return 通用返回对象，表示操作结果
+     */
+    @PutMapping("/mover/my-orders/cancel")
+    public Result moverCancelOrder(@RequestBody MoverCancelOrderDTO moverCancelOrderDTO) {
+        log.info("搬家工人{}，取消订单分配请求，DTO: {}", BaseContext.getCurrentId(), moverCancelOrderDTO);
+        orderService.moverCancelOrder(moverCancelOrderDTO);
+        return Result.success();
     }
 
 }

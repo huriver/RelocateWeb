@@ -4,10 +4,7 @@ import com.***REMOVED***.constant.MessageConstant;
 import com.***REMOVED***.constant.OrderStatusConstant;
 import com.***REMOVED***.constant.RatingTypeConstant;
 import com.***REMOVED***.context.BaseContext;
-import com.***REMOVED***.dto.DriverMyRatingPageQueryDTO;
-import com.***REMOVED***.dto.OverallRatingSubmitDTO;
-import com.***REMOVED***.dto.RatingPageQueryDTO;
-import com.***REMOVED***.dto.SingleRatingDTO;
+import com.***REMOVED***.dto.*;
 import com.***REMOVED***.entity.*;
 import com.***REMOVED***.exception.BusinessException;
 import com.***REMOVED***.exception.OrderBusinessException;
@@ -411,6 +408,40 @@ public class RatingServiceImpl implements RatingService {
             throw new BusinessException("未找到该评价或您无权查看");
         }
         return detailVO;
+    }
+
+    /**
+     * 搬家工人分页查询收到的评价列表
+     *
+     * @param queryDTO 查询条件DTO
+     * @return 评价列表分页结果
+     */
+    @Override
+    public PageResult moverPageQueryMyRatings(MoverMyRatingPageQueryDTO queryDTO) {
+        PageHelper.startPage(queryDTO.getPage(), queryDTO.getPageSize());
+        Page<MoverMyRatingListVO> page = ratingMapper.moverPageQueryMyRatings(queryDTO, BaseContext.getCurrentId());
+        return new PageResult(page.getTotal(), page.getResult());
+    }
+
+    /**
+     * 搬家工人查询收到的指定评价详情
+     *
+     * @param ratingId 评价记录ID
+     * @return 评价详情VO
+     */
+    @Override
+    public MoverMyRatingDetailVO moverGetMyRatingDetail(Long ratingId) {
+        // 1. 权限校验：获取当前登录的搬家工人ID
+        Long currentMoverId = BaseContext.getCurrentId();
+        MoverMyRatingDetailVO detail = ratingMapper.moverGetMyRatingDetail(ratingId, currentMoverId);
+
+        // 2. 结果校验与异常处理
+        if (detail == null) {
+            log.warn("搬家工人ID:{} 查询评价ID:{} 详情失败，评价不存在或无权限访问", currentMoverId, ratingId);
+            throw new BusinessException("评价不存在或您无权查看该评价详情");
+        }
+
+        return detail;
     }
 
 }

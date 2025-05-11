@@ -103,11 +103,10 @@ public interface OrderService {
     // 搬家工人端：查询历史订单详情
     MoverHistoricalOrderDetailVO moverGetHistoricalOrderDetail(Long orderId);
 
-    /**
-     * 获取适用于搬家工人端“我的订单”列表筛选的状态列表
-     *
-     * @return 包含状态码和描述的 OrderStatusVO 列表
-     */
-//    List<OrderStatusVO> moverGetMyOrderStatuses(); // *** 搬家工人我的订单状态列表方法 ***
+    // 后台搬家工人端接单
+    void moverAcceptOrder(MoverAcceptOrderDTO moverAcceptOrderDTO);
+
+    // 搬家工人取消订单
+    void moverCancelOrder(MoverCancelOrderDTO moverCancelOrderDTO);
 
 }

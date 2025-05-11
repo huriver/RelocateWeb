@@ -3,11 +3,13 @@ package com.***REMOVED***.controller.back;
 
 import com.***REMOVED***.context.BaseContext;
 import com.***REMOVED***.dto.DriverMyRatingPageQueryDTO;
+import com.***REMOVED***.dto.MoverMyRatingPageQueryDTO;
 import com.***REMOVED***.dto.RatingPageQueryDTO;
 import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.result.Result;
 import com.***REMOVED***.service.RatingService;
 import com.***REMOVED***.vo.DriverMyRatingDetailVO;
+import com.***REMOVED***.vo.MoverMyRatingDetailVO;
 import com.***REMOVED***.vo.RatingDetailVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +79,32 @@ public class RatingController {
         log.info("司机{}，查询司机收到的评价详情，评价ID：{}", BaseContext.getCurrentId(), id);
         DriverMyRatingDetailVO detailVO = ratingService.driverGetMyRatingDetail(id);
         return Result.success(detailVO);
+    }
+
+    /**
+     * 搬家工人端：分页查询自己收到的评价
+     *
+     * @param queryDTO 查询参数 (Spring MVC会自动将请求参数映射到DTO的字段)
+     * @return 分页结果
+     */
+    @GetMapping("/mover/my-ratings")
+    public Result<PageResult> moverPageQueryMyRatings(MoverMyRatingPageQueryDTO queryDTO) {
+        log.info("搬家工人{}，分页查询我的评价，参数：{}", BaseContext.getCurrentId(), queryDTO);
+        PageResult pageResult = ratingService.moverPageQueryMyRatings(queryDTO);
+        return Result.success(pageResult);
+    }
+
+    /**
+     * 搬家工人端：查询我的评价详情
+     *
+     * @param ratingId 评价记录ID
+     * @return 评价详情
+     */
+    @GetMapping("/mover/my-ratings/{ratingId}")
+    public Result<MoverMyRatingDetailVO> moverGetMyRatingDetail(@PathVariable Long ratingId) {
+        log.info("搬家工人{}，查询我的评价详情，评价ID：{}", BaseContext.getCurrentId(), ratingId);
+        MoverMyRatingDetailVO detail = ratingService.moverGetMyRatingDetail(ratingId);
+        return Result.success(detail);
     }
 
 }

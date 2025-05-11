@@ -2,6 +2,7 @@ package com.***REMOVED***.mapper;
 
 import com.***REMOVED***.vo.MoverVO;
 import org.apache.ibatis.annotations.Delete;
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
@@ -27,8 +28,18 @@ public interface OrderMoverMapper {
     @Select("SELECT COUNT(*) FROM order_mover WHERE order_id = #{orderId}")
     int countByOrderId(Long orderId);
 
-    // Future: 可以添加其他操作 order_mover 表的方法，例如：
-    // @Insert("insert into order_mover (order_id, mover_id) values (#{orderId}, #{moverId})")
-    // void insert(@Param("orderId") Long orderId, @Param("moverId") Long moverId);
-    // List<Long> getMoverIdsByOrderId(@Param("orderId") Long orderId);
+    @Insert("INSERT INTO order_mover (order_id, mover_id) VALUES (#{orderId}, #{moverId})")
+    void insert(Long orderId, Long moverId);
+
+    //  根据订单ID统计已分配的搬家工人数量
+    @Select("SELECT COUNT(id) FROM order_mover WHERE order_id = #{orderId}")
+    int countAssignedMoversByOrderId(Long orderId);
+
+    @Select("SELECT EXISTS(SELECT 1 FROM order_mover WHERE order_id = #{orderId} AND mover_id = #{moverId})")
+    boolean existsByOrderIdAndMoverId(Long orderId, Long moverId);
+
+    // 根据订单ID和搬运工ID删除关联记录 (用于取消分配)
+    @Delete("DELETE FROM order_mover WHERE order_id = #{orderId} AND mover_id = #{moverId}")
+    int deleteByOrderIdAndMoverId(Long orderId, Long moverId);
+
 }

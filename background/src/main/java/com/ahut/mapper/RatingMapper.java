@@ -1,6 +1,7 @@
 package com.***REMOVED***.mapper;
 
 import com.***REMOVED***.dto.DriverMyRatingPageQueryDTO;
+import com.***REMOVED***.dto.MoverMyRatingPageQueryDTO;
 import com.***REMOVED***.dto.RatingPageQueryDTO;
 import com.***REMOVED***.entity.Rating;
 import com.***REMOVED***.vo.*;
@@ -49,5 +50,11 @@ public interface RatingMapper {
 
     // 司机查询收到的指定评价详情
     DriverMyRatingDetailVO driverGetMyRatingDetail(Long ratingId, Long driverId);
+
+    // 搬家工人端：分页查询自己收到的评价列表
+    Page<MoverMyRatingListVO> moverPageQueryMyRatings(MoverMyRatingPageQueryDTO queryDTO, Long moverId);
+
+    // 搬家工人端：查询我的评价详情
+    MoverMyRatingDetailVO moverGetMyRatingDetail(Long ratingId, Long moverId);
 
 }

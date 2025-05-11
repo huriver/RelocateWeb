@@ -15,10 +15,10 @@
     </insert>
 
     <select id="getServiceRatingsByServiceId" resultType="ServiceRatingVO">
-        SELECT c.name        AS customerName,
+        SELECT c.name         AS customerName,
                r.rating_value AS ratingValue,
-               r.comment     AS comment,
-               r.rating_time AS ratingTime
+               r.comment      AS comment,
+               r.rating_time  AS ratingTime
         FROM rating r
                  JOIN customer c ON r.customer_id = c.id
         WHERE r.rating_type = 'SERVICE'
@@ -177,6 +177,104 @@
         WHERE r.id = #{ratingId}
           AND r.ratee_id = #{driverId}
           AND r.rating_type = 'DRIVER'
+    </select>
+
+    <resultMap id="moverMyRatingListResultMap" type="com.***REMOVED***.vo.MoverMyRatingListVO">
+        <id column="rating_id" property="id"/>
+        <result column="order_number" property="orderNumber"/>
+        <result column="customer_name" property="customerName"/>
+        <result column="rating_value" property="ratingValue"/>
+        <result column="comment_snippet" property="commentSnippet"/>
+        <result column="rating_time" property="ratingTime"/>
+        <result column="order_id" property="orderId"/>
+    </resultMap>
+
+    <select id="moverPageQueryMyRatings" resultMap="moverMyRatingListResultMap">
+        SELECT
+        r.id AS rating_id,
+        r.order_id,
+
+        mo.order_number,
+        c.name AS customer_name,
+
+        r.rating_value,
+        SUBSTRING(r.comment, 1, 200) AS comment_snippet,
+
+        r.rating_time AS rating_time
+
+        FROM rating r
+        LEFT JOIN moving_order mo ON r.order_id = mo.id
+        LEFT JOIN customer c ON r.customer_id = c.id
+        WHERE r.ratee_id = #{moverId} AND r.rating_type = 'MOVER'
+
+        <if test="queryDTO.minRatingValue != null">
+            AND r.rating_value &gt;= #{queryDTO.minRatingValue}
+        </if>
+        <if test="queryDTO.maxRatingValue != null">
+            AND r.rating_value &lt;= #{queryDTO.maxRatingValue}
+        </if>
+        <if test="queryDTO.startTime != null">
+            AND r.create_time &gt;= #{queryDTO.startTime}
+        </if>
+        <if test="queryDTO.endTime != null">
+            AND r.create_time &lt;= #{queryDTO.endTime}
+        </if>
+        <if test="queryDTO.orderNumber != null and queryDTO.orderNumber != ''">
+            AND mo.order_number LIKE CONCAT('%', #{queryDTO.orderNumber}, '%')
+        </if>
+        <if test="queryDTO.customerName != null and queryDTO.customerName != ''">
+            AND c.name LIKE CONCAT('%', #{queryDTO.customerName}, '%')
+        </if>
+        ORDER BY r.create_time DESC
+    </select>
+
+    <resultMap id="moverMyRatingDetailResultMap" type="com.***REMOVED***.vo.MoverMyRatingDetailVO">
+        <id column="rating_id" property="id"/>
+        <result column="rating_value" property="ratingValue"/>
+        <result column="comment" property="comment"/>
+        <result column="rating_time" property="ratingTime"/>
+
+        <result column="customer_name" property="customerName"/>
+        <result column="customer_phone" property="customerPhone"/>
+        <result column="customer_id" property="customerId"/>
+
+        <result column="order_number" property="orderNumber"/>
+        <result column="moving_origin" property="movingOrigin"/>
+        <result column="moving_destination" property="movingDestination"/>
+        <result column="service_name" property="serviceName"/>
+        <result column="truck_type_name" property="truckTypeName"/>
+        <result column="number_of_helpers" property="numberOfHelpers"/>
+        <result column="moving_price" property="movingPrice"/>
+        <result column="order_id" property="orderId"/>
+    </resultMap>
+
+    <select id="moverGetMyRatingDetail" resultMap="moverMyRatingDetailResultMap">
+        SELECT r.id          AS rating_id,
+
+               r.rating_value,
+               r.comment,
+               r.rating_time AS rating_time,
+
+               c.id          AS customer_id,
+               c.name        AS customer_name,
+               c.phone       AS customer_phone,
+
+               mo.id         AS order_id,
+               mo.order_number,
+               mo.moving_origin,
+               mo.moving_destination,
+               s.service_name,
+               tt.type_name  AS truck_type_name,
+               mo.number_of_helpers,
+               mo.moving_price
+        FROM rating r
+                 LEFT JOIN customer c ON r.customer_id = c.id
+                 LEFT JOIN moving_order mo ON r.order_id = mo.id
+                 LEFT JOIN service s ON mo.service_id = s.id
+                 LEFT JOIN truck_type tt ON mo.truck_type_id = tt.id
+        WHERE r.id = #{ratingId}
+          AND r.ratee_id = #{moverId}
+          AND r.rating_type = 'MOVER'
     </select>
 
 </mapper>
