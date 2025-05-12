@@ -106,6 +106,7 @@ public class AuthController {
                 .id(getId(user))
                 .username(getUsername(user))
                 .name(getName(user))
+                .photoUrl(getPhotoUrl(user)) // 新增：填充 photoUrl 字段
                 .token(token)
                 .build();
 
@@ -188,6 +189,20 @@ public class AuthController {
         if (user instanceof Driver) return ((Driver) user).getName();
         if (user instanceof Mover) return ((Mover) user).getName();
         if (user instanceof Customer) return ((Customer) user).getName();
+        return null;
+    }
+
+    /**
+     * 获取用户头像URL
+     *
+     * @param user 用户对象（Admin, Driver, Mover, Customer 实例）
+     * @return 用户头像URL，如果用户对象不支持或字段不存在则返回 null
+     */
+    private String getPhotoUrl(Object user) {
+        if (user instanceof Admin) return ((Admin) user).getPhotoUrl();
+        if (user instanceof Driver) return ((Driver) user).getPhotoUrl();
+        if (user instanceof Mover) return ((Mover) user).getPhotoUrl();
+        if (user instanceof Customer) return ((Customer) user).getPhotoUrl();
         return null;
     }
 

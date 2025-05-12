@@ -13,5 +13,7 @@ public class UserLoginVO {
     private Long id;
     private String username;
     private String name;
+    private String photoUrl; // 用户照片URL
+
     private String token;
 }

@@ -1,157 +1,715 @@
 <script setup>
-import { ref, watch } from "vue"
-import { useRoute } from "vue-router"
-import { getOrderPriceApi } from "@/api/order.js"
+	import { ref, watch, computed, onUnmounted } from 'vue';
+	import { useRoute, useRouter } from 'vue-router';
+	import { estimateOrderPriceApi, submitOrderApi, orderPaymentApi } from '@/api/order.js';
+	import { ElMessage, ElMessageBox } from 'element-plus';
+	import dayjs from 'dayjs';
+	import { debounce } from 'lodash';
 
-const route = useRoute()
+	const route = useRoute();
+	const router = useRouter();
 
-const disabled = ref(true)
-const form = ref({
-  originAddress: "",
-  destinationAddress: "",
-  numberOfHelpers: 0,
-  reservationTime: "",
-  notes: ""
-})
-const rules = ref({
-  originAddress: { required: true, message: '请输入起始地点', trigger: 'blur' },
-  destinationAddress: { required: true, message: '请输入终止地点', trigger: 'blur' },
-  numberOfHelpers: { required: true, message: '请输入工人数量', trigger: 'blur' },
-  reservationTime: { required: true, message: '请输入上门时间', trigger: 'blur' },
-})
+	const orderFormRef = ref(null);
+	const disabled = ref(true); // 用于控制“立即下单”按钮的禁用状态
+	const form = ref({
+		originAddress: '',
+		destinationAddress: '',
+		numberOfHelpers: 0,
+		reservationTime: '',
+		notes: '',
+	});
 
-// 禁用日期规则
-const disabledDate = (date) => {
-  // 计算今天0点的时间戳（去除时分秒影响）
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+	const estimatedPriceDetails = ref(null);
 
-  // 计算两周后的日期（14天后的23:59:59）
-  const twoWeeksLater = new Date(today)
-  twoWeeksLater.setDate(today.getDate() + 14)
-  twoWeeksLater.setHours(23, 59, 59, 999)
+	// --- 新增状态变量 ---
+	const submittedOrderDetails = ref(null); // 存储下单成功后的订单详情
+	const showPaymentSection = ref(false); // 控制是否显示支付方式选择区域
+	const selectedPayMethod = ref(null); // 存储用户选择的支付方式
+	// --- 新增状态变量结束 ---
 
-  // 转换比较时间戳
-  const time = date.getTime()
-  return time < today.getTime() || time > twoWeeksLater.getTime()
-}
+	// --- 倒计时相关状态变量 ---
+	const paymentCountdown = ref(0); // 倒计时剩余时间，秒
+	let countdownInterval = null; // 存储 interval ID
 
-import { debounce } from 'lodash';
+	// 格式化倒计时显示
+	const formattedCountdown = computed(() => {
+		const minutes = Math.floor(paymentCountdown.value / 60);
+		const seconds = paymentCountdown.value % 60;
+		return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+	});
 
-// 定义防抖函数（用户停止操作 500ms 后触发）
-const debouncedFetchPrice = debounce(async (formValue) => {
-  if (
-    formValue.originAddress &&
-    formValue.destinationAddress &&
-    formValue.numberOfHelpers >= 0
-  ) {
-    const { data: res } = await getOrderPriceApi({
-      serviceId: route.params.id,
-      originAddress: formValue.originAddress,
-      destinationAddress: formValue.destinationAddress,
-      numberOfHelpers: formValue.numberOfHelpers,
-    });
-    console.log(res);
-  }
-}, 1000); // 关键：延迟时间设为 500ms
+	// 开始倒计时
+	const startCountdown = () => {
+		// 先清除旧的计时器，防止重复
+		if (countdownInterval) {
+			clearInterval(countdownInterval);
+		}
+		paymentCountdown.value = 15 * 60; // 15分钟 = 900秒
 
-// 监听表单变化
-watch(
-  () => form.value,
-  (newVal) => {
-    debouncedFetchPrice(newVal);
-  },
-  { deep: true } // 深度监听对象属性变化
-);
+		countdownInterval = setInterval(() => {
+			if (paymentCountdown.value > 0) {
+				paymentCountdown.value--;
+			} else {
+				clearInterval(countdownInterval);
+				countdownInterval = null;
+				ElMessage.warning('支付时间已到，订单已自动取消。');
+				// 可以在这里调用后端接口取消订单，或者将订单状态设置为已取消
+				// 例如：callCancelOrderApi(submittedOrderDetails.value.orderNumber);
+			}
+		}, 1000);
+	};
+
+	// 当组件卸载时清除计时器，防止内存泄漏
+	onUnmounted(() => {
+		if (countdownInterval) {
+			clearInterval(countdownInterval);
+		}
+	});
+	// --- 倒计时相关状态变量结束 ---
+
+	// 修改 totalPriceDisplay 计算属性，以适应下单前后的显示
+	const totalPriceDisplay = computed(() => {
+		if (submittedOrderDetails.value) {
+			return submittedOrderDetails.value.orderAmount.toFixed(2); // 下单后显示订单金额
+		}
+		if (estimatedPriceDetails.value) {
+			return estimatedPriceDetails.value.estimatedPrice.toFixed(2); // 下单前显示估算金额
+		}
+		return '--';
+	});
+
+	const rules = ref({
+		originAddress: {
+			required: true,
+			message: '请填写具体地址，例如：xx省xx市xx区xx街道xx小区xx号楼xx单元',
+			trigger: 'blur',
+		},
+		destinationAddress: {
+			required: true,
+			message: '请填写具体地址，例如：xx省xx市xx区xx街道xx小区xx号楼xx单元',
+			trigger: 'blur',
+		},
+		numberOfHelpers: [
+			{ required: true, message: '请输入工人数量', trigger: 'blur' },
+			{ type: 'number', min: 0, message: '工人数量不能小于0', trigger: 'change' },
+		],
+		reservationTime: { required: true, message: '请选择上门时间', trigger: 'change' },
+	});
+
+	const disabledDate = (date) => {
+		const today = dayjs().startOf('day');
+		const twoWeeksLater = dayjs().add(14, 'day').endOf('day');
+
+		const time = dayjs(date);
+		return time.isBefore(today) || time.isAfter(twoWeeksLater);
+	};
+
+	const debouncedFetchPrice = debounce(async () => {
+		if (!orderFormRef.value) {
+			console.warn('orderFormRef is not yet available for validation during debouncedFetchPrice.');
+			estimatedPriceDetails.value = null;
+			disabled.value = true;
+			return;
+		}
+
+		const fieldsToValidate = ['originAddress', 'destinationAddress', 'numberOfHelpers'];
+		console.log('Attempting to validate fields for price estimation:', fieldsToValidate);
+		console.log('Current form values for estimation validation:', {
+			originAddress: form.value.originAddress,
+			destinationAddress: form.value.destinationAddress,
+			numberOfHelpers: form.value.numberOfHelpers,
+		});
+
+		try {
+			const validationResults = await Promise.allSettled(
+				fieldsToValidate.map((field) => orderFormRef.value.validateField(field))
+			);
+			console.log('Validation results for estimation fields:', validationResults);
+
+			const isValidForEstimate = validationResults.every((result) => result.status === 'fulfilled');
+			console.log('isValidForEstimate:', isValidForEstimate);
+
+			if (isValidForEstimate) {
+				console.log(
+					'Validation passed for estimation fields. Proceeding with price estimation API call...'
+				);
+				const { data: res } = await estimateOrderPriceApi({
+					serviceId: route.params.id,
+					originAddress: form.value.originAddress,
+					destinationAddress: form.value.destinationAddress,
+					numberOfHelpers: form.value.numberOfHelpers,
+				});
+
+				if (res.code === 1) {
+					estimatedPriceDetails.value = res.data;
+					ElMessage.success('价格估算成功！');
+					// 价格估算成功后，重新验证整个表单，以更新“立即下单”按钮的禁用状态
+					orderFormRef.value.validate((valid) => {
+						console.log('Overall form validation after estimation success:', valid);
+						disabled.value = !valid; // 估算成功且表单有效，则启用“立即下单”
+					});
+				} else {
+					let errorMessage = res.msg || '价格估算失败！';
+					if (errorMessage.includes('计算搬家距离发生未知错误')) {
+						errorMessage = '您输入的地址无法识别或不完整，请检查后重试。';
+					}
+					ElMessage.error(errorMessage);
+					estimatedPriceDetails.value = null;
+					disabled.value = true; // 估算失败，禁用“立即下单”
+					console.error('Price estimation API failed:', res.msg);
+				}
+			} else {
+				console.log(
+					'Validation failed for estimation fields. Clearing estimated price and disabling button.'
+				);
+				estimatedPriceDetails.value = null;
+				disabled.value = true; // 估算字段验证失败，禁用“立即下单”
+			}
+		} catch (error) {
+			console.error('Error during price estimation or validation:', error);
+			ElMessage.error('价格估算过程中发生错误，请稍后再试。');
+			estimatedPriceDetails.value = null;
+			disabled.value = true; // 估算过程出错，禁用“立即下单”
+		}
+	}, 1000);
+
+	const estimationFields = computed(() => ({
+		originAddress: form.value.originAddress,
+		destinationAddress: form.value.destinationAddress,
+		numberOfHelpers: form.value.numberOfHelpers,
+	}));
+
+	watch(
+		estimationFields,
+		(newVal, oldVal) => {
+			console.log('--- Watch Triggered (Estimation Fields) ---');
+			console.log('oldVal.originAddress:', oldVal.originAddress);
+			console.log('newVal.originAddress:', newVal.originAddress);
+			console.log('oldVal.destinationAddress:', oldVal.destinationAddress);
+			console.log('newVal.destinationAddress:', newVal.destinationAddress);
+			console.log('oldVal.numberOfHelpers:', oldVal.numberOfHelpers);
+			console.log('newVal.numberOfHelpers:', newVal.numberOfHelpers);
+			console.log('-----------------------------------------');
+
+			// 只有当不在支付流程时才触发估算
+			if (!showPaymentSection.value) {
+				console.log('Watch triggered: Estimation fields changed. Triggering debouncedFetchPrice.');
+				debouncedFetchPrice();
+			}
+			// 不需要 else 块来处理 disabled 状态，因为当 showPaymentSection.value 为 true 时，
+			// “立即下单”按钮已经不再显示，其 disabled 状态无关紧要。
+		},
+		{ deep: true }
+	);
+
+	// 这个 watch 保持不变，它主要用于在任何表单字段变化时，更新“立即下单”按钮的禁用状态
+	watch(
+		() => form.value,
+		() => {
+			if (orderFormRef.value && !showPaymentSection.value) {
+				// 只有在未进入支付流程时才更新“立即下单”按钮状态
+				orderFormRef.value.validate((valid) => {
+					disabled.value = !valid || !estimatedPriceDetails.value;
+				});
+			}
+		},
+		{ deep: true, immediate: true }
+	);
+
+	// --- 新增：重命名并修改 submitOrder 为 placeOrder ---
+	const placeOrder = async () => {
+		if (!orderFormRef.value) return;
+
+		orderFormRef.value.validate(async (valid) => {
+			if (valid) {
+				if (!estimatedPriceDetails.value) {
+					ElMessage.warning('请先完成价格估算！');
+					return;
+				}
+
+				try {
+					const formattedReservationTime = dayjs(form.value.reservationTime).format(
+						'YYYY-MM-DD HH:mm:ss'
+					);
+
+					const { data: res } = await submitOrderApi({
+						serviceId: route.params.id,
+						reservationTime: formattedReservationTime,
+						movingOrigin: form.value.originAddress,
+						movingDestination: form.value.destinationAddress,
+						numberOfHelpers: form.value.numberOfHelpers,
+						notes: form.value.notes,
+					});
+
+					if (res.code === 1) {
+						ElMessage.success('订单已创建，请选择支付方式完成支付！');
+						submittedOrderDetails.value = res.data; // 存储订单详情
+						showPaymentSection.value = true; // 显示支付方式选择区域
+						disabled.value = true; // 禁用“立即下单”按钮，因为它不再需要
+						startCountdown(); // 订单创建成功后开始倒计时
+					} else {
+						ElMessage.error(res.msg || '下单失败，请稍后再试。');
+					}
+				} catch (error) {
+					console.error('下单失败:', error);
+					ElMessage.error('下单失败，请检查网络或联系管理员。');
+				}
+			} else {
+				ElMessage.error('请填写完整的订单信息！');
+			}
+		});
+	};
+
+	// --- 新增：支付按钮的禁用状态 ---
+	// 支付按钮的禁用状态，除了未选择支付方式外，还要检查倒计时是否为0
+	const payButtonDisabled = computed(
+		() => !selectedPayMethod.value || paymentCountdown.value === 0
+	);
+
+	// --- 新增：处理支付的函数 ---
+	const handlePayment = async () => {
+		if (!selectedPayMethod.value) {
+			ElMessage.warning('请选择支付方式！');
+			return;
+		}
+		if (!submittedOrderDetails.value || !submittedOrderDetails.value.orderNumber) {
+			ElMessage.error('订单信息缺失，无法支付。');
+			return;
+		}
+		if (paymentCountdown.value === 0) {
+			ElMessage.error('支付时间已过，请重新下单。');
+			return;
+		}
+
+		try {
+			// 弹出确认对话框
+			await ElMessageBox.confirm('是否确定支付？', '提示', {
+				confirmButtonText: '确定',
+				cancelButtonText: '取消',
+				type: 'warning',
+			});
+
+			console.log(
+				'Initiating payment for order:',
+				submittedOrderDetails.value.orderNumber,
+				'with method:',
+				selectedPayMethod.value
+			);
+			const { data: res } = await orderPaymentApi({
+				orderNumber: submittedOrderDetails.value.orderNumber,
+				payMethod: selectedPayMethod.value,
+			});
+
+			if (res.code === 1) {
+				// 支付成功，立即显示成功消息
+				ElMessage.success('支付成功！');
+
+				// 清除订单支付倒计时
+				clearInterval(countdownInterval);
+				countdownInterval = null;
+
+				let currentClosingCountdown = 5; // 用于页面关闭倒计时
+
+				// 显示自动关闭提示，并开始倒计时
+				const closeMsgInstance = ElMessage({
+					message: `支付成功！本页面将在 ${currentClosingCountdown} 秒后自动关闭。`,
+					type: 'success',
+					duration: 0, // 持续显示，直到倒计时结束或手动关闭
+					showClose: true, // 允许用户手动关闭提示
+				});
+
+				let closingInterval = setInterval(() => {
+					if (currentClosingCountdown > 1) {
+						currentClosingCountdown--;
+						// 更新提示消息内容
+						closeMsgInstance.message = `支付成功！本页面将在 ${currentClosingCountdown} 秒后自动关闭。`;
+					} else {
+						clearInterval(closingInterval);
+						closeMsgInstance.close(); // 关闭倒计时提示
+
+						// 尝试关闭当前标签页
+						try {
+							window.close();
+						} catch (e) {
+							console.error('Failed to close window:', e);
+							// 如果浏览器不允许自动关闭，则提示用户手动关闭
+							ElMessage.warning('由于浏览器安全限制，无法自动关闭当前页面，请手动关闭此标签页。');
+						}
+						// 无论标签页是否关闭成功，都跳转到用户主页（或订单列表页）
+						router.push('/userHome/my');
+					}
+				}, 1000);
+			} else {
+				ElMessage.error(res.msg || '支付失败，请稍后再试。');
+			}
+		} catch (error) {
+			// 用户取消了确认对话框，或者其他支付错误
+			if (error === 'cancel') {
+				ElMessage.info('已取消支付。');
+			} else {
+				console.error('支付过程中发生错误:', error);
+				ElMessage.error('支付过程中发生错误，请稍后再试。');
+			}
+		}
+	};
 </script>
 
 <template>
-  <div class="form">
-    <el-form :inline="true" :model="form" :rules="rules">
-      <el-form-item label="起始地点" prop="originAddress">
-        <el-input v-model="form.originAddress" placeholder="请输入起始地" />
-      </el-form-item>
-      <el-form-item label="终止地点" prop="destinationAddress">
-        <el-input style="width: 220px;" v-model="form.destinationAddress" placeholder="请输入终止地" />
-      </el-form-item>
-      <el-form-item label="工人数量" prop="numberOfHelpers">
-        <el-input-number style="width:198px;" v-model="form.numberOfHelpers" :min="0" :max="10" />
-      </el-form-item>
-      <el-form-item label="上门时间" prop="reservationTime">
-        <el-date-picker v-model="form.reservationTime" type="datetime" :disabled-date="disabledDate"
-          placeholder="请选择未来两周内的日期" />
-      </el-form-item>
-      <el-form-item label="个人备注">
-        <el-input v-model="form.notes" style="width: 540px" :rows="10" resize="none" type="textarea"
-          placeholder="请您填写备注" />
-      </el-form-item>
-    </el-form>
-  </div>
-  <div class="footer">
-    <div class="details">
-      <div class="left">费用明细</div>
-      <div class="right">
-        <div>111</div>
-        <div>111</div>
-        <div>111</div>
-        <div>111</div>
-        <div>111</div>
-      </div>
-    </div>
-    <div class="pay">
-      <div class="left">总计 <span class="price">￥{{ "--" }}</span></div>
-      <el-button class="pay-btn" color="#f16622" :disabled="disabled">去支付</el-button>
-    </div>
-  </div>
+	<div class="form-container">
+		<el-card class="order-form-card" v-if="!showPaymentSection">
+			<template #header>
+				<div class="card-header-title">填写订单信息</div>
+			</template>
+			<el-form :model="form" :rules="rules" ref="orderFormRef" label-width="auto">
+				<el-form-item label="起始地点" prop="originAddress">
+					<el-input
+						v-model="form.originAddress"
+						placeholder="请填写具体地址，例如：xx省xx市xx区xx街道xx小区xx号楼xx单元"
+					/>
+				</el-form-item>
+				<el-form-item label="终止地点" prop="destinationAddress">
+					<el-input
+						v-model="form.destinationAddress"
+						placeholder="请填写具体地址，例如：xx省xx市xx区xx街道xx小区xx号楼xx单元"
+					/>
+				</el-form-item>
+				<el-form-item label="工人数量" prop="numberOfHelpers">
+					<el-input-number v-model="form.numberOfHelpers" :min="0" :max="10" />
+				</el-form-item>
+				<el-form-item label="上门时间" prop="reservationTime">
+					<el-date-picker
+						v-model="form.reservationTime"
+						type="datetime"
+						:disabled-date="disabledDate"
+						placeholder="请选择未来两周内的日期"
+						value-format="YYYY-MM-DD HH:mm:ss"
+						format="YYYY-MM-DD HH:mm"
+					/>
+				</el-form-item>
+				<el-form-item label="个人备注">
+					<el-input
+						v-model="form.notes"
+						:rows="4"
+						resize="none"
+						type="textarea"
+						placeholder="请您填写备注"
+					/>
+				</el-form-item>
+			</el-form>
+		</el-card>
+
+		<el-card
+			class="order-confirmation-card"
+			v-else-if="showPaymentSection && submittedOrderDetails"
+		>
+			<template #header>
+				<div class="card-header-title">订单详情</div>
+			</template>
+			<div class="order-summary-content">
+				<p>
+					订单号: <strong>{{ submittedOrderDetails.orderNumber }}</strong>
+				</p>
+				<p>
+					订单金额: <strong>{{ submittedOrderDetails.orderAmount.toFixed(2) }}元</strong>
+				</p>
+				<p>下单时间: {{ submittedOrderDetails.orderTime }}</p>
+				<p style="margin-top: 20px; color: #606266">请在下方选择支付方式并确认支付。</p>
+			</div>
+		</el-card>
+
+		<div class="footer">
+			<div class="details">
+				<div class="left">费用明细</div>
+				<div class="right">
+					<div v-if="showPaymentSection && submittedOrderDetails">
+						<p>
+							订单号: <strong>{{ submittedOrderDetails.orderNumber }}</strong>
+						</p>
+						<p>
+							订单金额:
+							<strong class="price-value"
+								>{{ submittedOrderDetails.orderAmount.toFixed(2) }}元</strong
+							>
+						</p>
+						<p>下单时间: {{ submittedOrderDetails.orderTime }}</p>
+					</div>
+					<div v-else-if="estimatedPriceDetails">
+						<p>
+							预估总价:
+							<strong class="price-value"
+								>{{ estimatedPriceDetails.estimatedPrice.toFixed(2) }}元</strong
+							>
+						</p>
+						<p>里程费用: {{ estimatedPriceDetails.mileageCost.toFixed(2) }}元</p>
+						<p>工人费用: {{ estimatedPriceDetails.helperCost.toFixed(2) }}元</p>
+						<p>类型价格乘数: {{ estimatedPriceDetails.categoryPriceMultiplier.toFixed(2) }}</p>
+					</div>
+					<div v-else>
+						<p>请填写地址和工人数量以估算价格。</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="pay">
+				<div class="left">
+					总计 <span class="price">￥{{ totalPriceDisplay }}</span>
+				</div>
+
+				<div v-if="showPaymentSection" class="payment-options-container">
+					<div class="payment-timer-info" :style="{ 'text-align': 'right' }">
+						<p class="warning-text" v-if="paymentCountdown > 0">
+							请在
+							<span class="countdown-timer">{{ formattedCountdown }}</span>
+							内完成支付，否则订单将自动取消。
+						</p>
+						<p class="expired-text" v-else>支付时间已过，订单已自动取消。</p>
+					</div>
+
+					<div class="payment-actions-wrapper">
+						<el-radio-group v-model="selectedPayMethod" class="payment-methods">
+							<el-radio :value="1" :disabled="paymentCountdown === 0">微信</el-radio>
+							<el-radio :value="2" :disabled="paymentCountdown === 0">支付宝</el-radio>
+							<el-radio :value="3" :disabled="paymentCountdown === 0">云闪付</el-radio>
+						</el-radio-group>
+						<el-button
+							class="pay-btn"
+							color="#f16622"
+							:disabled="payButtonDisabled"
+							@click="handlePayment"
+						>
+							确认支付
+						</el-button>
+					</div>
+				</div>
+				<div v-else>
+					<el-button class="pay-btn" color="#f16622" :disabled="disabled" @click="placeOrder">
+						立即下单
+					</el-button>
+				</div>
+			</div>
+		</div>
+	</div>
 </template>
 
 <style scoped lang="less">
-.form {
-  width: 650px;
-  margin: 30px auto;
-  box-sizing: border-box;
-}
+	.form-container {
+		display: flex;
+		flex-direction: column;
+		min-height: calc(100vh - 60px); /* Adjust based on header height */
+		padding-bottom: 150px; /* 调整 padding-bottom 以适应新的 footer 高度 */
+	}
 
-.footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: absolute;
-  z-index: 999;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 110px;
-  background-color: rgb(66, 68, 86);
-  color: rgb(131, 132, 137);
-  box-sizing: border-box;
-  padding: 20px;
+	.order-form-card {
+		width: 600px; /* Adjust width of the card */
+		margin: 30px auto; /* Center the card */
+		border-radius: 12px; /* Softer corners */
+		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); /* Lighter, modern shadow */
+		background-color: #fff; /* Ensure white background for clarity */
+		padding: 20px 30px; /* Added internal padding for the card content */
 
-  .details {
-    display: flex;
-    align-items: center;
+		:deep(.el-card__header) {
+			border-bottom: none; /* Remove default header border */
+			padding: 0; /* Remove default header padding */
+			margin-bottom: 20px; /* Add space below header */
+		}
 
-    .left {
-      margin-right: 20px;
-    }
-  }
+		.card-header-title {
+			font-size: 26px; /* Larger, more prominent title */
+			font-weight: bold;
+			text-align: center;
+			color: #333;
+			/* margin-bottom: 20px; Moved margin to :deep(.el-card__header) */
+		}
 
-  .pay {
-    display: flex;
-    align-items: center;
+		:deep(.el-form-item) {
+			margin-bottom: 20px; /* Consistent spacing */
+			display: flex; /* Make form items full width */
+			align-items: center; /* Vertically center label and input */
 
-    .price {
-      font-size: 36px;
-      color: #f16622;
-      margin-right: 20px;
-    }
+			.el-form-item__label {
+				flex-shrink: 0; /* Prevent label from shrinking */
+				width: 100px !important; /* Fixed label width for alignment (adjust as needed) */
+				text-align: right;
+				padding-right: 12px;
+				font-weight: 500; /* Slightly bolder labels */
+				color: #555;
+			}
 
-    .pay-btn {
-      width: 176px;
-      height: 56px;
-      border-radius: 28px;
-      font-size: 18px;
-    }
-  }
-}
+			.el-form-item__content {
+				flex-grow: 1;
+				flex-basis: 0; /* Allow content to fill remaining space */
+				.el-input,
+				.el-input-number,
+				.el-date-editor {
+					width: 100%; /* Make inputs fill available width */
+				}
+			}
+		}
+
+		.el-textarea {
+			.el-textarea__inner {
+				min-height: 100px !important; /* Ensure textarea is tall enough */
+			}
+		}
+	}
+
+	/* --- 新增：订单确认卡片的样式 --- */
+	.order-confirmation-card {
+		width: 600px; /* 与表单卡片保持一致的宽度 */
+		margin: 30px auto; /* 居中显示 */
+		border-radius: 12px;
+		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+		background-color: #fff;
+		padding: 20px 30px;
+
+		:deep(.el-card__header) {
+			border-bottom: none;
+			padding: 0;
+			margin-bottom: 20px;
+		}
+
+		.card-header-title {
+			font-size: 26px;
+			font-weight: bold;
+			text-align: center;
+			color: #333;
+		}
+
+		.order-summary-content {
+			text-align: center; /* 内容居中 */
+			padding: 20px;
+			font-size: 16px;
+			color: #333;
+
+			p {
+				margin-bottom: 10px; /* 段落间距 */
+			}
+
+			strong {
+				color: #f16622; /* 订单号和金额突出显示 */
+			}
+		}
+	}
+	/* --- 订单确认卡片样式结束 --- */
+
+	.footer {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		position: fixed;
+		z-index: 999;
+		left: 0;
+		bottom: 0;
+		width: 100%;
+		height: 150px; /* 增加 footer 高度以容纳新内容 */
+		background-color: #2c3e50; /* A darker, softer blue-grey */
+		color: #e0e0e0; /* Lighter text for contrast */
+		box-sizing: border-box;
+		padding: 0 80px; /* Slightly more padding */
+		box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.15); /* More pronounced but soft shadow */
+
+		.details {
+			display: flex;
+			flex-direction: column; /* Stack left and right parts */
+			align-items: flex-start;
+			font-size: 14px;
+
+			.left {
+				margin-bottom: 10px; /* Space between title and details */
+				color: #fff;
+				font-weight: bold;
+				font-size: 18px; /* Slightly larger title */
+			}
+
+			.right {
+				p {
+					margin-bottom: 8px; /* 增加行间距，提供更多呼吸空间 */
+					line-height: 1.4;
+					color: #b0b0b0; /* Softer color for detail text */
+					font-size: 13px;
+				}
+				.price-value {
+					color: #f16622;
+					font-weight: bold;
+					font-size: 16px;
+				}
+			}
+		}
+
+		.pay {
+			display: flex;
+			align-items: center; // 确保 '总计' 和支付选项块垂直居中对齐
+
+			.payment-options-container {
+				display: flex;
+				flex-direction: column; // 垂直堆叠：倒计时信息 和 支付选项/按钮
+				align-items: flex-end; // 整个 payment-options-container 内部的内容右对齐
+				gap: 10px; // 倒计时信息和下方支付方式的间距
+
+				.payment-timer-info {
+					// 文本右对齐已通过内联样式实现，这里可以补充其他样式
+					font-size: 14px;
+					.warning-text {
+						color: #ffc107; // 警告色
+						font-weight: bold;
+						.countdown-timer {
+							font-size: 16px;
+							color: #ff5722; // 倒计时数字更突出
+							font-weight: bolder;
+						}
+					}
+					.expired-text {
+						color: #dc3545; // 过期提示色
+						font-weight: bold;
+					}
+				}
+
+				.payment-actions-wrapper {
+					display: flex; // 恢复支付方式和按钮的水平布局
+					align-items: center; // 垂直居中对齐
+					gap: 20px; /* Spacing between radio group and button */
+				}
+
+				.payment-methods {
+					.el-radio {
+						color: #e0e0e0; /* Match footer text color */
+						margin-right: 15px; /* Spacing between radio buttons */
+					}
+					/* You might need deep selectors if default styles are stubborn */
+					:deep(.el-radio__input.is-checked + .el-radio__label) {
+						color: #f16622; /* Highlight selected option */
+					}
+					:deep(.el-radio__label) {
+						color: #e0e0e0;
+					}
+				}
+			}
+
+			/* 以下是原始的 .pay-btn 样式，它适用于所有带有 .pay-btn 类的按钮 */
+			.pay-btn {
+				width: 200px; /* Slightly wider button */
+				height: 60px; /* Slightly taller button */
+				border-radius: 30px; /* More rounded */
+				font-size: 20px; /* Larger text on button */
+				font-weight: bold;
+				transition: all 0.3s ease;
+				&:hover {
+					transform: translateY(-2px);
+					box-shadow: 0 4px 10px rgba(241, 102, 34, 0.4);
+				}
+			}
+
+			.left {
+				margin-right: 30px; /* Space between total text and button */
+				font-size: 18px; /* Slightly larger "总计" text */
+				color: #fff;
+			}
+
+			.price {
+				font-size: 40px; /* Even larger total price */
+				color: #f16622;
+				font-weight: bold;
+			}
+		}
+	}
 </style>

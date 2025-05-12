@@ -1,306 +1,642 @@
 <script setup>
-import { queryServiceApi, getServiceDetailApi } from '@/api/service.js'
-import { getServiceRatingApi } from '@/api/rating.js'
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+	import { queryServiceApi, getServiceDetailApi } from '@/api/service.js';
+	import { getServiceRatingApi } from '@/api/rating.js';
+	import { getServiceCategoriesApi } from '@/api/serviceCategoriesApi.js';
+	import { ref, onMounted, watch, onDeactivated } from 'vue'; // **新增导入 onDeactivated**
+	import { useRouter } from 'vue-router';
+	import {
+		ElMessage,
+		ElTag,
+		ElButton,
+		ElCard,
+		ElDescriptions,
+		ElDescriptionsItem,
+		ElDivider,
+		ElRate,
+		ElSkeleton,
+		ElSkeletonItem,
+		ElSelect,
+		ElOption,
+		ElPagination, // 导入 ElPagination
+		ElEmpty, // 导入 ElEmpty
+	} from 'element-plus';
 
-const router = useRouter()
+	const router = useRouter();
 
-const form = ref({
-  page: 0,
-  pageSize: 5,
-  categoryId: "",
-  total: 0
-})
-const data = ref([])
-const loading = ref(false)
-const noMore = ref(false)
+	// 服务筛选和分页参数
+	const serviceFilterPagination = ref({
+		page: 1, // 更改为 1-indexed，与 el-pagination 保持一致
+		pageSize: 10, // 设置一个默认的每页大小，例如 10
+		categoryId: '', // 初始化为空字符串，表示查询所有类型
+		total: 0, // 总记录数
+	});
 
-const queryService = async () => {
-  if (noMore.value || loading.value) return
+	// 服务记录列表
+	const serviceRecords = ref([]);
+	// 列表加载状态
+	const isServiceListLoading = ref(false);
 
-  loading.value = true
-  try {
-    const { data: res } = await queryServiceApi({
-      ...form.value,
-      page: form.value.page + 1 // 先使用+1的页码查询
-    })
+	// 服务类型相关状态
+	const serviceCategories = ref([]); // 存储从后端获取的服务类型列表
+	const selectedCategoryId = ref(''); // 存储当前选中的服务类型ID，默认为空字符串（表示全部）
 
-    if (res.code !== 1) return ElMessage.error(res.msg)
+	// 获取服务类型列表
+	const fetchServiceCategories = async () => {
+		try {
+			const { data: res } = await getServiceCategoriesApi();
+			if (res.code === 1) {
+				serviceCategories.value = res.data;
+			} else {
+				ElMessage.error('获取服务类型失败！');
+			}
+		} catch (error) {
+			console.error('获取服务类型 API 调用失败:', error);
+			ElMessage.error('获取服务类型失败，请检查网络。');
+		}
+	};
 
-    // 更新页码和总数
-    form.value.page += 1
-    form.value.total = res.data.total
+	// 查询服务列表
+	const queryServiceList = async () => {
+		isServiceListLoading.value = true; // 设置列表加载状态为 true
+		// **核心修改：确保 categoryId 始终为字符串**
+		const categoryToSend =
+			selectedCategoryId.value === undefined || selectedCategoryId.value === null
+				? '' // 如果 selectedCategoryId.value 是 undefined 或 null，则发送空字符串
+				: selectedCategoryId.value; // 否则，发送当前值
 
-    // 追加数据
-    data.value.push(...res.data.records)
+		try {
+			const { data: res } = await queryServiceApi({
+				page: serviceFilterPagination.value.page, // 直接使用当前页码
+				pageSize: serviceFilterPagination.value.pageSize, // 直接使用当前每页大小
+				categoryId: categoryToSend, // **使用处理后的 categoryToSend**
+			});
 
-    // 判断是否还有更多数据
-    noMore.value = data.value.length >= res.data.total
-  } catch {
-    loading.value = false
-    noMore.value = true
-  } finally {
-    loading.value = false
-  }
-}
+			if (res.code !== 1) {
+				ElMessage.error(res.msg);
+				serviceRecords.value = []; // 查询失败时清空数据
+				serviceFilterPagination.value.total = 0; // 重置总数
+				return;
+			}
 
-// 新增展开状态管理
-const expandStates = ref({})
-// 新增切换详情方法
-const toggleDetail = (id) => {
-  expandStates.value = {
-    ...expandStates.value,
-    [id]: !expandStates.value[id]
-  }
-}
+			serviceRecords.value = res.data.records || []; // 替换数据，而不是追加
+			serviceFilterPagination.value.total = res.data.total || 0; // 更新总数
+		} catch (error) {
+			console.error('查询服务失败:', error);
+			ElMessage.error('查询服务失败，请稍后再试。');
+			serviceRecords.value = []; // 发生错误时清空数据
+			serviceFilterPagination.value.total = 0; // 重置总数
+		} finally {
+			isServiceListLoading.value = false; // 完成加载，无论成功或失败
+		}
+	};
 
-const detailData = ref({})
-const detailLoading = ref({})
-// 修改后的详情方法
-const getDetail = async (id) => {
-  toggleDetail(id)
-  if (detailData.value[id]) return
-  detailLoading.value[id] = true
-  const { data: res } = await getServiceDetailApi(id)
-  if (res.code !== 1) return ElMessage.error(res.msg)
-  detailData.value[id] = res.data
-  // 加载评价
-  const { data: rating } = await getServiceRatingApi(id)
-  // 只要展示一条，其余的可以跳转
-  detailData.value[id].rating = rating.data[0]
-  detailLoading.value[id] = false
-}
-const rateColors = ref(['#99A9BF', '#F7BA2A', '#FF9900'])
+	// 处理页码改变事件
+	const handlePageChange = (newPage) => {
+		serviceFilterPagination.value.page = newPage;
+		queryServiceList();
+	};
 
-const selectService = (id) => {
-  const route = router.resolve({ path: `/order/${id}` })
-  window.open(route.href, '_blank')
-}
+	// 处理每页显示数量改变事件
+	const handleSizeChange = (newSize) => {
+		serviceFilterPagination.value.pageSize = newSize;
+		serviceFilterPagination.value.page = 1; // 每页数量改变时，回到第一页
+		queryServiceList();
+	};
+
+	// 展开状态管理：键为服务ID，值为布尔型，表示详情是否展开
+	const isServiceDetailExpandedMap = ref({});
+	// 切换详情方法
+	const toggleServiceDetail = (serviceId) => {
+		isServiceDetailExpandedMap.value = {
+			...isServiceDetailExpandedMap.value,
+			[serviceId]: !isServiceDetailExpandedMap.value[serviceId],
+		};
+	};
+
+	// 存储已加载的服务详细数据：键为服务ID，值为服务详细对象
+	const serviceDetailsMap = ref({});
+	// 存储服务详情加载状态：键为服务ID，值为布尔型
+	const isServiceDetailLoadingMap = ref({});
+
+	// 修改后的详情方法
+	const getServiceDetail = async (serviceId) => {
+		toggleServiceDetail(serviceId);
+		if (serviceDetailsMap.value[serviceId] && !isServiceDetailLoadingMap.value[serviceId]) return;
+
+		if (isServiceDetailExpandedMap.value[serviceId] && !serviceDetailsMap.value[serviceId]) {
+			isServiceDetailLoadingMap.value[serviceId] = true;
+			try {
+				const { data: serviceRes } = await getServiceDetailApi(serviceId);
+				if (serviceRes.code !== 1) {
+					ElMessage.error(serviceRes.msg);
+					// 失败时自动收起详情
+					isServiceDetailExpandedMap.value[serviceId] = false; // <-- 增加此行
+					return;
+				}
+				serviceDetailsMap.value[serviceId] = serviceRes.data;
+
+				const { data: ratingRes } = await getServiceRatingApi(serviceId);
+				if (ratingRes.code === 1 && ratingRes.data && ratingRes.data.length > 0) {
+					serviceDetailsMap.value[serviceId].rating = ratingRes.data[0];
+				} else {
+					serviceDetailsMap.value[serviceId].rating = null;
+				}
+			} catch (error) {
+				console.error('加载详情失败:', error);
+				ElMessage.error('加载详情失败，请稍后再试。');
+				// 失败时自动收起详情
+				isServiceDetailExpandedMap.value[serviceId] = false; // <-- 增加此行
+			} finally {
+				isServiceDetailLoadingMap.value[serviceId] = false;
+			}
+		}
+	};
+
+	const rateColors = ref(['#99A9BF', '#F7BA2A', '#FF9900']);
+
+	const selectServiceForOrder = (serviceId) => {
+		// 打开新窗口跳转到订单创建页
+		const route = router.resolve({ path: `/order/${serviceId}` });
+		window.open(route.href, '_blank');
+	};
+
+	// *** 新增方法：查看所有评论 ***
+	const viewAllComments = (serviceId) => {
+		router.push({ name: 'serviceComments', params: { id: serviceId } });
+	};
+
+	// 首次加载数据和分类
+	onMounted(() => {
+		fetchServiceCategories(); // 首次加载服务类型
+		queryServiceList(); // 首次加载服务列表
+	});
+
+	// 监听 selectedCategoryId 的变化，当筛选条件改变时重置分页并重新查询
+	watch(selectedCategoryId, (newCategoryId, oldCategoryId) => {
+		// 只有当值真正改变时才执行
+		if (newCategoryId !== oldCategoryId) {
+			// **新增代码：切换类别时，将所有服务详情的展开状态重置为关闭**
+			isServiceDetailExpandedMap.value = {};
+			serviceFilterPagination.value.page = 1; // 重置页码到第一页
+			queryServiceList(); // 重新查询服务列表
+		}
+	});
+
+	// **新增生命周期钩子：当组件被停用时触发**
+	onDeactivated(() => {
+		// 获取当前路由（即即将进入的路由）
+		const toRoute = router.currentRoute.value;
+
+		// 如果即将进入的路由不是服务评论页面 (serviceComments)，
+		// 说明用户导航到了其他主菜单项（如新闻、须知、个人中心等），
+		// 此时应重置服务详情的展开状态，使其在下次进入时默认关闭。
+		if (toRoute.name !== 'serviceComments') {
+			// 将所有服务详情的展开状态重置为关闭
+			isServiceDetailExpandedMap.value = {};
+			// 您也可以选择性地清空已加载的服务详情数据（serviceDetailsMap），
+			// 但通常保留数据以便用户快速重新展开同一服务是更好的用户体验。
+			// serviceDetailsMap.value = {};
+		}
+	});
 </script>
 
 <template>
-  <div class="service-container home-container">
-    <ul v-infinite-scroll="queryService" :infinite-scroll-distance="0" :infinite-scroll-disabled="noMore || loading"
-      class="infinite-list">
-      <li class="service-item" v-for="item in data" :key="item.id">
-        <div class="title">
-          <h1 class="name">{{ item.serviceName }}</h1>
-          <el-tag class="category">{{ item.categoryName }}</el-tag>
-        </div>
-        <div class="description">{{ item.shortDescription }}</div>
-        <div class="price-car">
-          <div class="truckType-name">{{ item.truckTypeName }}</div>
-          <div class="base-price">起步价（5公里以内）：{{ item.basePrice }}元</div>
-          <el-button type="success" link @click="getDetail(item.id)">{{ expandStates[item.id] ? '收起详情' : '查询详情'
-          }}</el-button>
-        </div>
+	<div class="service-main-container">
+		<div class="filter-section">
+			<el-select
+				v-model="selectedCategoryId"
+				placeholder="选择服务类型"
+				clearable
+				size="default"
+				style="width: 220px"
+			>
+				<el-option label="全部服务类型" value=""></el-option>
+				<el-option
+					v-for="category in serviceCategories"
+					:key="category.id"
+					:label="category.typeName"
+					:value="category.id"
+				>
+				</el-option>
+			</el-select>
+		</div>
 
-        <!-- 新增详情内容 -->
-        <transition name="slide">
-          <div v-if="expandStates[item.id]" class="detail-content">
-            <div v-if="!detailLoading[item.id]">
-              <div class="detail-description description-item">
-                <div class="head-title">装载能力</div>
-                <div class="box">{{ detailData[item.id].loadingCapacityDescription }}</div>
-              </div>
-              <div class="car-description description-item">
-                <div class="head-title">货车信息</div>
-                <div class="box">
-                  <div class="box-item">
-                    <div class="label">货车描述：</div>
-                    <div class="info">{{ detailData[item.id].truckType.description }}</div>
-                  </div>
-                  <div class="box-item">
-                    <div class="label">货车规格：</div>
-                    <div class="info">{{ detailData[item.id].truckType.capacity }}</div>
-                  </div>
-                  <div class="box-item">
-                    <div class="label">起步价（5公里以内）：</div>
-                    <div class="info">{{ detailData[item.id].truckType.baseFare }}元</div>
-                  </div>
-                  <div class="box-item">
-                    <div class="label">5-25公里每公里价格：</div>
-                    <div class="info">{{ detailData[item.id].truckType.pricePerKmTier1 }}元/公里</div>
-                  </div>
-                  <div class="box-item">
-                    <div class="label">25-30公里每公里价格：</div>
-                    <div class="info">{{ detailData[item.id].truckType.pricePerKmTier2 }}元/公里</div>
-                  </div>
-                  <div class="box-item">
-                    <div class="label">30-50公里每公里价格：</div>
-                    <div class="info">{{ detailData[item.id].truckType.pricePerKmTier3 }}元/公里</div>
-                  </div>
-                  <div class="box-item">
-                    <div class="label">50-80公里每公里价格：</div>
-                    <div class="info">{{ detailData[item.id].truckType.pricePerKmTier4 }}元/公里</div>
-                  </div>
-                  <div class="box-item">
-                    <div class="label">超过80公里每公里价格：</div>
-                    <div class="info">{{ detailData[item.id].truckType.pricePerKmTier5 }}元/公里</div>
-                  </div>
-                  <div class="box-item">
-                    <div class="label">价格乘数：</div>
-                    <div class="info">{{ detailData[item.id].categoryPriceMultiplier }}</div>
-                  </div>
-                </div>
-              </div>
-              <div class="detail-description description-item">
-                <div class="head-title">费用</div>
-                <div class="box-item">
-                  <div class="label">工人费用：</div>
-                  <div class="info">{{ detailData[item.id].perHelperCost }}元/人</div>
-                </div>
-                <div class="box-item">
-                  <div class="label">费用计算：</div>
-                  <div class="info">（公里数 * 公里费用 + 工人数 * 工人费用）* 价格乘数</div>
-                </div>
-              </div>
-              <div class="rate-description description-item">
-                <div class="head-title">服务评价</div>
-                <div class="box">
-                  <div class="box-item">
-                    <div class="label">评论：</div>
-                    <div class="info">{{ detailData[item.id].rating?.comment || "暂无评论" }}</div>
-                  </div>
-                  <div class="box-item">
-                    <div class="label">评分值：</div>
-                    <el-rate v-model="detailData[item.id].averageRating" :colors="rateColors" disabled show-score
-                      text-color="#ff9900" score-template="{value}" />
-                  </div>
-                  <el-button link style="font-size: 12px;padding: 0;" type="primary">查看更多评论</el-button>
-                </div>
-              </div>
-              <el-button link type="danger" style="font-size: 20px; float: right;"
-                @click="selectService(item.id)">选择服务</el-button>
-            </div>
-            <div v-else style="text-align: center;height: 80px;line-height: 80px;">加载中...</div>
-          </div>
-        </transition>
-      </li>
+		<div class="data-list-box">
+			<el-skeleton
+				v-if="isServiceListLoading && serviceRecords.length === 0"
+				animated
+				:rows="serviceFilterPagination.pageSize"
+			>
+				<template #template>
+					<el-skeleton-item
+						variant="rect"
+						style="width: 100%; height: 150px; margin-bottom: 20px"
+					/>
+					<el-skeleton-item variant="h3" style="width: 60%; margin-bottom: 10px" />
+					<el-skeleton-item variant="text" style="width: 100%" />
+					<el-skeleton-item variant="text" style="width: 80%" />
+					<el-skeleton-item
+						variant="rect"
+						style="width: 100%; height: 150px; margin-bottom: 20px"
+					/>
+					<el-skeleton-item variant="h3" style="width: 60%; margin-bottom: 10px" />
+					<el-skeleton-item variant="text" style="width: 100%" />
+					<el-skeleton-item variant="text" style="width: 80%" />
+				</template>
+			</el-skeleton>
 
-      <!-- 加载状态提示 -->
-      <li v-if="loading" class="loading-text">加载中...</li>
-      <li v-if="noMore" class="no-more-text">已经到底啦~</li>
-    </ul>
-  </div>
+			<template v-else>
+				<div class="service-item" v-for="item in serviceRecords" :key="item.id">
+					<el-card shadow="hover" class="service-card">
+						<div class="card-body-content">
+							<div class="card-header">
+								<h2 class="service-name">{{ item.serviceName }}</h2>
+								<el-tag type="info" effect="light" size="small">{{ item.categoryName }}</el-tag>
+							</div>
+							<p class="short-description">{{ item.shortDescription }}</p>
+
+							<div class="summary-info">
+								<span class="truck-type-name">{{ item.truckTypeName }}</span>
+								<span class="base-price-display-aligned"
+									>起步价（5公里以内）：<strong class="price-value"
+										>{{ item.basePrice }}元</strong
+									></span
+								>
+
+								<div class="service-rating-summary">
+									<el-rate
+										:model-value="item.averageRating"
+										:colors="rateColors"
+										disabled
+										show-score
+										text-color="#ff9900"
+										score-template="{value}"
+									/>
+									<span class="rating-count">（{{ item.ratingCount }} 条评价）</span>
+								</div>
+
+								<el-button
+									type="primary"
+									link
+									@click="getServiceDetail(item.id)"
+									class="toggle-detail-btn"
+								>
+									{{ isServiceDetailExpandedMap[item.id] ? '收起详情' : '查看详情' }}
+								</el-button>
+							</div>
+
+							<transition name="el-fade-in-linear">
+								<div v-if="isServiceDetailExpandedMap[item.id]" class="detail-section">
+									<el-skeleton v-if="isServiceDetailLoadingMap[item.id]" animated>...</el-skeleton>
+									<div v-else class="detail-content-loaded">
+										<template v-if="serviceDetailsMap[item.id]">
+											<el-descriptions
+												title="装载能力"
+												:column="1"
+												border
+												class="detail-descriptions"
+											>
+												<el-descriptions-item label="描述">
+													{{ serviceDetailsMap[item.id].loadingCapacityDescription || '暂无描述' }}
+												</el-descriptions-item>
+											</el-descriptions>
+											<el-divider />
+
+											<el-descriptions
+												title="货车信息"
+												:column="2"
+												border
+												class="detail-descriptions"
+											>
+												<el-descriptions-item label="货车描述">{{
+													serviceDetailsMap[item.id].truckType?.description || '暂无'
+												}}</el-descriptions-item>
+												<el-descriptions-item label="货车规格">{{
+													serviceDetailsMap[item.id].truckType?.capacity || '暂无'
+												}}</el-descriptions-item>
+												<el-descriptions-item label="起步价（5公里以内）"
+													>{{
+														serviceDetailsMap[item.id].truckType?.baseFare
+													}}元</el-descriptions-item
+												>
+											</el-descriptions>
+											<el-divider />
+
+											<el-descriptions
+												title="服务评价"
+												:column="1"
+												border
+												class="detail-descriptions"
+											>
+												<el-descriptions-item label="评论">
+													{{ serviceDetailsMap[item.id].rating?.comment || '暂无评论' }}
+													<el-button
+														v-if="serviceDetailsMap[item.id].rating?.comment"
+														link
+														type="primary"
+														size="small"
+														style="margin-left: 10px"
+														@click="viewAllComments(item.id)"
+														>查看更多评论</el-button
+													>
+												</el-descriptions-item>
+												<el-descriptions-item label="评分值">
+													<el-rate
+														:model-value="serviceDetailsMap[item.id].rating?.ratingValue"
+														:colors="rateColors"
+														disabled
+														show-score
+														text-color="#ff9900"
+														score-template="{value}"
+													/>
+												</el-descriptions-item>
+											</el-descriptions>
+
+											<div class="select-service-action">
+												<el-button
+													type="danger"
+													size="large"
+													@click="selectServiceForOrder(item.id)"
+													>立即选择此服务</el-button
+												>
+											</div>
+										</template>
+										<div v-else style="text-align: center; padding: 20px; color: #909399">
+											加载详情数据失败或暂无数据。
+										</div>
+									</div>
+								</div>
+							</transition>
+						</div>
+					</el-card>
+				</div>
+				<el-empty
+					v-if="serviceRecords.length === 0 && !isServiceListLoading"
+					description="暂无服务数据"
+				/>
+			</template>
+		</div>
+
+		<div class="pagination-footer">
+			<el-pagination
+				v-model:current-page="serviceFilterPagination.page"
+				v-model:page-size="serviceFilterPagination.pageSize"
+				:page-sizes="[5, 10, 15, 20]"
+				layout="total, sizes, prev, pager, next, jumper"
+				:total="serviceFilterPagination.total"
+				@size-change="handleSizeChange"
+				@current-change="handlePageChange"
+			/>
+		</div>
+	</div>
 </template>
 
 <style scoped lang="less">
-.service-container {
-  height: 100%;
+	// 整体页面的内容容器，与 News.vue 保持一致的简约卡片风格
+	.service-main-container {
+		max-width: 1200px; // 限制页面内容的最大宽度，保持一致
+		margin: 20px auto; // 上下外边距 20px，左右自动居中
+		padding: 30px; // 内部填充，让内容有更多呼吸空间
+		background-color: #fff; // 白色背景，使其在父级浅灰色背景上浮现
+		border-radius: 8px; // 圆角
+		box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05); // 轻微的阴影，增加立体感
+	}
 
-  .infinite-list {
-    height: 100%;
-    overflow: auto;
-    padding: 0;
-    margin: 0;
+	// 新增：骨架屏容器样式
+	.loading-skeleton {
+		padding: 20px;
+		min-height: 400px; /* 确保加载区域有足够的高度，防止内容跳动 */
+		/* 为 skeleton-item 提供一个默认宽度 */
+		:deep(.el-skeleton__item) {
+			width: 100%;
+		}
+	}
 
-    li.service-item {
-      position: relative;
-      overflow: hidden;
-      list-style: none;
-      padding: 16px;
-      border-bottom: 1px solid #eee;
-      background: white;
-      transition: 0.3s;
+	.skeleton-form-item {
+		margin-bottom: 20px;
+		:deep(.el-skeleton__item) {
+			height: 32px; /* 模拟输入框和按钮高度 */
+			margin-right: 10px; /* 模拟表单项间距 */
+		}
+	}
 
-      &:hover {
-        background: #f8f9fa;
-      }
+	.skeleton-pagination {
+		margin-top: 30px;
+		:deep(.el-skeleton__item) {
+			width: 60% !important; /* 模拟分页组件宽度 */
+			height: 32px; /* 模拟分页组件高度 */
+			margin: 0 auto; /* 居中 */
+		}
+	}
 
-      &:last-child {
-        border-bottom: none;
-      }
+	// 筛选区域，样式与 News.vue 的 .search-panel 保持一致
+	.filter-section {
+		padding-bottom: 20px; // 底部内边距，与下方列表分隔
+		margin-bottom: 20px; // 底部外边距，与下方列表分隔
+		border-bottom: 1px solid #eee; // 底部细边框，作为视觉分隔
+		display: flex;
+		align-items: center;
+		justify-content: flex-start; // 筛选器靠左对齐
+	}
 
-      .title {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
+	// 数据列表区域 (取代原来的 infinite-list)
+	.data-list-box {
+		padding-top: 20px; // 顶部内边距，与筛选区域分隔
+		display: flex;
+		flex-direction: column;
+		gap: 20px; // 每个服务卡片之间的间距，与 News.vue 的 .data-item 的 margin-bottom 保持一致
+		min-height: 300px; // 确保即使没有数据也有一定的区域高度，防止内容跳动
+	}
 
-      .description {
-        color: #666;
-        margin: 10px 0;
-      }
+	// 服务项样式 (与 News.vue 的 .data-item 保持高度一致)
+	.service-item {
+		.el-card {
+			height: auto; // 允许卡片高度根据内容自适应
+			min-height: 200px; // 设置一个合理的最小高度，以避免卡片过短
+			padding: 0; // 移除 el-card 自身的内边距，由内部的 .card-body-content 控制
+			border: 1px solid rgba(0, 0, 0, 0.08);
+			border-radius: 8px;
+			box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+			transition: all 0.3s ease-in-out;
+			overflow: hidden;
+			cursor: pointer;
 
-      .price-car {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 14px;
+			&:hover {
+				box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+				transform: translateY(-3px);
+			}
 
-        .base-price {
-          color: #e6a23c;
-          font-weight: 500;
-        }
-      }
+			// 将 el-card__body 设置为弹性容器
+			:deep(.el-card__body) {
+				display: flex;
+				flex-direction: column;
+				height: 100%; // 确保其占据 el-card 的全部高度
+				padding: 0 !important; // 重置 ElCard 的 padding
+			}
+		}
 
-      .detail-content {
-        margin-top: 16px;
-        padding-top: 16px;
-        border-top: 1px dashed #ccc;
-        transform: scaleY(1);
-        transform-origin: top;
-        opacity: 1;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        will-change: transform, opacity;
-        font-size: 12px;
-        color: #666;
+		// 新增的用于包裹卡片内容的容器，处理 padding 和 flex 布局
+		.card-body-content {
+			display: flex;
+			flex-direction: column;
+			height: 100%; // 确保它占据 el-card__body 的全部高度
+			padding: 18px 20px 12px 20px; // 顶部、左右 18px/20px，底部调整为 12px
+		}
 
-        .detail-item {
-          margin-bottom: 12px;
+		.card-header {
+			flex-shrink: 0; // 防止头部内容收缩
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 10px;
 
-          label {
-            color: #666;
-            font-weight: 500;
-            margin-right: 8px;
-          }
+			.service-name {
+				color: var(--el-color-primary, rgb(64, 158, 255));
+				font-size: 20px;
+				font-weight: bold;
+				margin: 0;
+			}
 
-          p {
-            display: inline;
-            color: #888;
-          }
-        }
+			.el-tag {
+				font-size: 12px;
+				height: 24px;
+				line-height: 22px;
+				padding: 0 8px;
+			}
+		}
 
-        .head-title {
-          color: #000;
-          font-size: 14px;
-          margin-bottom: 10px;
-        }
+		.short-description {
+			color: #666;
+			font-size: 14px;
+			margin: 0 0 5px 0; // 底部外边距从 10px 减小到 5px，进一步减小间距
+			line-height: 1.6; // 提高行高，增加可读性
+			// 固定高度以确保下方元素对齐
+			min-height: calc(1.6em * 3); // 至少3行高度
+			max-height: calc(1.6em * 3); // 最多3行高度
+			overflow: hidden;
+			text-overflow: ellipsis;
+			word-break: break-word;
+			display: -webkit-box;
+			-webkit-box-orient: vertical;
+			-webkit-line-clamp: 3; // 限制显示 3 行内容
+			flex-grow: 0; // 不允许弹性增长，防止内容短时下方元素被向下推
+		}
 
-        .description-item {
-          margin-bottom: 20px;
-        }
+		.summary-info {
+			display: grid; // 使用 Grid 布局
+			// 调整列宽以实现“起步价”对齐:
+			// Column 1: truck-type-name (最大宽度180px，超出部分省略)
+			// Column 2: base-price-display-aligned (固定宽度，其起始位置将对齐)
+			// Column 3: service-rating-summary (固定宽度，用于评分显示)
+			// Column 4: toggle-detail-btn (自适应宽度)
+			grid-template-columns: 180px 300px 280px auto;
+			align-items: center; // 垂直居中对齐
+			gap: 25px; // 列之间的间距
+			font-size: 14px;
+			color: #555;
+			flex-shrink: 0;
+			margin-top: 0; // 顶部外边距从 5px 减小到 0px，进一步减小间距
 
-        .box-item {
-          display: flex;
-          align-items: center;
-        }
-      }
+			.truck-type-name {
+				font-weight: 500;
+				color: #409eff;
+				max-width: 100%; // 限制在网格列宽内
+				overflow: hidden; // 隐藏超出部分
+				text-overflow: ellipsis; // 显示省略号
+				white-space: nowrap; // 不换行
+				justify-self: start; // 在其网格单元格内左对齐
+			}
 
-      .slide-enter-active,
-      .slide-leave-active {
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      }
+			.base-price-display-aligned {
+				color: #888;
+				justify-self: start; // 确保在网格单元格内左对齐，从而实现起始位置的统一
+			}
 
-      .slide-enter-from {
-        transform: scaleY(0.95);
-        opacity: 0;
-      }
+			.price-value {
+				color: #e6a23c;
+				font-weight: bold;
+				font-size: 15px;
+			}
 
-      .slide-leave-to {
-        transform: scaleY(0.95);
-        opacity: 0;
-      }
-    }
-  }
+			.service-rating-summary {
+				display: flex;
+				align-items: center;
+				justify-content: center; // 在其列中居中
+			}
 
-  .loading-text,
-  .no-more-text {
-    text-align: center;
-    color: #888;
-    padding: 16px;
-  }
-}
+			.rating-count {
+				margin-left: 5px; // 评分星级和评价数量的间距
+			}
+
+			.toggle-detail-btn {
+				font-size: 14px;
+				justify-self: end; // 将按钮对齐到其网格单元格的右侧
+				flex-shrink: 0;
+			}
+		}
+
+		.detail-section {
+			margin-top: 20px;
+			padding-top: 20px;
+			border-top: 1px dashed #eee;
+			flex-shrink: 0; // 防止详情区域收缩
+
+			.el-descriptions {
+				margin-bottom: 15px;
+
+				:deep(.el-descriptions__header) {
+					margin-bottom: 10px;
+
+					.el-descriptions__title {
+						font-size: 16px;
+						font-weight: bold;
+						color: #333;
+					}
+				}
+
+				:deep(.el-descriptions__body) {
+					background-color: #f8f8f8;
+					border-radius: 4px;
+					padding: 10px;
+				}
+
+				:deep(.el-descriptions__label) {
+					font-weight: 500;
+					color: #555;
+					min-width: 120px;
+				}
+
+				:deep(.el-descriptions__content) {
+					color: #666;
+				}
+
+				.el-rate {
+					vertical-align: middle;
+				}
+			}
+
+			.el-divider {
+				margin: 15px 0;
+			}
+
+			.select-service-action {
+				display: flex;
+				justify-content: flex-end;
+				margin-top: 20px;
+
+				.el-button {
+					padding: 12px 25px;
+					font-size: 16px;
+					border-radius: 6px;
+				}
+			}
+		}
+	}
+
+	// 分页区域
+	.pagination-footer {
+		margin-top: 20px; // 顶部外边距
+		display: flex;
+		justify-content: center; // 水平居中分页组件
+	}
 </style>

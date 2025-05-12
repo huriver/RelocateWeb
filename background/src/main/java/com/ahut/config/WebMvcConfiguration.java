@@ -87,7 +87,7 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
                 .allowedOrigins("http://localhost:5173")
                 .allowedMethods("GET", "POST", "PUT", "DELETE")
                 .maxAge(3600)
-                .allowedHeaders("Origin", "Accept", "Content-Type", "Authorization", "token", "authentication")
+                .allowedHeaders("Origin", "Accept", "Content-Type", "Authorization", "token", "authentication","role")
                 .allowCredentials(true);
     }
 }
