@@ -36,26 +36,12 @@ declare module 'vue' {
     ElRow: typeof import('element-plus/es')['ElRow']
     ElSelect: typeof import('element-plus/es')['ElSelect']
     ElSkeleton: typeof import('element-plus/es')['ElSkeleton']
-    ElTable: typeof import('element-plus/es')['ElTable']
-    ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
-    ElTabPane: typeof import('element-plus/es')['ElTabPane']
-    ElTabs: typeof import('element-plus/es')['ElTabs']
     ElTag: typeof import('element-plus/es')['ElTag']
-    Front: typeof import('./components/user/page/Front.vue')['default']
     MoreCard: typeof import('./components/user/component/MoreCard.vue')['default']
-    My: typeof import('./components/user/page/My.vue')['default']
-    News: typeof import('./components/user/page/News.vue')['default']
-    NewsDetail: typeof import('./components/user/page/NewsDetail.vue')['default']
-    Notic: typeof import('./components/user/page/Notic.vue')['default']
-    NoticDetail: typeof import('./components/user/page/NoticDetail.vue')['default']
-    Order: typeof import('./components/user/page/Order.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    Service: typeof import('./components/user/page/Service.vue')['default']
-    ServiceComments: typeof import('./components/user/page/ServiceComments.vue')['default']
   }
   export interface ComponentCustomProperties {
-    vInfiniteScroll: typeof import('element-plus/es')['ElInfiniteScroll']
     vLoading: typeof import('element-plus/es')['ElLoadingDirective']
   }
 }

@@ -46,7 +46,7 @@
 
 <style scoped lang="less">
   .more-card-container {
-    margin-top: 20px; // 顶部外边距稍大，与其他组件区隔更清晰
+    margin-top: 30px; // 顶部外边距稍大，与其他组件区隔更清晰
 
     .head {
       display: flex;
@@ -77,7 +77,7 @@
         display: inline-block;
         width: 40px;
         height: 40px;
-        background-color: #fff;
+        background-color: rgb(240, 242, 245);
       }
 
       .title::before {
@@ -89,7 +89,7 @@
         display: inline-block;
         width: 40px;
         height: 40px;
-        background-color: #fff;
+        background-color: rgb(240, 242, 245);
       }
     }
 

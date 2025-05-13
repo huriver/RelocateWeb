@@ -72,7 +72,7 @@
 	.front-container {
 		max-width: 1200px;
 		margin: 20px auto;
-		padding: 20px;
+		// padding: 20px;
 		// ... (其他样式保持不变，您可以根据需要调整) ...
 	}
 </style>
