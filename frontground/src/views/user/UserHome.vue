@@ -11,8 +11,8 @@
 					class="main-nav-menu"
 				>
 					<el-menu-item index="/userHome/front">首页</el-menu-item>
-					<el-menu-item index="/userHome/service">搬家服务</el-menu-item>
-					<el-menu-item index="/userHome/notic">搬家须知</el-menu-item>
+					<el-menu-item index="/userHome/services">搬家服务</el-menu-item>
+					<el-menu-item index="/userHome/notice">搬家须知</el-menu-item>
 					<el-menu-item index="/userHome/news">搬家新闻</el-menu-item>
 				</el-menu>
 
@@ -41,13 +41,13 @@
 					</el-dropdown>
 				</div>
 				<div class="login-register-section" v-else>
-					<el-button type="primary" link @click="router.push('/userLogin')">登录</el-button>
-					<el-button type="primary" link @click="router.push('/userRegister')">注册</el-button>
+					<el-button type="primary" link @click="router.push('/login')">登录</el-button>
+					<el-button type="primary" link @click="router.push('/register')">注册</el-button>
 				</div>
 			</el-header>
 			<el-main class="main-content">
 				<router-view v-slot="{ Component }">
-					<keep-alive :include="['Service']">
+					<keep-alive :include="['UserServices', 'UserMyOrders', 'UserMyRatings', 'UserOrder']">
 						<component :is="Component" />
 					</keep-alive>
 				</router-view>
@@ -64,7 +64,7 @@
 	import { ArrowDown } from '@element-plus/icons-vue'; // 导入 Element Plus 图标
 
 	// 导入用户相关的 API
-	import { userLogoutApi } from '@/api/userApi.js';
+	import { userLogoutApi } from '@/api/userApi.js'; // 假设 userApi.js 存在
 
 	const store = myStore(); // 实例化你的 Pinia store
 	const route = useRoute();
@@ -87,7 +87,7 @@
 
 	const handleCommand = (command) => {
 		if (command === 'personalCenter') {
-			router.push('/userHome/my');
+			router.push('/userHome/personal-center');
 		} else if (command === 'logout') {
 			logout();
 		}
@@ -103,25 +103,22 @@
 			.then(async () => {
 				try {
 					// 调用后端注销 API
-					const res = await userLogoutApi();
+					// 假设 userLogoutApi 返回 res.data.code 和 res.data.msg
+					const { data: res } = await userLogoutApi();
 
-					// !!! 核心修改：访问 res.data.code 和 res.data.msg
-					if (res.data.code === 1) {
+					if (res.code === 1) {
 						ElMessage.success('已成功注销！');
 					} else {
-						// 即使后端返回非成功代码，也提示错误信息，并仍然执行本地注销，以避免客户端状态不一致
-						ElMessage.warning(res.data.msg || '注销失败，请重试。');
+						ElMessage.warning(res.msg || '注销失败，请重试。');
 					}
 				} catch (error) {
-					// 处理网络请求失败等异常
 					console.error('注销请求失败:', error);
-					// 对于网络错误或非 2xx 响应，显示更明确的错误信息
 					ElMessage.error('网络错误或注销请求失败，请检查网络。');
 				} finally {
 					// 无论后端注销成功与否，都清除本地存储和 Pinia Store 中的用户数据
 					// 并跳转到登录页面，确保客户端状态和页面显示正确
 					store.clear();
-					router.push('/userLogin'); // 假设你的登录页面路由是 /userLogin
+					router.push('/login'); // 假设你的登录页面路由是 /login
 				}
 			})
 			.catch(() => {

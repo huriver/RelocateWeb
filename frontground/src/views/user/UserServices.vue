@@ -1,7 +1,7 @@
 <script setup>
-	import { queryServiceApi, getServiceDetailApi } from '@/api/service.js';
-	import { getServiceRatingApi } from '@/api/rating.js';
-	import { getServiceCategoriesApi } from '@/api/serviceCategoriesApi.js';
+	import { queryServiceApi, getServiceDetailApi } from '@/api/serviceApi.js';
+	import { getServiceRatingApi } from '@/api/ratingApi.js';
+	import { getServiceCategoriesApi } from '@/api/serviceCategoryApi.js';
 	import { ref, onMounted, watch, onDeactivated } from 'vue'; // **新增导入 onDeactivated**
 	import { useRouter } from 'vue-router';
 	import {
@@ -20,6 +20,13 @@
 		ElPagination, // 导入 ElPagination
 		ElEmpty, // 导入 ElEmpty
 	} from 'element-plus';
+
+	// **新增：明确定义组件的 name，以配合 keep-alive 的 include 属性**
+	// 如果您的项目配置了 unplugin-vue-components 或 defineOptions 是全局可用的，可能不需要手动导入
+	import { defineOptions } from 'vue';
+	defineOptions({
+		name: 'UserServices',
+	});
 
 	const router = useRouter();
 
@@ -156,13 +163,13 @@
 
 	const selectServiceForOrder = (serviceId) => {
 		// 打开新窗口跳转到订单创建页
-		const route = router.resolve({ path: `/order/${serviceId}` });
+		const route = router.resolve({ path: `/userOrder/${serviceId}` });
 		window.open(route.href, '_blank');
 	};
 
 	// *** 新增方法：查看所有评论 ***
 	const viewAllComments = (serviceId) => {
-		router.push({ name: 'serviceComments', params: { id: serviceId } });
+		router.push({ name: 'userServiceComments', params: { id: serviceId } }); // 更改为新的路由名称
 	};
 
 	// 首次加载数据和分类
@@ -190,7 +197,7 @@
 		// 如果即将进入的路由不是服务评论页面 (serviceComments)，
 		// 说明用户导航到了其他主菜单项（如新闻、须知、个人中心等），
 		// 此时应重置服务详情的展开状态，使其在下次进入时默认关闭。
-		if (toRoute.name !== 'serviceComments') {
+		if (toRoute.name !== 'userServiceComments') {
 			// 将所有服务详情的展开状态重置为关闭
 			isServiceDetailExpandedMap.value = {};
 			// 您也可以选择性地清空已加载的服务详情数据（serviceDetailsMap），

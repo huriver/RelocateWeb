@@ -1,362 +1,13 @@
-<script setup>
-	import { ref, watch, computed, onUnmounted } from 'vue';
-	import { useRoute, useRouter } from 'vue-router';
-	import { estimateOrderPriceApi, submitOrderApi, orderPaymentApi } from '@/api/order.js';
-	import { ElMessage, ElMessageBox } from 'element-plus';
-	import dayjs from 'dayjs';
-	import { debounce } from 'lodash';
-
-	const route = useRoute();
-	const router = useRouter();
-
-	const orderFormRef = ref(null);
-	const disabled = ref(true); // 用于控制“立即下单”按钮的禁用状态
-	const form = ref({
-		originAddress: '',
-		destinationAddress: '',
-		numberOfHelpers: 0,
-		reservationTime: '',
-		notes: '',
-	});
-
-	const estimatedPriceDetails = ref(null);
-
-	// --- 新增状态变量 ---
-	const submittedOrderDetails = ref(null); // 存储下单成功后的订单详情
-	const showPaymentSection = ref(false); // 控制是否显示支付方式选择区域
-	const selectedPayMethod = ref(null); // 存储用户选择的支付方式
-	// --- 新增状态变量结束 ---
-
-	// --- 倒计时相关状态变量 ---
-	const paymentCountdown = ref(0); // 倒计时剩余时间，秒
-	let countdownInterval = null; // 存储 interval ID
-
-	// 格式化倒计时显示
-	const formattedCountdown = computed(() => {
-		const minutes = Math.floor(paymentCountdown.value / 60);
-		const seconds = paymentCountdown.value % 60;
-		return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-	});
-
-	// 开始倒计时
-	const startCountdown = () => {
-		// 先清除旧的计时器，防止重复
-		if (countdownInterval) {
-			clearInterval(countdownInterval);
-		}
-		paymentCountdown.value = 15 * 60; // 15分钟 = 900秒
-
-		countdownInterval = setInterval(() => {
-			if (paymentCountdown.value > 0) {
-				paymentCountdown.value--;
-			} else {
-				clearInterval(countdownInterval);
-				countdownInterval = null;
-				ElMessage.warning('支付时间已到，订单已自动取消。');
-				// 可以在这里调用后端接口取消订单，或者将订单状态设置为已取消
-				// 例如：callCancelOrderApi(submittedOrderDetails.value.orderNumber);
-			}
-		}, 1000);
-	};
-
-	// 当组件卸载时清除计时器，防止内存泄漏
-	onUnmounted(() => {
-		if (countdownInterval) {
-			clearInterval(countdownInterval);
-		}
-	});
-	// --- 倒计时相关状态变量结束 ---
-
-	// 修改 totalPriceDisplay 计算属性，以适应下单前后的显示
-	const totalPriceDisplay = computed(() => {
-		if (submittedOrderDetails.value) {
-			return submittedOrderDetails.value.orderAmount.toFixed(2); // 下单后显示订单金额
-		}
-		if (estimatedPriceDetails.value) {
-			return estimatedPriceDetails.value.estimatedPrice.toFixed(2); // 下单前显示估算金额
-		}
-		return '--';
-	});
-
-	const rules = ref({
-		originAddress: {
-			required: true,
-			message: '请填写具体地址，例如：xx省xx市xx区xx街道xx小区xx号楼xx单元',
-			trigger: 'blur',
-		},
-		destinationAddress: {
-			required: true,
-			message: '请填写具体地址，例如：xx省xx市xx区xx街道xx小区xx号楼xx单元',
-			trigger: 'blur',
-		},
-		numberOfHelpers: [
-			{ required: true, message: '请输入工人数量', trigger: 'blur' },
-			{ type: 'number', min: 0, message: '工人数量不能小于0', trigger: 'change' },
-		],
-		reservationTime: { required: true, message: '请选择上门时间', trigger: 'change' },
-	});
-
-	const disabledDate = (date) => {
-		const today = dayjs().startOf('day');
-		const twoWeeksLater = dayjs().add(14, 'day').endOf('day');
-
-		const time = dayjs(date);
-		return time.isBefore(today) || time.isAfter(twoWeeksLater);
-	};
-
-	const debouncedFetchPrice = debounce(async () => {
-		if (!orderFormRef.value) {
-			console.warn('orderFormRef is not yet available for validation during debouncedFetchPrice.');
-			estimatedPriceDetails.value = null;
-			disabled.value = true;
-			return;
-		}
-
-		const fieldsToValidate = ['originAddress', 'destinationAddress', 'numberOfHelpers'];
-		console.log('Attempting to validate fields for price estimation:', fieldsToValidate);
-		console.log('Current form values for estimation validation:', {
-			originAddress: form.value.originAddress,
-			destinationAddress: form.value.destinationAddress,
-			numberOfHelpers: form.value.numberOfHelpers,
-		});
-
-		try {
-			const validationResults = await Promise.allSettled(
-				fieldsToValidate.map((field) => orderFormRef.value.validateField(field))
-			);
-			console.log('Validation results for estimation fields:', validationResults);
-
-			const isValidForEstimate = validationResults.every((result) => result.status === 'fulfilled');
-			console.log('isValidForEstimate:', isValidForEstimate);
-
-			if (isValidForEstimate) {
-				console.log(
-					'Validation passed for estimation fields. Proceeding with price estimation API call...'
-				);
-				const { data: res } = await estimateOrderPriceApi({
-					serviceId: route.params.id,
-					originAddress: form.value.originAddress,
-					destinationAddress: form.value.destinationAddress,
-					numberOfHelpers: form.value.numberOfHelpers,
-				});
-
-				if (res.code === 1) {
-					estimatedPriceDetails.value = res.data;
-					ElMessage.success('价格估算成功！');
-					// 价格估算成功后，重新验证整个表单，以更新“立即下单”按钮的禁用状态
-					orderFormRef.value.validate((valid) => {
-						console.log('Overall form validation after estimation success:', valid);
-						disabled.value = !valid; // 估算成功且表单有效，则启用“立即下单”
-					});
-				} else {
-					let errorMessage = res.msg || '价格估算失败！';
-					if (errorMessage.includes('计算搬家距离发生未知错误')) {
-						errorMessage = '您输入的地址无法识别或不完整，请检查后重试。';
-					}
-					ElMessage.error(errorMessage);
-					estimatedPriceDetails.value = null;
-					disabled.value = true; // 估算失败，禁用“立即下单”
-					console.error('Price estimation API failed:', res.msg);
-				}
-			} else {
-				console.log(
-					'Validation failed for estimation fields. Clearing estimated price and disabling button.'
-				);
-				estimatedPriceDetails.value = null;
-				disabled.value = true; // 估算字段验证失败，禁用“立即下单”
-			}
-		} catch (error) {
-			console.error('Error during price estimation or validation:', error);
-			ElMessage.error('价格估算过程中发生错误，请稍后再试。');
-			estimatedPriceDetails.value = null;
-			disabled.value = true; // 估算过程出错，禁用“立即下单”
-		}
-	}, 1000);
-
-	const estimationFields = computed(() => ({
-		originAddress: form.value.originAddress,
-		destinationAddress: form.value.destinationAddress,
-		numberOfHelpers: form.value.numberOfHelpers,
-	}));
-
-	watch(
-		estimationFields,
-		(newVal, oldVal) => {
-			console.log('--- Watch Triggered (Estimation Fields) ---');
-			console.log('oldVal.originAddress:', oldVal.originAddress);
-			console.log('newVal.originAddress:', newVal.originAddress);
-			console.log('oldVal.destinationAddress:', oldVal.destinationAddress);
-			console.log('newVal.destinationAddress:', newVal.destinationAddress);
-			console.log('oldVal.numberOfHelpers:', oldVal.numberOfHelpers);
-			console.log('newVal.numberOfHelpers:', newVal.numberOfHelpers);
-			console.log('-----------------------------------------');
-
-			// 只有当不在支付流程时才触发估算
-			if (!showPaymentSection.value) {
-				console.log('Watch triggered: Estimation fields changed. Triggering debouncedFetchPrice.');
-				debouncedFetchPrice();
-			}
-			// 不需要 else 块来处理 disabled 状态，因为当 showPaymentSection.value 为 true 时，
-			// “立即下单”按钮已经不再显示，其 disabled 状态无关紧要。
-		},
-		{ deep: true }
-	);
-
-	// 这个 watch 保持不变，它主要用于在任何表单字段变化时，更新“立即下单”按钮的禁用状态
-	watch(
-		() => form.value,
-		() => {
-			if (orderFormRef.value && !showPaymentSection.value) {
-				// 只有在未进入支付流程时才更新“立即下单”按钮状态
-				orderFormRef.value.validate((valid) => {
-					disabled.value = !valid || !estimatedPriceDetails.value;
-				});
-			}
-		},
-		{ deep: true, immediate: true }
-	);
-
-	// --- 新增：重命名并修改 submitOrder 为 placeOrder ---
-	const placeOrder = async () => {
-		if (!orderFormRef.value) return;
-
-		orderFormRef.value.validate(async (valid) => {
-			if (valid) {
-				if (!estimatedPriceDetails.value) {
-					ElMessage.warning('请先完成价格估算！');
-					return;
-				}
-
-				try {
-					const formattedReservationTime = dayjs(form.value.reservationTime).format(
-						'YYYY-MM-DD HH:mm:ss'
-					);
-
-					const { data: res } = await submitOrderApi({
-						serviceId: route.params.id,
-						reservationTime: formattedReservationTime,
-						movingOrigin: form.value.originAddress,
-						movingDestination: form.value.destinationAddress,
-						numberOfHelpers: form.value.numberOfHelpers,
-						notes: form.value.notes,
-					});
-
-					if (res.code === 1) {
-						ElMessage.success('订单已创建，请选择支付方式完成支付！');
-						submittedOrderDetails.value = res.data; // 存储订单详情
-						showPaymentSection.value = true; // 显示支付方式选择区域
-						disabled.value = true; // 禁用“立即下单”按钮，因为它不再需要
-						startCountdown(); // 订单创建成功后开始倒计时
-					} else {
-						ElMessage.error(res.msg || '下单失败，请稍后再试。');
-					}
-				} catch (error) {
-					console.error('下单失败:', error);
-					ElMessage.error('下单失败，请检查网络或联系管理员。');
-				}
-			} else {
-				ElMessage.error('请填写完整的订单信息！');
-			}
-		});
-	};
-
-	// --- 新增：支付按钮的禁用状态 ---
-	// 支付按钮的禁用状态，除了未选择支付方式外，还要检查倒计时是否为0
-	const payButtonDisabled = computed(
-		() => !selectedPayMethod.value || paymentCountdown.value === 0
-	);
-
-	// --- 新增：处理支付的函数 ---
-	const handlePayment = async () => {
-		if (!selectedPayMethod.value) {
-			ElMessage.warning('请选择支付方式！');
-			return;
-		}
-		if (!submittedOrderDetails.value || !submittedOrderDetails.value.orderNumber) {
-			ElMessage.error('订单信息缺失，无法支付。');
-			return;
-		}
-		if (paymentCountdown.value === 0) {
-			ElMessage.error('支付时间已过，请重新下单。');
-			return;
-		}
-
-		try {
-			// 弹出确认对话框
-			await ElMessageBox.confirm('是否确定支付？', '提示', {
-				confirmButtonText: '确定',
-				cancelButtonText: '取消',
-				type: 'warning',
-			});
-
-			console.log(
-				'Initiating payment for order:',
-				submittedOrderDetails.value.orderNumber,
-				'with method:',
-				selectedPayMethod.value
-			);
-			const { data: res } = await orderPaymentApi({
-				orderNumber: submittedOrderDetails.value.orderNumber,
-				payMethod: selectedPayMethod.value,
-			});
-
-			if (res.code === 1) {
-				// 支付成功，立即显示成功消息
-				ElMessage.success('支付成功！');
-
-				// 清除订单支付倒计时
-				clearInterval(countdownInterval);
-				countdownInterval = null;
-
-				let currentClosingCountdown = 5; // 用于页面关闭倒计时
-
-				// 显示自动关闭提示，并开始倒计时
-				const closeMsgInstance = ElMessage({
-					message: `支付成功！本页面将在 ${currentClosingCountdown} 秒后自动关闭。`,
-					type: 'success',
-					duration: 0, // 持续显示，直到倒计时结束或手动关闭
-					showClose: true, // 允许用户手动关闭提示
-				});
-
-				let closingInterval = setInterval(() => {
-					if (currentClosingCountdown > 1) {
-						currentClosingCountdown--;
-						// 更新提示消息内容
-						closeMsgInstance.message = `支付成功！本页面将在 ${currentClosingCountdown} 秒后自动关闭。`;
-					} else {
-						clearInterval(closingInterval);
-						closeMsgInstance.close(); // 关闭倒计时提示
-
-						// 尝试关闭当前标签页
-						try {
-							window.close();
-						} catch (e) {
-							console.error('Failed to close window:', e);
-							// 如果浏览器不允许自动关闭，则提示用户手动关闭
-							ElMessage.warning('由于浏览器安全限制，无法自动关闭当前页面，请手动关闭此标签页。');
-						}
-						// 无论标签页是否关闭成功，都跳转到用户主页（或订单列表页）
-						router.push('/userHome/my');
-					}
-				}, 1000);
-			} else {
-				ElMessage.error(res.msg || '支付失败，请稍后再试。');
-			}
-		} catch (error) {
-			// 用户取消了确认对话框，或者其他支付错误
-			if (error === 'cancel') {
-				ElMessage.info('已取消支付。');
-			} else {
-				console.error('支付过程中发生错误:', error);
-				ElMessage.error('支付过程中发生错误，请稍后再试。');
-			}
-		}
-	};
-</script>
-
 <template>
 	<div class="form-container">
-		<el-card class="order-form-card" v-if="!showPaymentSection">
+		<el-card class="order-form-card" v-if="isExistingOrderLoading">
+			<template #header>
+				<div class="card-header-title">加载订单中...</div>
+			</template>
+			<el-skeleton :rows="5" animated />
+		</el-card>
+
+		<el-card class="order-form-card" v-else-if="!showPaymentSection">
 			<template #header>
 				<div class="card-header-title">填写订单信息</div>
 			</template>
@@ -491,6 +142,461 @@
 	</div>
 </template>
 
+<script setup>
+	// 引入 onActivated 和 onDeactivated
+	import { ref, watch, computed, onUnmounted, onMounted, onActivated, onDeactivated } from 'vue';
+	import { useRoute, useRouter } from 'vue-router';
+	import {
+		estimateOrderPriceApi,
+		submitOrderApi,
+		orderPaymentApi,
+		getOrderDetailApi,
+	} from '@/api/orderApi.js';
+	import { ElMessage, ElMessageBox } from 'element-plus';
+	import dayjs from 'dayjs'; // 确保已安装 dayjs: npm install dayjs
+	import { debounce } from 'lodash'; // 确保已安装 lodash: npm install lodash
+
+	// 定义组件的 name，以配合 keep-alive 的 include 属性
+	import { defineOptions } from 'vue';
+	defineOptions({
+		name: 'UserOrder',
+	});
+
+	const route = useRoute();
+	const router = useRouter();
+
+	const orderFormRef = ref(null);
+	const disabled = ref(true); // 用于控制“立即下单”按钮的禁用状态
+	const form = ref({
+		originAddress: '',
+		destinationAddress: '',
+		numberOfHelpers: 0,
+		reservationTime: '',
+		notes: '',
+	});
+
+	const estimatedPriceDetails = ref(null);
+
+	const submittedOrderDetails = ref(null); // 存储下单成功后的订单详情 或 从历史订单加载的订单详情
+	const showPaymentSection = ref(false); // 控制是否显示支付方式选择区域
+	const selectedPayMethod = ref(null); // 存储用户选择的支付方式
+	const isExistingOrderLoading = ref(false); // 加载现有订单详情时的加载状态
+
+	// --- 倒计时相关状态变量 ---
+	const paymentCountdown = ref(0); // 倒计时剩余时间，秒
+	let countdownInterval = null; // 存储 interval ID
+	const MAX_PAYMENT_DURATION_SECONDS = 15 * 60; // 支付时间限制：15分钟
+
+	// 格式化倒计时显示
+	const formattedCountdown = computed(() => {
+		const minutes = Math.floor(paymentCountdown.value / 60);
+		const seconds = paymentCountdown.value % 60;
+		return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+	});
+
+	// 停止倒计时
+	const stopCountdown = () => {
+		if (countdownInterval) {
+			clearInterval(countdownInterval);
+			countdownInterval = null;
+			console.log('Countdown stopped.');
+		}
+	};
+
+	// 开始倒计时 (现在接受一个可选的 initialSeconds 参数)
+	const startCountdown = (initialSeconds = MAX_PAYMENT_DURATION_SECONDS) => {
+		stopCountdown(); // 先清除旧的计时器，防止重复
+
+		// 如果初始时间小于等于0，直接显示已过期
+		if (initialSeconds <= 0) {
+			paymentCountdown.value = 0;
+			if (submittedOrderDetails.value?.orderNumber) {
+				ElMessage.warning('支付时间已到，订单已自动取消。');
+				router.replace('/userHome/my-orders');
+			}
+			return;
+		}
+
+		paymentCountdown.value = initialSeconds; // 设置初始倒计时值
+
+		// 立即执行一次倒计时逻辑，避免首次更新延迟1秒
+		countdownInterval = setInterval(() => {
+			if (paymentCountdown.value > 0) {
+				paymentCountdown.value--;
+			} else {
+				stopCountdown(); // 倒计时结束时停止计时器
+				ElMessage.warning('支付时间已到，订单已自动取消。');
+				if (submittedOrderDetails.value?.orderNumber) {
+					router.replace('/userHome/my-orders');
+				}
+			}
+		}, 1000);
+
+		// 立即执行一次倒计时逻辑
+		if (paymentCountdown.value > 0) {
+			paymentCountdown.value--;
+		} else {
+			stopCountdown();
+			ElMessage.warning('支付时间已到，订单已自动取消。');
+			if (submittedOrderDetails.value?.orderNumber) {
+				router.replace('/userHome/my-orders');
+			}
+		}
+
+		console.log(`Countdown started from ${initialSeconds} seconds.`);
+	};
+
+	// 提取加载现有订单的逻辑为独立函数
+	const loadExistingOrder = async (orderId) => {
+		if (isExistingOrderLoading.value) return;
+		isExistingOrderLoading.value = true;
+		try {
+			const { data: res } = await getOrderDetailApi(orderId);
+			if (res.code === 1 && res.data) {
+				const order = res.data;
+				if (!order.isPaid && [0].includes(order.orderStatus)) {
+					submittedOrderDetails.value = {
+						orderNumber: order.orderNumber,
+						orderAmount: order.movingPrice,
+						orderTime: order.createTime,
+						isPaid: order.isPaid,
+						orderStatus: order.orderStatus,
+					};
+					showPaymentSection.value = true;
+
+					const orderCreateTime = dayjs(order.createTime);
+					const now = dayjs();
+					const elapsedSeconds = now.diff(orderCreateTime, 'second');
+					const remainingSeconds = MAX_PAYMENT_DURATION_SECONDS - elapsedSeconds;
+
+					if (remainingSeconds > 0) {
+						paymentCountdown.value = remainingSeconds;
+						startCountdown(remainingSeconds); // 立即开始倒计时
+						ElMessage.success(
+							`成功加载订单 ${order.orderNumber}，请在 ${formattedCountdown.value} 内完成支付。`
+						);
+					} else {
+						paymentCountdown.value = 0;
+						ElMessage.warning('此订单的支付时间已过期。');
+						router.replace('/userHome/my-orders');
+					}
+				} else if (order.isPaid) {
+					ElMessage.warning('此订单已支付。');
+					router.replace('/userHome/my-orders');
+				} else {
+					ElMessage.warning('此订单当前状态无法支付。');
+					router.replace('/userHome/my-orders');
+				}
+			} else {
+				ElMessage.error(res.msg || '加载订单详情失败，请重试。');
+				router.replace('/userHome/my-orders');
+			}
+		} catch (error) {
+			console.error('加载现有订单详情失败:', error);
+			ElMessage.error('加载订单详情失败，请检查网络或稍后再试。');
+			router.replace('/userHome/my-orders');
+		} finally {
+			isExistingOrderLoading.value = false;
+		}
+	};
+
+	// onMounted 仅在组件首次挂载时执行一次
+	onMounted(async () => {
+		console.log('UserOrder component mounted.');
+		const existingOrderId = route.query.existingOrderId;
+		if (existingOrderId) {
+			await loadExistingOrder(existingOrderId);
+		}
+	});
+
+	// 当组件被激活（从缓存中重新显示）时，恢复倒计时
+	onActivated(async () => {
+		console.log('UserOrder component activated.');
+		const existingOrderId = route.query.existingOrderId;
+
+		// 如果是现有订单页面，并且 submittedOrderDetails 为空（意味着页面是第一次被激活或被浏览器刷新），
+		// 并且有 existingOrderId，则重新加载订单数据。
+		if (existingOrderId && !submittedOrderDetails.value) {
+			console.log(
+				'Existing order ID found on activated, and submittedOrderDetails is null. Reloading order.'
+			);
+			await loadExistingOrder(existingOrderId);
+		}
+
+		// 如果支付 section 应该显示但倒计时未运行，则启动倒计时
+		if (showPaymentSection.value && paymentCountdown.value > 0 && !countdownInterval) {
+			startCountdown(paymentCountdown.value);
+		} else if (showPaymentSection.value && paymentCountdown.value <= 0) {
+			ElMessage.warning('支付时间已到，订单已自动取消。');
+			if (submittedOrderDetails.value?.orderNumber) {
+				router.replace('/userHome/my-orders');
+			}
+		}
+	});
+
+	// 当组件被禁用（从缓存中隐藏）时，停止倒计时
+	onDeactivated(() => {
+		console.log('UserOrder component deactivated.');
+		stopCountdown();
+	});
+
+	// 当组件卸载时清除计时器，防止内存泄漏
+	onUnmounted(() => {
+		console.log('UserOrder component unmounted.');
+		stopCountdown();
+	});
+	// --- 倒计时相关状态变量结束 ---
+
+	// 修改 totalPriceDisplay 计算属性，以适应下单前后的显示
+	const totalPriceDisplay = computed(() => {
+		if (submittedOrderDetails.value) {
+			return submittedOrderDetails.value.orderAmount.toFixed(2); // 下单后显示订单金额
+		}
+		if (estimatedPriceDetails.value) {
+			return estimatedPriceDetails.value.estimatedPrice.toFixed(2); // 下单前显示估算金额
+		}
+		return '--';
+	});
+
+	const rules = ref({
+		originAddress: {
+			required: true,
+			message: '请填写具体地址，例如：xx省xx市xx区xx街道xx小区xx号楼xx单元',
+			trigger: 'blur',
+		},
+		destinationAddress: {
+			required: true,
+			message: '请填写具体地址，例如：xx省xx市xx区xx街道xx小区xx号楼xx单元',
+			trigger: 'blur',
+		},
+		numberOfHelpers: [
+			{ required: true, message: '请输入工人数量', trigger: 'blur' },
+			{ type: 'number', min: 0, message: '工人数量不能小于0', trigger: 'change' },
+		],
+		reservationTime: { required: true, message: '请选择上门时间', trigger: 'change' },
+	});
+
+	const disabledDate = (date) => {
+		const today = dayjs().startOf('day');
+		const twoWeeksLater = dayjs().add(14, 'day').endOf('day');
+
+		const time = dayjs(date);
+		return time.isBefore(today) || time.isAfter(twoWeeksLater);
+	};
+
+	const debouncedFetchPrice = debounce(async () => {
+		if (!orderFormRef.value) {
+			estimatedPriceDetails.value = null;
+			disabled.value = true;
+			return;
+		}
+
+		const fieldsToValidate = ['originAddress', 'destinationAddress', 'numberOfHelpers'];
+
+		try {
+			const validationResults = await Promise.allSettled(
+				fieldsToValidate.map((field) => orderFormRef.value.validateField(field))
+			);
+
+			const isValidForEstimate = validationResults.every((result) => result.status === 'fulfilled');
+
+			if (isValidForEstimate) {
+				const { data: res } = await estimateOrderPriceApi({
+					serviceId: route.params.id,
+					originAddress: form.value.originAddress,
+					destinationAddress: form.value.destinationAddress,
+					numberOfHelpers: form.value.numberOfHelpers,
+				});
+
+				if (res.code === 1) {
+					estimatedPriceDetails.value = res.data;
+					ElMessage.success('价格估算成功！');
+					orderFormRef.value.validate((valid) => {
+						disabled.value = !valid;
+					});
+				} else {
+					let errorMessage = res.msg || '价格估算失败！';
+					if (errorMessage.includes('计算搬家距离发生未知错误')) {
+						errorMessage = '您输入的地址无法识别或不完整，请检查后重试。';
+					}
+					ElMessage.error(errorMessage);
+					estimatedPriceDetails.value = null;
+					disabled.value = true;
+				}
+			} else {
+				estimatedPriceDetails.value = null;
+				disabled.value = true;
+			}
+		} catch (error) {
+			console.error('Error during price estimation or validation:', error);
+			ElMessage.error('价格估算过程中发生错误，请稍后再试。');
+			estimatedPriceDetails.value = null;
+			disabled.value = true;
+		}
+	}, 1000);
+
+	const estimationFields = computed(() => ({
+		originAddress: form.value.originAddress,
+		destinationAddress: form.value.destinationAddress,
+		numberOfHelpers: form.value.numberOfHelpers,
+	}));
+
+	watch(
+		estimationFields,
+		() => {
+			// 只有当不在支付流程时才触发估算
+			if (!showPaymentSection.value) {
+				debouncedFetchPrice();
+			}
+		},
+		{ deep: true }
+	);
+
+	watch(
+		() => form.value,
+		() => {
+			if (orderFormRef.value && !showPaymentSection.value) {
+				orderFormRef.value.validate((valid) => {
+					disabled.value = !valid || !estimatedPriceDetails.value;
+				});
+			}
+		},
+		{ deep: true, immediate: true }
+	);
+
+	const placeOrder = async () => {
+		if (!orderFormRef.value) return;
+
+		orderFormRef.value.validate(async (valid) => {
+			if (valid) {
+				if (!estimatedPriceDetails.value) {
+					ElMessage.warning('请先完成价格估算！');
+					return;
+				}
+
+				try {
+					const formattedReservationTime = dayjs(form.value.reservationTime).format(
+						'YYYY-MM-DD HH:mm:ss'
+					);
+
+					const { data: res } = await submitOrderApi({
+						serviceId: route.params.id,
+						reservationTime: formattedReservationTime,
+						movingOrigin: form.value.originAddress,
+						movingDestination: form.value.destinationAddress,
+						numberOfHelpers: form.value.numberOfHelpers,
+						notes: form.value.notes,
+					});
+
+					if (res.code === 1) {
+						ElMessage.success('订单已创建，请选择支付方式完成支付！');
+						submittedOrderDetails.value = res.data; // 存储订单详情
+						showPaymentSection.value = true; // 显示支付方式选择区域
+						disabled.value = true; // 禁用“立即下单”按钮，因为它不再需要
+						startCountdown(MAX_PAYMENT_DURATION_SECONDS); // 订单创建成功后开始倒计时
+					} else {
+						ElMessage.error(res.msg || '下单失败，请稍后再试。');
+					}
+				} catch (error) {
+					console.error('下单失败:', error);
+					ElMessage.error('下单失败，请检查网络或联系管理员。');
+				}
+			} else {
+				ElMessage.error('请填写完整的订单信息！');
+			}
+		});
+	};
+
+	// 支付按钮的禁用状态，除了未选择支付方式外，还要检查倒计时是否为0
+	const payButtonDisabled = computed(
+		() => !selectedPayMethod.value || paymentCountdown.value === 0
+	);
+
+	// 处理支付的函数
+	const handlePayment = async () => {
+		if (!selectedPayMethod.value) {
+			ElMessage.warning('请选择支付方式！');
+			return;
+		}
+		if (!submittedOrderDetails.value || !submittedOrderDetails.value.orderNumber) {
+			ElMessage.error('订单信息缺失，无法支付。');
+			return;
+		}
+		if (paymentCountdown.value === 0) {
+			ElMessage.error('支付时间已过，请重新下单。');
+			return;
+		}
+
+		try {
+			// 弹出确认对话框
+			await ElMessageBox.confirm('是否确定支付？', '提示', {
+				confirmButtonText: '确定',
+				cancelButtonText: '取消',
+				type: 'warning',
+			});
+
+			console.log(
+				'Initiating payment for order:',
+				submittedOrderDetails.value.orderNumber,
+				'with method:',
+				selectedPayMethod.value
+			);
+			const { data: res } = await orderPaymentApi({
+				orderNumber: submittedOrderDetails.value.orderNumber,
+				payMethod: selectedPayMethod.value,
+			});
+
+			if (res.code === 1) {
+				// 支付成功，立即显示成功消息
+				ElMessage.success('支付成功！');
+
+				stopCountdown(); // 清除订单支付倒计时
+
+				let currentClosingCountdown = 5; // 用于页面关闭倒计时
+
+				// 显示自动关闭提示，并开始倒计时
+				const closeMsgInstance = ElMessage({
+					message: `支付成功！本页面将在 ${currentClosingCountdown} 秒后自动关闭。`,
+					type: 'success',
+					duration: 0, // 持续显示，直到倒计时结束或手动关闭
+					showClose: true, // 允许用户手动关闭提示
+				});
+
+				let closingInterval = setInterval(() => {
+					if (currentClosingCountdown > 1) {
+						currentClosingCountdown--;
+						// 更新提示消息内容
+						closeMsgInstance.message = `支付成功！本页面将在 ${currentClosingCountdown} 秒后自动关闭。`;
+					} else {
+						clearInterval(closingInterval);
+						closeMsgInstance.close(); // 关闭倒计时提示
+
+						// 尝试关闭当前标签页
+						try {
+							window.close();
+						} catch (e) {
+							console.error('Failed to close window:', e);
+							ElMessage.warning('由于浏览器安全限制，无法自动关闭当前页面，请手动关闭此标签页。');
+						}
+						// 无论标签页是否关闭成功，都跳转到用户主页（或订单列表页）
+						router.replace('/userHome/my-orders'); // 使用 replace 防止返回到支付页面
+					}
+				}, 1000);
+			} else {
+				ElMessage.error(res.msg || '支付失败，请稍后再试。');
+			}
+		} catch (error) {
+			// 用户取消了确认对话框，或者其他支付错误
+			if (error === 'cancel') {
+				ElMessage.info('已取消支付。');
+			} else {
+				console.error('支付过程中发生错误:', error);
+				ElMessage.error('支付过程中发生错误，请稍后再试。');
+			}
+		}
+	};
+</script>
+
 <style scoped lang="less">
 	.form-container {
 		display: flex;
@@ -518,7 +624,6 @@
 			font-weight: bold;
 			text-align: center;
 			color: #333;
-			/* margin-bottom: 20px; Moved margin to :deep(.el-card__header) */
 		}
 
 		:deep(.el-form-item) {
@@ -647,7 +752,6 @@
 				gap: 10px; // 倒计时信息和下方支付方式的间距
 
 				.payment-timer-info {
-					// 文本右对齐已通过内联样式实现，这里可以补充其他样式
 					font-size: 14px;
 					.warning-text {
 						color: #ffc107; // 警告色
@@ -685,7 +789,6 @@
 				}
 			}
 
-			/* 以下是原始的 .pay-btn 样式，它适用于所有带有 .pay-btn 类的按钮 */
 			.pay-btn {
 				width: 200px; /* Slightly wider button */
 				height: 60px; /* Slightly taller button */

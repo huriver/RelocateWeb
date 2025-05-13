@@ -3,28 +3,18 @@ import axios from "axios";
 import { ElMessage, ElLoading } from "element-plus"; // 明确导入 ElLoading
 import { nextTick } from "vue";
 import router from "../router";
-import { myStore } from "@/stores/store.js";
+import { myStore } from "@/stores/store.js"; // 导入 Pinia Store
 
-const store = myStore();
+import { publicApiPaths } from '@/router/index.js';
 
 const request = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: "http://localhost:8080", // 保持您代码中的 baseURL
   // timeout: 10000 // 原始代码中注释掉，保持不变
 });
 
 // ======================== 新增/修改的加载动画管理逻辑 ========================
 let loadingInstance = null; // 将 'loading' 重命名为 'loadingInstance'，更清晰
 let requestCount = 0;       // 新增：记录当前正在进行的请求数量
-
-// 您代码中使用的 getClientId() 函数未在此文件内定义或导入。
-// 假设它是一个全局函数或从其他地方导入。
-// 如果它确实不存在，此处的调用将导致错误。请确保此函数可用。
-// 如果您不确定，可以暂时注释掉其调用或提供其定义。
-// 例如：
-// function getClientId() {
-//   // ... 您的 getClientId 实现 ...
-// }
-// =========================================================================
 
 // 请求拦截器
 request.interceptors.request.use(
@@ -47,9 +37,29 @@ request.interceptors.request.use(
     }
 
     // 获取token并设置请求头
-    const userInfo = localStorage.getItem("userInfo");
-    const token = userInfo ? JSON.parse(userInfo).token : "";
-    if (token) config.headers["authentication"] = token;
+    const store = myStore();
+
+    // ======================== 修改点：使用导入的 publicApiPaths 进行判断 ========================
+    // 检查当前请求的 URL（相对于 baseURL）是否在公共 API 路径列表中
+    // 使用 some() 和 includes() 来判断 config.url 是否包含公共路径之一
+    const isPublicRequest = publicApiPaths.some(path => config.url.includes(path));
+
+    // 如果不是公共请求 (即需要认证的请求)，才尝试获取并添加 token
+    if (!isPublicRequest) {
+      // 确保 store.userInfo 存在且不为 null 再访问 token 属性，避免 null 错误
+      const token = store.userInfo ? store.userInfo.token : '';
+      if (token) {
+        config.headers["authentication"] = token;
+      } else {
+        // 如果是非公共请求但 store 中没有 token，说明用户未登录或登录信息丢失
+        // 在这里可以添加处理逻辑，例如重定向到登录页
+        console.warn('尝试访问需要认证的接口', config.url, '但用户未登录或token丢失');
+        router.push('/login'); // 重定向到用户登录页
+        // throw new Error('用户未登录，无法访问需要认证的接口'); // 或者抛出错误中断请求
+        // 默认情况下，如果不添加 authentication 头部，后端会处理未授权请求
+      }
+    }
+
 
     return config;
   },
@@ -86,7 +96,10 @@ request.interceptors.response.use(
       response.data.errorMessage["业务错误"] === "登录过期"
     ) {
       ElMessage.error("登录过期");
-      localStorage.clear();
+      // 在这里获取 store 实例，并清除数据
+      const store = myStore();
+      store.clear(); // 清除 Pinia Store 和 localStorage 中的数据
+
       // 确保 getClientId 函数可用，否则可能导致错误
       if (typeof getClientId === 'function') {
         getClientId(); // 调用获取客户端 ID 的函数
@@ -95,7 +108,7 @@ request.interceptors.response.use(
       }
 
       setTimeout(() => {
-        router.push("/login");
+        router.push("/login"); // 跳转到用户登录页
       }, 2000);
       // 登录过期属于业务错误，通常不应继续 Promise.resolve()，而应该中断后续操作
       return Promise.reject(new Error("登录过期"));
@@ -116,6 +129,9 @@ request.interceptors.response.use(
     // 务必检查 error.response 是否存在，因为有些网络错误可能没有 response 对象
     if (error.response && error.response.status === 401) {
       ElMessage.error("登录过期，请重新登录");
+      // 在这里获取 store 实例，并清除数据
+      const store = myStore();
+      store.clear(); // 清除 Pinia Store 和 localStorage 中的数据
       router.push("/userLogin"); // 跳转到用户登录页
       return Promise.reject(error); // 拒绝 Promise，中断后续操作
     }

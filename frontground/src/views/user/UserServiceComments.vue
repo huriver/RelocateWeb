@@ -1,7 +1,7 @@
 <script setup>
 	import { ref, onMounted } from 'vue';
 	import { useRoute, useRouter } from 'vue-router'; // 导入 useRouter
-	import { getServiceRatingApi } from '@/api/rating.js'; // 确保路径正确
+	import { getServiceRatingApi } from '@/api/ratingApi.js'; // 确保路径正确
 	import {
 		ElMessage,
 		ElCard,
@@ -13,6 +13,13 @@
 		ElIcon,
 	} from 'element-plus';
 	import { ArrowLeft } from '@element-plus/icons-vue'; // 导入左箭头图标
+
+	// **新增：明确定义组件的 name**
+	// 如果您的项目配置了 unplugin-vue-components 或 defineOptions 是全局可用的，可能不需要手动导入
+	import { defineOptions } from 'vue';
+	defineOptions({
+		name: 'UserServiceComments',
+	});
 
 	const route = useRoute();
 	const router = useRouter(); // 初始化 useRouter 实例

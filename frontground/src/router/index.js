@@ -1,109 +1,219 @@
+// D:\Java\code\RelocateWeb\frontground\src\router\index.js
+
 import { createRouter, createWebHistory } from "vue-router";
-import { ElMessage } from 'element-plus'; // ① 确保导入 ElMessage 用于提示
+import { ElMessage } from 'element-plus';
+import { myStore } from '@/stores/store.js';
+
+// 导入主要视图组件
+import UserHome from '@/views/user/UserHome.vue';
+import UserPersonalCenter from '@/views/user/UserPersonalCenter.vue';
+
+// 导入个人中心子组件
+import UserMyOrders from '@/views/user/personalCenter/UserMyOrders.vue';
+import UserMyRatings from '@/views/user/personalCenter/UserMyRatings.vue';
+import UserPersonalInfo from '@/views/user/personalCenter/UserPersonalInfo.vue';
+import UserChangePassword from '@/views/user/personalCenter/UserChangePassword.vue';
+
+
+// 导入其他用户端页面组件
+import UserFront from '@/views/user/UserFront.vue';
+import UserNews from '@/views/user/UserNews.vue';
+import UserNewsDetail from '@/views/user/UserNewsDetail.vue';
+import UserNotice from '@/views/user/UserNotice.vue';
+import UserNoticeDetail from '@/views/user/UserNoticeDetail.vue';
+import UserServices from '@/views/user/UserServices.vue';
+import UserServiceComments from '@/views/user/UserServiceComments.vue';
+import UserOrder from '@/views/user/UserOrder.vue';
+import UserOrderRating from '@/views/user/UserOrderRating.vue';
+
+// 导入认证相关组件
+import UserLogin from '@/views/auth/UserLogin.vue';
+import UserRegister from '@/views/auth/UserRegister.vue';
+import AdminLogin from '@/views/auth/AdminLogin.vue';
+import AdminRegister from '@/views/auth/AdminRegister.vue';
+
+// 导入管理端主页组件
+import AdminHome from '@/views/admin/AdminHome.vue';
+
+// 导入 404 页面
+import NotFound from '@/views/NotFound.vue';
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: "/",
-      redirect: "/userHome",
+      redirect: "/userHome/front",
     },
     {
       path: "/userHome",
       name: "userHome",
-      redirect: "/userHome/front", // 默认重定向到首页
-      component: () => import("@/views/home/UserHome.vue"),
+      redirect: "/userHome/front",
+      component: UserHome,
       children: [
         {
-          path: "front", // 首页，无需登录，公开访问
-          name: "front",
-          component: () => import("@/components/user/page/Front.vue"),
-          // 无 meta.requiresAuth
+          path: "front",
+          name: "userFront",
+          component: UserFront,
+          meta: { title: '首页' } // 首页，未登录可访问，不需要 requiresAuth: true
         },
         {
-          path: "news", // 搬家新闻列表页，需要登录
-          name: "news",
-          component: () => import("@/components/user/page/News.vue"),
-          meta: { requiresAuth: true } // ② **需要登录才能访问**
+          path: "news",
+          name: "userNews",
+          component: UserNews,
+          meta: { title: '搬家新闻', requiresAuth: true }, // 搬家新闻列表，未登录不可访问，需要 requiresAuth: true
         },
         {
-          path: "news/:id", // 新闻详情页，无需登录（可从首页进入）
-          name: "newsDetail",
-          component: () => import("@/components/user/page/NewsDetail.vue"),
-          // 无 meta.requiresAuth，以满足在未登录下从首页点击详情后可以展示的需求
+          path: "news/:id",
+          name: "userNewsDetail",
+          component: UserNewsDetail,
+          meta: { title: '新闻详情' }, // 新闻详情，未登录可访问，不需要 requiresAuth: true
         },
         {
-          path: "notic", // 搬家须知列表页，需要登录
-          name: "notic",
-          component: () => import("@/components/user/page/Notic.vue"),
-          meta: { requiresAuth: true } // ② **需要登录才能访问**
+          path: "notice",
+          name: "userNotice",
+          component: UserNotice,
+          meta: { title: '搬家须知', requiresAuth: true }, // 搬家须知列表，未登录不可访问，需要 requiresAuth: true
         },
         {
-          path: "notic/:id", // 通知详情页，无需登录（可从首页进入）
-          name: "noticDetail",
-          component: () => import("@/components/user/page/NoticDetail.vue"),
-          // 无 meta.requiresAuth
+          path: "notice/:id",
+          name: "userNoticeDetail",
+          component: UserNoticeDetail,
+          meta: { title: '须知详情' }, // 须知详情，未登录可访问，不需要 requiresAuth: true
         },
         {
-          path: "service", // 服务页面，假设需要登录
-          name: "service",
-          component: () => import("@/components/user/page/Service.vue"),
-          meta: { requiresAuth: true } // **假设服务页面需要登录**
-        },
-        // *** 新增路由：服务评论列表页 ***
-        {
-          path: "serviceComments/:id", // 接收服务ID作为参数
-          name: "serviceComments",
-          component: () => import("@/components/user/page/ServiceComments.vue"), // 指向新的组件
-          meta: { requiresAuth: true } // 假设评论页面也需要登录
+          path: "services",
+          name: "userServices",
+          component: UserServices,
+          meta: { title: '搬家服务', requiresAuth: true }, // 搬家服务列表，未登录不可访问
         },
         {
-          path: "my", // 我的页面，假设需要登录
-          name: "my",
-          component: () => import("@/components/user/page/My.vue"),
-          meta: { requiresAuth: true } // **假设我的页面需要登录**
+          path: "services/:id/comments",
+          name: "userServiceComments",
+          component: UserServiceComments,
+          meta: { title: '服务评论', requiresAuth: true }, // 服务评论页，未登录不可访问
+        },
+        {
+          path: 'personal-center',
+          name: 'userPersonalCenter',
+          component: UserPersonalCenter,
+          meta: { title: '个人中心', requiresAuth: true }, // 个人中心，未登录不可访问
+          redirect: '/userHome/personal-center/orders',
+          children: [
+            {
+              path: 'orders',
+              name: 'userMyOrders',
+              component: UserMyOrders,
+              meta: { title: '我的订单', requiresAuth: true } // 个人中心子路由，继承父路由的 requiresAuth
+            },
+            {
+              path: 'ratings',
+              name: 'userMyRatings',
+              component: UserMyRatings,
+              meta: { title: '我的评价', requiresAuth: true } // 个人中心子路由
+            },
+            {
+              path: 'info',
+              name: 'userPersonalInfo',
+              component: UserPersonalInfo,
+              meta: { title: '个人信息', requiresAuth: true } // 个人中心子路由
+            },
+            {
+              path: 'password',
+              name: 'userChangePassword',
+              component: UserChangePassword,
+              meta: { title: '修改密码', requiresAuth: true } // 个人中心子路由
+            },
+          ]
         },
       ],
     },
     {
-      path: "/order/:id", // 订单详情页，假设需要登录
-      name: "order",
-      component: () => import("@/components/user/page/Order.vue"),
-      meta: { requiresAuth: true } // **假设订单详情页需要登录**
+      path: "/userOrder/:id?",
+      name: "userOrder",
+      component: UserOrder,
+      meta: { title: '订单详情', requiresAuth: true }, // 订单详情页，未登录不可访问
     },
     {
-      path: "/backHome", // 后台管理主页，假设需要登录
-      name: "backHome",
-      component: () => import("@/views/home/BackHome.vue"),
-      meta: { requiresAuth: true } // **假设后台主页需要登录**
+      path: "/userOrder/:orderId/rate",
+      name: "userOrderRating",
+      component: UserOrderRating,
+      meta: { title: '评价订单', requiresAuth: true }, // 评价订单页，未登录不可访问
     },
     {
-      path: "/userLogin", // 用户登录页，无需登录
+      path: "/admin",
+      name: "adminHome",
+      component: AdminHome,
+      meta: { requiresAuth: true, roles: ['admin', 'driver', 'mover'] }, // 管理端主页，未登录不可访问
+      children: [
+        // 管理端路由 (请确保这里的子路由也配置了 requiresAuth: true 或继承父路由的 requiresAuth)
+      ]
+    },
+    {
+      path: "/login",
       name: "userLogin",
-      component: () => import("@/views/login/UserLogin.vue"),
+      component: UserLogin,
+      meta: { title: '用户登录' }, // 登录页，未登录可访问
     },
     {
-      path: "/userRegister", // 用户注册页，无需登录
+      path: "/register",
       name: "userRegister",
-      component: () => import("@/views/register/UserRegister.vue"),
-    }
-
+      component: UserRegister,
+      meta: { title: '用户注册' }, // 注册页，未登录可访问
+    },
+    {
+      path: "/admin/login",
+      name: "adminLogin",
+      component: AdminLogin,
+      meta: { title: '管理端登录' }, // 管理端登录页，未登录可访问
+    },
+    {
+      path: "/admin/register",
+      name: "adminRegister",
+      component: AdminRegister,
+      meta: { title: '管理端注册' }, // 管理端注册页，未登录可访问
+    },
+    { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound, meta: { title: '页面未找到' } },
   ],
 });
 
-// ③ 优化后的 beforeEach 守卫
-router.beforeEach((to, from, next) => {
-  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-  const isLoggedIn = userInfo && userInfo.token; // 检查用户是否已登录
+// 定义那些不需要在请求头中携带认证 token 的后端 API 接口路径
+// 这个列表通常用于 Axios 请求拦截器
+// 已经根据您提供的 common.js 和 userApi.js 文件内容进行了更新
+export const publicApiPaths = [
+  // 认证相关的API
+  '/auth/login',         // 用户登录接口
+  '/auth/register',      // 用户注册接口
+  // 注意：管理端登录/注册也可能需要在这里添加，取决于您的认证逻辑是否共享
 
-  // 情况1: 如果目标路由需要认证 (requiresAuth: true) 且用户未登录
-  if (to.meta.requiresAuth && !isLoggedIn) {
-    ElMessage.error("请先登录才能访问此页面！"); // 给出提示
-    // 重定向到登录页，并传递原目标路径作为查询参数，以便登录后可以跳回
-    next({ name: 'userLogin' });
-  }
-  // 情况2: 其他所有情况，允许导航
-  else {
+  // 公共查询API (搬家须知和新闻)
+  '/public/moving-tips/page',      // 查询须知列表接口
+  '/public/moving-tips/',          // 查询须知详情接口 (匹配前缀)
+  '/public/moving-news/page',      // 查询新闻列表接口
+  '/public/moving-news/',          // 查询新闻详情接口 (匹配前缀)
+
+  // 如果管理端也有公共接口，需要在此处添加
+  // '/public/admin/some-public-api',
+];
+
+
+// 路由守卫
+router.beforeEach((to, from, next) => {
+  document.title = to.meta.title ? `${to.meta.title} - 搬家服务平台` : '搬家服务平台';
+
+  const store = myStore();
+  const requiresAuth = to.meta.requiresAuth; // 获取路由元信息中的 requiresAuth 属性
+
+  // 检查路由是否需要认证且用户未登录
+  if (requiresAuth && (!store.userInfo || !store.userInfo.token)) {
+    // 如果需要认证但用户未登录，显示提示并重定向到登录页
+    ElMessage.warning('请先登录以访问此页面');
+    // 保存用户尝试访问的路径，登录成功后可以跳转回去 (可选功能，此处未实现)
+    // store.setRedirectPath(to.fullPath);
+    next('/login'); // 重定向到用户登录页面
+  } else {
+    // 否则，允许继续导航
     next();
   }
 });
