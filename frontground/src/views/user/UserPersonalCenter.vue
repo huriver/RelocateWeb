@@ -77,16 +77,16 @@
 	/* **重要：确保 html, body, #app 占据全屏，且没有默认的边距** */
 	/* 这段样式通常放在全局 CSS 文件（如 common.css）或 main.js 中更合适，
 	   但为了确保效果，暂时放在这里，您可以后续考虑将其移到更恰当的位置。 */
-	html,
-	body,
-	#app {
-		height: 100%;
-		width: 100%;
-		margin: 0;
-		padding: 0;
-		/* 如果页面整体出现滚动条，可能是因为某些元素溢出，可以考虑设置 overflow: hidden */
-		/* overflow: hidden; */
-	}
+	// html,
+	// body,
+	// #app {
+	// 	height: 100%;
+	// 	width: 100%;
+	// 	margin: 0;
+	// 	padding: 0;
+	// 	/* 如果页面整体出现滚动条，可能是因为某些元素溢出，可以考虑设置 overflow: hidden */
+	// 	/* overflow: hidden; */
+	// }
 
 	.personal-center-layout {
 		/* 根据您的实际布局，减去头部导航的高度 (假设头部高度为 60px) */
@@ -154,13 +154,13 @@
 		}
 	}
 
-	.content-area {
-		padding: 20px 160px; /* 内容区域内边距 */
-		min-height: 600px; /* 确保内容区域有足够的最小高度 */
-		flex: 1; /* **关键：让内容区域填充剩余空间** */
-		box-sizing: border-box; /* 确保 padding 和 border 包含在宽度内 */
-		overflow-x: auto; /* **关键：如果内容溢出，添加水平滚动条** */
-		overflow-y: auto; /* 如果内容垂直溢出，添加垂直滚动条 */
-		max-width: calc(100% - 200px); /* 确保内容区域不会扩展到侧边栏下面 */
-	}
+	// .content-area {
+	// 	padding: 20px 160px; /* 内容区域内边距 */
+	// 	min-height: 600px; /* 确保内容区域有足够的最小高度 */
+	// 	flex: 1; /* **关键：让内容区域填充剩余空间** */
+	// 	box-sizing: border-box; /* 确保 padding 和 border 包含在宽度内 */
+	// 	overflow-x: auto; /* **关键：如果内容溢出，添加水平滚动条** */
+	// 	overflow-y: auto; /* 如果内容垂直溢出，添加垂直滚动条 */
+	// 	max-width: calc(100% - 200px); /* 确保内容区域不会扩展到侧边栏下面 */
+	// }
 </style>
