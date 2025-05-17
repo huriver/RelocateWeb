@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.***REMOVED***.mapper.DashboardMapper">
+
+    <select id="countOrders" resultType="java.lang.Long">
+        SELECT COUNT(id) FROM moving_order
+        <where>
+            <if test="startDate != null and endDate != null">
+                AND create_time BETWEEN #{startDate} AND #{endDate}
+            </if>
+        </where>
+    </select>
+
+    <select id="countOrdersByStatus" resultType="java.lang.Long">
+        SELECT COUNT(id) FROM moving_order
+        <where>
+            order_status = #{status}
+            <if test="startDate != null and endDate != null">
+                AND create_time BETWEEN #{startDate} AND #{endDate}
+            </if>
+        </where>
+    </select>
+
+    <select id="sumRevenue" resultType="java.math.BigDecimal">
+        SELECT SUM(moving_price) FROM moving_order
+        <where>
+            is_paid = 1
+            <if test="startDate != null and endDate != null">
+                AND payment_time BETWEEN #{startDate} AND #{endDate}
+            </if>
+        </where>
+    </select>
+
+    <select id="countCustomers" resultType="java.lang.Long">
+        SELECT COUNT(id) FROM customer
+        <where>
+            <if test="startDate != null and endDate != null">
+                AND create_time BETWEEN #{startDate} AND #{endDate}
+            </if>
+        </where>
+    </select>
+
+    <select id="countDrivers" resultType="java.lang.Long">
+        SELECT COUNT(id) FROM driver
+        <where>
+            <if test="startDate != null and endDate != null">
+                AND create_time BETWEEN #{startDate} AND #{endDate}
+            </if>
+        </where>
+    </select>
+
+    <select id="countMovers" resultType="java.lang.Long">
+        SELECT COUNT(id) FROM mover
+        <where>
+            <if test="startDate != null and endDate != null">
+                AND create_time BETWEEN #{startDate} AND #{endDate}
+            </if>
+        </where>
+    </select>
+
+    <select id="calculateAverageOrderPrice" resultType="java.math.BigDecimal">
+        SELECT AVG(moving_price) FROM moving_order
+        <where>
+            order_status = 4 AND is_paid = 1
+            <if test="startDate != null and endDate != null">
+                AND moving_end_time BETWEEN #{startDate} AND #{endDate}
+            </if>
+        </where>
+    </select>
+
+    <select id="countOrdersByTime" resultType="java.util.Map">
+        SELECT
+        <choose>
+            <when test="timeUnit == 'DAY'">DATE_FORMAT(create_time, '%Y-%m-%d')</when>
+            <when test="timeUnit == 'WEEK'">DATE_FORMAT(create_time, '%X-%V')</when>
+            <when test="timeUnit == 'MONTH'">DATE_FORMAT(create_time, '%Y-%m')</when>
+            <otherwise>DATE_FORMAT(create_time, '%Y-%m-%d')</otherwise>
+        </choose>
+        AS dateLabel,
+        COUNT(id) AS count
+        FROM moving_order
+        <where>
+            <if test="startDate != null and endDate != null">
+                AND create_time BETWEEN #{startDate} AND #{endDate}
+            </if>
+        </where>
+        GROUP BY dateLabel
+        ORDER BY dateLabel
+    </select>
+
+    <select id="sumRevenueByTime" resultType="java.util.Map">
+        SELECT
+        <choose>
+            <when test="timeUnit == 'DAY'">DATE_FORMAT(payment_time, '%Y-%m-%d')</when>
+            <when test="timeUnit == 'WEEK'">DATE_FORMAT(payment_time, '%X-%V')</when>
+            <when test="timeUnit == 'MONTH'">DATE_FORMAT(payment_time, '%Y-%m')</when>
+            <otherwise>DATE_FORMAT(payment_time, '%Y-%m-%d')</otherwise>
+        </choose>
+        AS dateLabel,
+        SUM(moving_price) AS amount
+        FROM moving_order
+        <where>
+            is_paid = 1
+            <if test="startDate != null and endDate != null">
+                AND payment_time BETWEEN #{startDate} AND #{endDate}
+            </if>
+        </where>
+        GROUP BY dateLabel
+        ORDER BY dateLabel
+    </select>
+
+    <select id="countUsersByTime" resultType="java.util.Map">
+        SELECT
+        <choose>
+            <when test="timeUnit == 'DAY'">DATE_FORMAT(create_time, '%Y-%m-%d')</when>
+            <when test="timeUnit == 'WEEK'">DATE_FORMAT(create_time, '%X-%V')</when>
+            <when test="timeUnit == 'MONTH'">DATE_FORMAT(create_time, '%Y-%m')</when>
+            <otherwise>DATE_FORMAT(create_time, '%Y-%m-%d')</otherwise>
+        </choose>
+        AS dateLabel,
+        COUNT(id) AS count
+        FROM ${userTable}
+        <where>
+            <if test="startDate != null and endDate != null">
+                AND create_time BETWEEN #{startDate} AND #{endDate}
+            </if>
+        </where>
+        GROUP BY dateLabel
+        ORDER BY dateLabel
+    </select>
+
+    <select id="countOrdersByStatusDistribution" resultType="java.util.Map">
+        SELECT
+        order_status AS status,
+        COUNT(id) AS count
+        FROM moving_order
+        <where>
+            <if test="startDate != null and endDate != null">
+                AND create_time BETWEEN #{startDate} AND #{endDate}
+            </if>
+        </where>
+        GROUP BY order_status
+        ORDER BY order_status
+    </select>
+
+    <select id="countServiceResourcesByTypeDistribution" resultType="java.util.Map">
+        <choose>
+            <when test="type == 'SERVICE'">
+                SELECT
+                s.service_name AS name,
+                COUNT(mo.id) AS count
+                FROM moving_order mo
+                JOIN service s ON mo.service_id = s.id
+                <where>
+                    <if test="startDate != null and endDate != null">
+                        AND mo.create_time BETWEEN #{startDate} AND #{endDate}
+                    </if>
+                </where>
+                GROUP BY mo.service_id, s.service_name
+                ORDER BY count DESC
+            </when>
+            <when test="type == 'TRUCK_TYPE'">
+                SELECT
+                tt.type_name AS name,
+                COUNT(mo.id) AS count
+                FROM moving_order mo
+                JOIN truck_type tt ON mo.truck_type_id = tt.id
+                <where>
+                    <if test="startDate != null and endDate != null">
+                        AND mo.create_time BETWEEN #{startDate} AND #{endDate}
+                    </if>
+                </where>
+                GROUP BY mo.truck_type_id, tt.type_name
+                ORDER BY count DESC
+            </when>
+            <otherwise>
+                -- 如果 type 无效，返回空结果或默认一种类型
+                SELECT NULL AS name, NULL AS count WHERE 1=0
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="countRatingsByValueDistribution" resultType="java.util.Map">
+        SELECT
+        rating_value AS ratingValue,
+        COUNT(id) AS count
+        FROM rating
+        <where>
+            <if test="startDate != null and endDate != null">
+                AND rating_time BETWEEN #{startDate} AND #{endDate}
+            </if>
+            <if test="ratingType != null and ratingType != ''">
+                AND rating_type = #{ratingType}
+            </if>
+        </where>
+        GROUP BY rating_value
+        ORDER BY rating_value
+    </select>
+
+    <select id="countRatings" resultType="java.lang.Long">
+        SELECT COUNT(id)
+        FROM rating
+        <where>
+            <if test="startDate != null and endDate != null">
+                AND rating_time BETWEEN #{startDate} AND #{endDate}
+            </if>
+            <if test="ratingType != null and ratingType != ''">
+                AND rating_type = #{ratingType}
+            </if>
+        </where>
+    </select>
+
+    <select id="findTopDriversByRating" resultType="DriverRankingVO">
+        SELECT
+        id,
+        name,
+        average_rating AS averageRating, rating_count AS ratingCount FROM driver
+        <where>
+            is_banned = 0
+            <if test="minRatingCount > 0">
+                AND rating_count >= #{minRatingCount}
+            </if>
+        </where>
+        ORDER BY average_rating DESC, rating_count DESC
+        <if test="limit > 0">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <select id="findTopMoversByRating" resultType="MoverRankingVO">SELECT
+        id,
+        name,
+        average_rating AS averageRating,
+        rating_count AS ratingCount
+        FROM mover
+        <where>
+            is_banned = 0
+            <if test="minRatingCount > 0">
+                AND rating_count >= #{minRatingCount}
+            </if>
+        </where>
+        ORDER BY average_rating DESC, rating_count DESC
+        <if test="limit > 0">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <select id="findTopServicesByRating" resultType="ServiceRankingVO">
+        SELECT
+        id,
+        service_name AS serviceName,
+        average_rating AS averageRating,
+        rating_count AS ratingCount
+        FROM service
+        <where>
+            status = 1
+            <if test="minRatingCount > 0">
+                AND rating_count >= #{minRatingCount}
+            </if>
+        </where>
+        ORDER BY average_rating DESC, rating_count DESC
+        <if test="limit > 0">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+</mapper>

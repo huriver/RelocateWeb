@@ -59,7 +59,7 @@
                 AND rating_count &lt;= #{maxRatingCount}
             </if>
         </where>
-        ORDER BY create_time DESC
+        ORDER BY id ASC
     </select>
 
 </mapper>

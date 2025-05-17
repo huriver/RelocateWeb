@@ -56,7 +56,7 @@
                 AND mt.publish_date &lt;= #{publishDateEnd}
             </if>
         </where>
-        ORDER BY mt.publish_date DESC
+        ORDER BY mt.id
     </select>
 
     <select id="getByIdByAdmin" resultType="MovingTipsVO">

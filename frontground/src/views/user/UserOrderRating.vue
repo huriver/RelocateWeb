@@ -137,7 +137,7 @@
 	import { ref, onMounted } from 'vue';
 	import { useRoute, useRouter } from 'vue-router';
 	import { ElMessage } from 'element-plus';
-	import { getOrderDetailApi, submitOrderRatingApi } from '@/api/orderApi.js';
+	import { getFrontOrderDetailApi, submitOrderRatingApi } from '@/api/orderApi.js';
 
 	const route = useRoute();
 	const router = useRouter();
@@ -168,30 +168,36 @@
 	const fetchOrderDetail = async (orderId) => {
 		isOrderLoading.value = true;
 		try {
-			const { data: res } = await getOrderDetailApi(orderId);
+			const { data: res } = await getFrontOrderDetailApi(orderId);
 			if (res.code === 1 && res.data) {
 				const order = res.data;
+				// 客户端检查订单状态是否符合评价条件
 				if (order.orderStatus === 4 && !order.isReviewed) {
 					orderToRate.value = order;
 					if (order.moverList?.length) {
 						ratingForm.value.moverRatings = order.moverList.map((m) => ({
 							moverId: m.id,
-							name: m.name,
+							name: m.name, // 存储姓名用于显示
 							rating_value: 0,
 							comment: '',
 						}));
 					}
 				} else {
+					// 订单不符合评价条件，给出警告并返回
 					ElMessage.warning('订单已评价或不符合评价条件');
 					goBack();
 				}
 			} else {
-				ElMessage.error(res.msg || '加载失败');
-				goBack();
+				// 业务失败 (code !== 1) 或数据不存在，request.js 已经弹窗提示了后端 msg
+				// ElMessage.error(res.msg || '加载失败'); // <-- 移除此行
+				console.warn('加载订单详情业务失败:', res.msg); // 可以保留日志
+				goBack(); // 业务失败也返回
 			}
-		} catch (err) {
-			ElMessage.error('加载订单详情失败');
-			goBack();
+		} catch (error) {
+			// <-- 捕获真正的请求错误
+			console.error('加载订单详情请求失败:', error);
+			ElMessage.error('加载订单详情失败'); // <-- 这个用于网络或HTTP错误
+			goBack(); // 请求失败也返回
 		} finally {
 			isOrderLoading.value = false;
 		}
@@ -199,13 +205,20 @@
 
 	const submitRating = async () => {
 		if (!ratingFormRef.value) return;
+
+		// 使用单独的 try-catch 块来处理表单验证和 API 调用
 		try {
-			await ratingFormRef.value.validate();
+			await ratingFormRef.value.validate(); // 表单验证
+
+			// 验证通过后，再执行提交 API 调用
 			isSubmitting.value = true;
 
 			const ratings = [
 				{
-					rateeId: orderToRate.value.serviceId || orderToRate.value.id,
+					// 注意：这里 ServiceRating 的 rateeId 应该使用 serviceId，如果订单数据中有的话
+					// 如果 orderToRate 中有 serviceId 字段，建议使用 orderToRate.value.serviceId
+					// 否则使用 orderToRate.value.id (订单ID) 可能不是后端期望的被评价对象ID
+					rateeId: orderToRate.value.serviceId || orderToRate.value.id, // 假设评价对象是服务项，使用服务项ID
 					ratingType: 'SERVICE',
 					ratingValue: ratingForm.value.serviceRating.rating_value,
 					comment: ratingForm.value.serviceRating.comment.trim() || null,
@@ -223,32 +236,50 @@
 
 			for (const mover of ratingForm.value.moverRatings) {
 				ratings.push({
-					rateeId: mover.moverId,
+					rateeId: mover.moverId, // 搬运工ID
 					ratingType: 'MOVER',
 					ratingValue: mover.rating_value,
 					comment: mover.comment.trim() || null,
 				});
 			}
 
-			const { data: res } = await submitOrderRatingApi({
-				orderId: ratingForm.value.orderId,
-				ratings,
-			});
+			try {
+				// <-- 针对 API 调用的 try-catch
+				const { data: res } = await submitOrderRatingApi({
+					orderId: ratingForm.value.orderId,
+					ratings,
+				});
 
-			if (res.code === 1) {
-				ElMessage.success('评价成功！');
-				router.replace({ name: 'userMyRatings' });
-			} else {
-				ElMessage.error(res.msg || '提交失败');
+				if (res.code === 1) {
+					ElMessage.success('评价成功！');
+					// 评价成功后跳转到我的评价列表或订单列表
+					router.replace({ name: 'userMyRatings' }); // 假设有我的评价页面
+					// router.replace({ name: 'userMyOrders' }); // 或者返回我的订单
+				} else {
+					// 业务失败 (code !== 1)，request.js 已经弹窗提示了后端 msg
+					// ElMessage.error(res.msg || '提交失败'); // <-- 移除此行
+					console.warn('提交评价业务失败:', res.msg); // 可以保留日志
+					// 保持 loading 状态为 false
+				}
+			} catch (apiError) {
+				// <-- 捕获 API 调用中发生的请求错误
+				console.error('提交评价请求失败:', apiError);
+				// request.js 已经在 rejection 时弹窗了 HTTP/网络错误，这里提供一个兜底或通用提示
+				ElMessage.error('提交评价失败，请稍后再试'); // <-- 这个用于网络或HTTP错误
+			} finally {
+				isSubmitting.value = false; // API 调用结束后设置 submitting 为 false
 			}
-		} catch {
-			ElMessage.warning('请完善所有评分项');
-		} finally {
-			isSubmitting.value = false;
+		} catch (validationError) {
+			// <-- 捕获表单验证错误
+			// ElMessage.warning('请完善所有评分项'); // 这条警告是正确的，保留
+			console.warn('表单验证失败:', validationError); // 可以保留日志
+			// ElMessage 在 validate 方法失败时，字段下方会有提示，这里可以额外一个总提示
+			ElMessage.warning('请完善所有必填评分项'); // 更明确的提示
+			// 如果是验证失败，isSubmitting 未曾变为 true，所以这里不需要设置 isSubmitting.value = false;
 		}
 	};
 
-	const goBack = () => router.replace({ name: 'userMyOrders' });
+	const goBack = () => router.replace({ name: 'userMyOrders' }); // 返回我的订单列表
 </script>
 
 <style scoped lang="less">
@@ -310,6 +341,10 @@
 
 		.comment-textarea {
 			width: 100%;
+		}
+
+		.custom-rate :deep(.el-rate__text) {
+			font-size: 14px; // Adjust size if needed
 		}
 
 		.submit-buttons {

@@ -43,12 +43,15 @@
 			if (res.code === 1) {
 				comments.value = res.data || [];
 			} else {
-				ElMessage.error(res.msg || '获取评论失败！');
+				// 业务失败 (code !== 1)，request.js 已经弹窗提示了后端 msg
+				// ElMessage.error(res.msg || '获取评论失败！'); // <-- 移除此行
+				console.warn('获取服务评论业务失败:', res.msg); // 可以保留日志
 				comments.value = [];
 			}
 		} catch (error) {
+			// 捕获真正的请求错误
 			console.error('获取服务评论 API 调用失败:', error);
-			ElMessage.error('获取服务评论失败，请检查网络。');
+			ElMessage.error('获取服务评论失败，请检查网络。'); // <-- 这个用于网络或HTTP错误
 			comments.value = [];
 		} finally {
 			isLoading.value = false;

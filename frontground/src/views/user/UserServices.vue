@@ -54,11 +54,14 @@
 			if (res.code === 1) {
 				serviceCategories.value = res.data;
 			} else {
-				ElMessage.error('获取服务类型失败！');
+				// 业务失败 (code !== 1)，request.js 已经弹窗提示了后端 msg
+				// ElMessage.error('获取服务类型失败！'); // <-- 移除此行
+				console.warn('获取服务类型业务失败:', res.msg); // 可以保留日志
 			}
 		} catch (error) {
+			// 捕获真正的请求错误
 			console.error('获取服务类型 API 调用失败:', error);
-			ElMessage.error('获取服务类型失败，请检查网络。');
+			ElMessage.error('获取服务类型失败，请检查网络。'); // <-- 这个用于网络或HTTP错误
 		}
 	};
 
@@ -67,8 +70,10 @@
 		isServiceListLoading.value = true; // 设置列表加载状态为 true
 		// **核心修改：确保 categoryId 始终为字符串**
 		const categoryToSend =
-			selectedCategoryId.value === undefined || selectedCategoryId.value === null
-				? '' // 如果 selectedCategoryId.value 是 undefined 或 null，则发送空字符串
+			selectedCategoryId.value === undefined ||
+			selectedCategoryId.value === null ||
+			selectedCategoryId.value === ''
+				? undefined // 如果 selectedCategoryId.value 是 undefined, null, 或空字符串，则发送 undefined 或不发送此参数
 				: selectedCategoryId.value; // 否则，发送当前值
 
 		try {
@@ -79,17 +84,21 @@
 			});
 
 			if (res.code !== 1) {
-				ElMessage.error(res.msg);
+				// 业务失败 (code !== 1)，request.js 已经弹窗提示了后端 msg
+				// ElMessage.error(res.msg); // <-- 移除此行
+				console.warn('查询服务列表业务失败:', res.msg); // 可以保留日志
 				serviceRecords.value = []; // 查询失败时清空数据
 				serviceFilterPagination.value.total = 0; // 重置总数
-				return;
+				return; // 业务失败，提前返回
 			}
 
-			serviceRecords.value = res.data.records || []; // 替换数据，而不是追加
+			// 业务成功 (res.code === 1)
+			serviceRecords.value = res.data.records || []; // 替换数据
 			serviceFilterPagination.value.total = res.data.total || 0; // 更新总数
 		} catch (error) {
+			// 捕获真正的请求错误
 			console.error('查询服务失败:', error);
-			ElMessage.error('查询服务失败，请稍后再试。');
+			ElMessage.error('查询服务失败，请稍后再试。'); // <-- 这个用于网络或HTTP错误
 			serviceRecords.value = []; // 发生错误时清空数据
 			serviceFilterPagination.value.total = 0; // 重置总数
 		} finally {
@@ -120,37 +129,65 @@
 		};
 	};
 
-	// 存储已加载的服务详细数据：键为服务ID，值为服务详细对象
+	// 存储已加载的服务详细数据：键为服务ID，值为服务详细对象 (包含 rating)
 	const serviceDetailsMap = ref({});
 	// 存储服务详情加载状态：键为服务ID，值为布尔型
 	const isServiceDetailLoadingMap = ref({});
 
 	// 修改后的详情方法
 	const getServiceDetail = async (serviceId) => {
-		toggleServiceDetail(serviceId);
-		if (serviceDetailsMap.value[serviceId] && !isServiceDetailLoadingMap.value[serviceId]) return;
+		const isExpanded = isServiceDetailExpandedMap.value[serviceId]; // 获取当前展开状态
+		toggleServiceDetail(serviceId); // 先切换展开状态
 
+		// 如果现在是收起状态，或者详情数据已经存在且不在加载中，则不执行后续加载逻辑
+		if (
+			!isServiceDetailExpandedMap.value[serviceId] ||
+			(serviceDetailsMap.value[serviceId] && !isServiceDetailLoadingMap.value[serviceId])
+		) {
+			return;
+		}
+
+		// 只有在确定要展开且数据不存在时才加载
 		if (isServiceDetailExpandedMap.value[serviceId] && !serviceDetailsMap.value[serviceId]) {
 			isServiceDetailLoadingMap.value[serviceId] = true;
 			try {
+				// === 获取服务详情 ===
 				const { data: serviceRes } = await getServiceDetailApi(serviceId);
-				if (serviceRes.code !== 1) {
-					ElMessage.error(serviceRes.msg);
+				if (serviceRes.code !== 1 || !serviceRes.data) {
+					// 业务失败 (code !== 1) 或数据不存在，request.js 已经弹窗提示了后端 msg
+					// ElMessage.error(serviceRes.msg || '获取服务详情失败'); // <-- 移除此行
+					console.warn('获取服务详情业务失败:', serviceRes.msg); // 可以保留日志
 					// 失败时自动收起详情
-					isServiceDetailExpandedMap.value[serviceId] = false; // <-- 增加此行
-					return;
+					isServiceDetailExpandedMap.value[serviceId] = false;
+					isServiceDetailLoadingMap.value[serviceId] = false; // 确保加载状态也被重置
+					return; // 获取详情失败，不再尝试获取评价
 				}
+				// 获取服务详情成功，存储数据
 				serviceDetailsMap.value[serviceId] = serviceRes.data;
 
-				const { data: ratingRes } = await getServiceRatingApi(serviceId);
-				if (ratingRes.code === 1 && ratingRes.data && ratingRes.data.length > 0) {
-					serviceDetailsMap.value[serviceId].rating = ratingRes.data[0];
-				} else {
-					serviceDetailsMap.value[serviceId].rating = null;
+				// === 获取服务评价 ===
+				// 注意：这里即使获取评价失败，也不影响服务详情的展示
+				try {
+					const { data: ratingRes } = await getServiceRatingApi(serviceId);
+					if (ratingRes.code === 1 && ratingRes.data && ratingRes.data.length > 0) {
+						// 评价获取成功且有数据
+						serviceDetailsMap.value[serviceId].rating = ratingRes.data[0]; // 假设只需要第一条或最新一条评价
+					} else {
+						// 评价业务失败 (code !== 1) 或无数据，request.js 已经弹窗提示了后端 msg
+						// ElMessage.error(ratingRes.msg || '获取服务评价失败'); // <-- 移除此行
+						console.warn('获取服务评价业务失败:', ratingRes.msg); // 可以保留日志
+						serviceDetailsMap.value[serviceId].rating = null; // 没有评价或获取失败
+					}
+				} catch (ratingError) {
+					// 捕获获取评价的请求错误
+					console.error('获取服务评价请求失败:', ratingError);
+					ElMessage.error('获取服务评价失败'); // <-- 这个用于网络或HTTP错误
+					serviceDetailsMap.value[serviceId].rating = null; // 获取评价失败
 				}
 			} catch (error) {
+				// 捕获获取服务详情的请求错误 (request.js 抛出的错误)
 				console.error('加载详情失败:', error);
-				ElMessage.error('加载详情失败，请稍后再试。');
+				ElMessage.error('加载详情失败，请稍后再试。'); // <-- 这个用于网络或HTTP错误
 				// 失败时自动收起详情
 				isServiceDetailExpandedMap.value[serviceId] = false; // <-- 增加此行
 			} finally {
@@ -181,9 +218,14 @@
 	// 监听 selectedCategoryId 的变化，当筛选条件改变时重置分页并重新查询
 	watch(selectedCategoryId, (newCategoryId, oldCategoryId) => {
 		// 只有当值真正改变时才执行
+		// 由于 selectedCategoryId 默认为空字符串，这里 watch 会在 mounted 后触发一次，
+		// 但如果初始值为 ''，新值还是 ''，下面的 if 判断 newCategoryId !== oldCategoryId 应该能阻止重复执行。
+		// 如果初始值为 null 或 undefined，而设置为 ''，则会触发。
+		// 为了更稳健，可以检查旧值是否已初始化或者确保初始值为 ''。
 		if (newCategoryId !== oldCategoryId) {
 			// **新增代码：切换类别时，将所有服务详情的展开状态重置为关闭**
 			isServiceDetailExpandedMap.value = {};
+			// serviceDetailsMap.value = {}; // 可以选择性地清空已加载的详情数据
 			serviceFilterPagination.value.page = 1; // 重置页码到第一页
 			queryServiceList(); // 重新查询服务列表
 		}
@@ -194,10 +236,10 @@
 		// 获取当前路由（即即将进入的路由）
 		const toRoute = router.currentRoute.value;
 
-		// 如果即将进入的路由不是服务评论页面 (serviceComments)，
+		// 如果即将进入的路由不是服务评论页面 (userServiceComments)，
 		// 说明用户导航到了其他主菜单项（如新闻、须知、个人中心等），
 		// 此时应重置服务详情的展开状态，使其在下次进入时默认关闭。
-		if (toRoute.name !== 'userServiceComments') {
+		if (toRoute.name !== 'userServiceComments' && toRoute.name !== 'userOrder') {
 			// 将所有服务详情的展开状态重置为关闭
 			isServiceDetailExpandedMap.value = {};
 			// 您也可以选择性地清空已加载的服务详情数据（serviceDetailsMap），
@@ -232,23 +274,14 @@
 			<el-skeleton
 				v-if="isServiceListLoading && serviceRecords.length === 0"
 				animated
-				:rows="serviceFilterPagination.pageSize"
+				:count="serviceFilterPagination.pageSize"
+				style="margin-bottom: 20px"
 			>
 				<template #template>
 					<el-skeleton-item
 						variant="rect"
-						style="width: 100%; height: 150px; margin-bottom: 20px"
+						style="width: 100%; height: 200px; margin-bottom: 20px"
 					/>
-					<el-skeleton-item variant="h3" style="width: 60%; margin-bottom: 10px" />
-					<el-skeleton-item variant="text" style="width: 100%" />
-					<el-skeleton-item variant="text" style="width: 80%" />
-					<el-skeleton-item
-						variant="rect"
-						style="width: 100%; height: 150px; margin-bottom: 20px"
-					/>
-					<el-skeleton-item variant="h3" style="width: 60%; margin-bottom: 10px" />
-					<el-skeleton-item variant="text" style="width: 100%" />
-					<el-skeleton-item variant="text" style="width: 80%" />
 				</template>
 			</el-skeleton>
 
@@ -294,8 +327,14 @@
 
 							<transition name="el-fade-in-linear">
 								<div v-if="isServiceDetailExpandedMap[item.id]" class="detail-section">
-									<el-skeleton v-if="isServiceDetailLoadingMap[item.id]" animated>...</el-skeleton>
-									<div v-else class="detail-content-loaded">
+									<el-skeleton v-if="isServiceDetailLoadingMap[item.id]" animated>
+										<template #template>
+											<el-skeleton-item variant="p" style="width: 100%" />
+											<el-skeleton-item variant="p" style="width: 100%" />
+											<el-skeleton-item variant="p" style="width: 80%" />
+										</template>
+									</el-skeleton>
+									<div v-else-if="serviceDetailsMap[item.id]" class="detail-content-loaded">
 										<template v-if="serviceDetailsMap[item.id]">
 											<el-descriptions
 												title="装载能力"
@@ -371,6 +410,9 @@
 										<div v-else style="text-align: center; padding: 20px; color: #909399">
 											加载详情数据失败或暂无数据。
 										</div>
+									</div>
+									<div v-else style="text-align: center; padding: 20px; color: #909399">
+										加载详情数据失败或暂无数据。
 									</div>
 								</div>
 							</transition>

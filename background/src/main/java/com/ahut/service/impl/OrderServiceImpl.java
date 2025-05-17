@@ -1311,6 +1311,11 @@ public class OrderServiceImpl implements OrderService {
         // 从 DTO 中获取订单ID和取消原因
         Long orderId = driverCancelOrderDTO.getOrderId();
         String cancelReason = driverCancelOrderDTO.getCancelReason();
+        // *** 在原因前面加上 "消费者：" 前缀，如果原因不为空 ***
+        if (cancelReason != null && !cancelReason.isEmpty()) {
+            cancelReason = "司机工号" + BaseContext.getCurrentId() + "：" + cancelReason;
+        }
+
 
         // 获取当前司机ID
         Long currentDriverId = BaseContext.getCurrentId();

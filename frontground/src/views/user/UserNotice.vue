@@ -29,14 +29,16 @@
 				noticForm.value.total = res.data && res.data.total ? res.data.total : 0; // 确保 total 不会是 undefined
 				noticData.value = res.data && res.data.records ? res.data.records : []; // 确保 records 始终是数组
 			} else {
-				console.error('Failed to fetch notic data:', res.msg || 'Unknown error');
-				ElMessage.error(res.msg || '获取通知数据失败'); // 使用 ElMessage 进行错误提示
+				// 业务失败 (code !== 1)，request.js 已经弹窗提示了后端 msg
+				console.error('Failed to fetch notic data:', res.msg || 'Unknown error'); // 可以保留日志
+				// ElMessage.error(res.msg || '获取通知数据失败'); // <-- 移除此行，避免重复提示
 				noticData.value = [];
 				noticForm.value.total = 0;
 			}
 		} catch (error) {
+			// 捕获真正的请求错误 (网络问题、HTTP错误等)
 			console.error('Network or API error fetching notic data:', error);
-			ElMessage.error('网络错误或请求失败，请稍后再试'); // 使用 ElMessage 进行错误提示
+			ElMessage.error('获取通知数据失败，请稍后再试'); // <-- 这个用于网络或HTTP错误
 			noticData.value = [];
 			noticForm.value.total = 0;
 		}

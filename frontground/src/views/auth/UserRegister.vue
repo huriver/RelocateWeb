@@ -1,8 +1,9 @@
 <script setup>
 	import { ref } from 'vue';
 	import router from '@/router';
-	import { myStore } from '@/stores/store.js';
+	import { myStore } from '@/stores/store.js'; // 如果注册接口不需要 token，其实可以不导入和使用 store
 	import { userRegisterApi } from '@/api/userApi.js';
+	import { ElMessage } from 'element-plus'; // 确保导入 ElMessage
 
 	const registerForm = ref({});
 	const registerFormRef = ref(null);
@@ -38,7 +39,7 @@
 		confirmPassword: [{ required: true, validator: validatePass2, trigger: 'blur' }],
 	});
 
-	const store = myStore(); // 实例化 Pinia Store
+	// const store = myStore(); // 如果注册接口不需要 token，可以移除
 
 	const registerUser = (formEl) => {
 		if (!formEl) return; // 如果表单引用不存在则返回
@@ -47,36 +48,41 @@
 				// 表单校验成功
 
 				try {
+					// 根据 request.js 中对 /auth/register 的特殊处理逻辑
+					// role: 'customer' 的 POST 请求不需要 token
 					const { data: res } = await userRegisterApi(
 						{
 							username: registerForm.value.username,
 							password: registerForm.value.password,
 							role: 'customer', // 消费者注册，角色固定为 customer
-						},
-						{
-							headers: {
-								role: 'customer', // 这个 'role' 是在请求头 (header) 中
-							},
 						}
+						// { // 根据 request.js 的逻辑，对于 role: 'customer' 的注册请求，不需要在 headers 里加 role 和 token
+						// 	headers: {
+						// 		role: 'customer', // 这个 'role' 是在请求头 (header) 中
+						// 	},
+						// } // 移除 headers 部分，依赖 request.js 的请求体判断
 					);
 
-					if (res.code !== 1) {
-						// 根据后端响应，code 为 1 表示成功
-						return ElMessage.error(res.msg || '注册失败，请稍后重试');
+					if (res.code === 1) {
+						// 后端返回成功
+						ElMessage.success('注册成功！请登录。'); // 注册成功提示
+						registerForm.value = {}; // 清空表单
+						router.push('/login'); // 注册成功后跳转到登录页
+					} else {
+						// 后端返回业务错误 (code !== 1)
+						// request.js 拦截器已经弹窗提示了后端 msg
+						console.warn('注册业务失败:', res.msg); // 可以保留日志
+						// 这里不需要再次 ElMessage.error
 					}
-
-					ElMessage.success('注册成功！请登录。'); // 注册成功提示
-					registerForm.value = {}; // 清空表单
-					router.push('/login'); // 注册成功后跳转到登录页
 				} catch (error) {
-					// 捕获网络错误或其他未在 res.code 中处理的异常
-					ElMessage.error('注册请求发送失败，请检查网络或联系管理员。');
-					console.error('注册请求失败:', error);
+					// 捕获真正的请求错误 (网络错误或其他未在 res.code 中处理的异常，如 HTTP 错误)
+					console.error('注册请求发送失败:', error);
+					// request.js 已经在这些错误时弹窗了，这里的 ElMessage 可以作为兜底
+					ElMessage.error('注册请求发送失败，请检查网络或联系管理员。'); // <-- 这个用于网络或HTTP错误
 				}
 			} else {
-				// 表单校验失败
-				console.log('error submit!', fields);
-				// Element Plus 会自动在表单字段下方显示错误信息
+				// 表单校验失败，Element Plus 会自动在表单字段下方显示错误信息
+				console.log('表单校验失败!', fields);
 			}
 		});
 	};

@@ -87,7 +87,7 @@
                 )
             </if>
         </where>
-        ORDER BY r.rating_time DESC
+        ORDER BY r.id
     </select>
 
     <select id="getRatingsByOrderId" resultType="com.***REMOVED***.vo.RatingVO">

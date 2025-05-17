@@ -173,7 +173,7 @@
 	const fetchUserInfo = async () => {
 		// 假设后端 GET /front/customer 通过 token 获取当前用户，不需要传ID
 		// 如果后端需要ID，请修改此处的API调用和userApi.js中的API定义
-		// const userId = store.userInfo?.id;
+		// const userId = store.frontUserInfo?.id;
 		// if (!userId) {
 		//   ElMessage.error('无法获取用户信息，用户ID不存在！');
 		//   return;
@@ -196,19 +196,22 @@
 
 				// !!! 关键：获取最新信息后更新 Pinia store 中的用户信息，供全局（如头部）使用 !!!
 				// 假设您的 store 有一个直接修改 userInfo 对象的方法或允许直接修改
-				// 如果 store.userInfo 是 reactive 包裹的，直接赋值属性即可
-				if (store.userInfo) {
+				// 如果 store.frontUserInfo 是 reactive 包裹的，直接赋值属性即可
+				if (store.frontUserInfo) {
 					// 更安全的做法是检查属性是否存在再赋值，或者使用 store 提供的方法
-					Object.assign(store.userInfo, res.data.data);
+					Object.assign(store.frontUserInfo, res.data.data);
 				} else {
-					// 如果 store.userInfo 是 null 或 undefined，可能需要初始化或处理登录状态
+					// 如果 store.frontUserInfo 是 null 或 undefined，可能需要初始化或处理登录状态
 					console.warn('Pinia store 中的 userInfo 对象不存在或未初始化');
 				}
 			} else {
-				ElMessage.error(res.data.msg || '获取用户信息失败');
+				// 业务失败 (code !== 1)，request.js 已经弹窗提示了后端 msg
+				// ElMessage.error(res.data.msg || '获取用户信息失败'); // <-- 移除此行
+				console.warn('获取用户信息业务失败:', res.data.msg); // 可以保留日志
 			}
 		} catch (error) {
-			ElMessage.error('获取用户信息失败，请稍后重试！');
+			// 捕获真正的请求错误
+			ElMessage.error('获取用户信息失败，请稍后重试！'); // <-- 这个用于网络或HTTP错误
 			console.error('获取用户信息API调用失败:', error);
 			// 获取失败时，可能需要清空本地表单数据或给出明确提示
 			Object.assign(userInfoForm, {
@@ -280,10 +283,13 @@
 						// 此时 Store 中的 photoUrl 会被更新为后端保存的最终值
 						await fetchUserInfo();
 					} else {
-						ElMessage.error(res.data.msg || '用户信息更新失败');
+						// 业务失败 (code !== 1)，request.js 已经弹窗提示了后端 msg
+						// ElMessage.error(res.data.msg || '用户信息更新失败'); // <-- 移除此行
+						console.warn('用户信息更新业务失败:', res.data.msg); // 可以保留日志
 					}
 				} catch (error) {
-					ElMessage.error('用户信息更新失败，请稍后重试！');
+					// 捕获真正的请求错误
+					ElMessage.error('用户信息更新失败，请稍后重试！'); // <-- 这个用于网络或HTTP错误
 					console.error('更新用户信息API调用失败:', error);
 				} finally {
 					loading.close();
@@ -344,8 +350,8 @@
 				userInfoForm.photoUrl = newPhotoUrl; // !!! 只更新本地表单状态 !!!
 
 				// !!! 根据您的要求，这里不再直接更新 Store. Store 的更新将依赖于 saveUserInfo 成功后的 fetchUserInfo !!!
-				// if (store.userInfo) {
-				//   store.userInfo.photoUrl = newPhotoUrl;
+				// if (store.frontUserInfo) {
+				//   store.frontUserInfo.photoUrl = newPhotoUrl;
 				// } else {
 				//   console.warn('Pinia store 中的 userInfo 对象不存在或未初始化，无法更新头像 URL');
 				// }
@@ -356,13 +362,16 @@
 				// 注意：此时 Store 中的 photoUrl 仍是旧值。
 				// 它将在用户点击"保存信息"，并且 saveUserInfo 成功后，通过 fetchUserInfo 统一更新。
 			} else {
-				ElMessage.error(uploadRes.data.msg || '头像上传失败');
+				// 业务失败 (code !== 1)，request.js 已经弹窗提示了后端 msg
+				// ElMessage.error(uploadRes.data.msg || '头像上传失败'); // <-- 移除此行
+				console.warn('头像上传业务失败:', uploadRes.data.msg); // 可以保留日志
 				// 上传失败时，将 photoUrl 恢复到上传前的原始值或默认值
 				userInfoForm.photoUrl = originalUserInfo.photoUrl || defaultAvatar;
 				// 此时 Store 中的 photoUrl 不需要恢复，因为它压根没在这里更新过
 			}
 		} catch (error) {
-			ElMessage.error('头像上传失败，请稍后重试！');
+			// 捕获真正的请求错误
+			ElMessage.error('头像上传失败，请稍后重试！'); // <-- 这个用于网络或HTTP错误
 			console.error('头像上传API调用失败:', error);
 			// 上传失败时，将 photoUrl 恢复到上传前的原始值或默认值
 			userInfoForm.photoUrl = originalUserInfo.photoUrl || defaultAvatar;

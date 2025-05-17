@@ -250,7 +250,7 @@
                 AND mo.reservation_time &lt;= #{reservationTimeEnd}
             </if>
         </where>
-        ORDER BY mo.create_time DESC
+        ORDER BY mo.id
     </select>
 
     <resultMap id="driverAvailableOrderSummaryResultMap" type="com.***REMOVED***.vo.DriverAvailableOrderSummaryVO">
@@ -529,7 +529,14 @@
 
     </resultMap>
 
+
     <resultMap id="assignedVehicleResultMap" type="com.***REMOVED***.vo.AssignedVehicleVO">
+        <id column="assignedVehicle_id" property="vehicleId"/>
+        <result column="assignedVehicle_license_plate_number" property="licensePlateNumber"/>
+        <result column="assignedVehicle_vehicle_brand" property="vehicleBrand"/>
+    </resultMap>
+
+    <resultMap id="assignedVehicleResultMap2" type="com.***REMOVED***.vo.AssignedVehicleVO">
         <id column="vehicle_id" property="vehicleId"/>
         <result column="license_plate_number" property="licensePlateNumber"/>
         <result column="vehicle_brand" property="vehicleBrand"/>
@@ -1362,7 +1369,7 @@
         <result column="notes" property="notes"/>
         <result column="cancel_reason" property="cancelReason"/>
 
-        <association property="assignedVehicle" resultMap="assignedVehicleResultMap"/>
+        <association property="assignedVehicle" resultMap="assignedVehicleResultMap2"/>
 
         <collection property="assignedMovers" ofType="com.***REMOVED***.vo.MoverVO" resultMap="moverVOResultMap"/>
 

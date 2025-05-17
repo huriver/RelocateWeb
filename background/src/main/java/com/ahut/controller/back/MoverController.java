@@ -28,9 +28,8 @@ public class MoverController {
      *
      * @return
      */
-    @GetMapping
-    public Result<Mover> getById() {
-        Long id = BaseContext.getCurrentId();
+    @GetMapping("/{id}")
+    public Result<Mover> getById(@PathVariable Long id) {
         log.info("搬家工人{}，后台端根据id查询自己信息", id);
         Mover driver = moverService.getById(id);
         return Result.success(driver);

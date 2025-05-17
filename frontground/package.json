@@ -10,11 +10,13 @@
     "dep": "node deploy.js"
   },
   "dependencies": {
+    "@element-plus/icons": "^0.0.11",
     "@element-plus/icons-vue": "^2.3.1",
     "axios": "^1.9.0",
+    "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
+    "echarts": "^5.6.0",
     "element-plus": "^2.9.10",
-    "less": "^4.2.0",
     "lodash": "^4.17.21",
     "pinia": "^2.3.1",
     "vue": "^3.5.13",
@@ -22,6 +24,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.5",
+    "less": "^4.3.0",
     "unplugin-auto-import": "^0.17.6",
     "unplugin-icons": "^0.19.0",
     "unplugin-vue-components": "^0.27.2",

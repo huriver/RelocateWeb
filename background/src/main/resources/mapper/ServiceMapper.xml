@@ -107,7 +107,7 @@
                 AND s.create_time &lt;= #{createTimeEnd}
             </if>
         </where>
-        ORDER BY s.create_time DESC
+        ORDER BY s.id
     </select>
 
     <select id="getDetailsById" parameterType="long" resultMap="serviceDetailVOResultMap">

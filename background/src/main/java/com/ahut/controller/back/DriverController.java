@@ -30,9 +30,8 @@ public class DriverController {
      *
      * @return
      */
-    @GetMapping
-    public Result<Driver> getById() {
-        long id = BaseContext.getCurrentId();
+    @GetMapping("/{id}")
+    public Result<Driver> getById(@PathVariable Long id) {
         log.info("后台端根据id查询司机信息:{}", id);
         Driver driver = driverService.getById(id);
         return Result.success(driver);

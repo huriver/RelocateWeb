@@ -33,7 +33,7 @@
             </if>
         </where>
         GROUP BY d.id ,d.create_time
-        ORDER BY d.create_time DESC
+        ORDER BY d.id
     </select>
 
     <select id="listWithTruckTypeByDriverIds" resultMap="driverQualificationMap">

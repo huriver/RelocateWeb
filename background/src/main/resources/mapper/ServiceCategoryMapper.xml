@@ -32,7 +32,7 @@
                 AND sc.create_time &lt;= #{createTimeEnd}
             </if>
         </where>
-        ORDER BY sc.create_time DESC
+        ORDER BY sc.id
     </select>
 
     <select id="getByIdByAdmin" resultType="ServiceCategoryVO">

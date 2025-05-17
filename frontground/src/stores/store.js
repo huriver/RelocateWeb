@@ -1,38 +1,87 @@
+// D:\Java\code\RelocateWeb\frontground\src\stores\store.js
 import { ref } from "vue";
 import { defineStore } from "pinia";
 
 export const myStore = defineStore("myStore", () => {
-  // 从 localStorage 读取 userInfo，如果不存在则为 null
-  // userInfo 应该是一个对象，其中包含 token
-  const userInfo = ref(JSON.parse(localStorage.getItem("userInfo")) || null);
+  // == 前台用户信息状态 ==
+  const frontUserInfo = ref(JSON.parse(localStorage.getItem("frontUserInfo")) || null);
+  // == 后台用户信息状态 ==
+  const backUserInfo = ref(JSON.parse(localStorage.getItem("backUserInfo")) || null);
 
-  // 从 localStorage 读取 routePath，路径通常是字符串，无需 JSON.parse
-  const routePath = ref(localStorage.getItem("routePath") || null);
+  // == 前台路由路径状态 ==
+  const frontRoutePath = ref(localStorage.getItem("frontRoutePath") || null); // 新增状态和 key
+  // == 后台路由路径状态 ==
+  const backRoutePath = ref(localStorage.getItem("backRoutePath") || null); // 新增状态和 key
 
-  // 保存用户信息到 store 和 localStorage
-  const saveUserInfo = (newUserInfo) => {
-    userInfo.value = newUserInfo;
-    localStorage.setItem("userInfo", JSON.stringify(newUserInfo));
+  // == 保存前台用户信息的方法 ==
+  const saveFrontUserInfo = (newUserInfo) => {
+    frontUserInfo.value = newUserInfo;
+    localStorage.setItem("frontUserInfo", JSON.stringify(newUserInfo));
   };
 
-  // 保存路由路径到 store 和 localStorage
-  const saveRoutePath = (newRoutePath) => {
-    routePath.value = newRoutePath;
-    localStorage.setItem("routePath", newRoutePath); // 路径直接保存为字符串
+  // == 保存后台用户信息的方法 ==
+  const saveBackUserInfo = (newBackUserInfo) => {
+    backUserInfo.value = newBackUserInfo;
+    localStorage.setItem("backUserInfo", JSON.stringify(newBackUserInfo));
   };
 
-  // 清除所有相关数据：userInfo, routePath，并清空 localStorage
-  const clear = () => {
-    userInfo.value = null; // 清空用户信息，可以设为 null 或一个空对象 {}
-    routePath.value = null; // 清空路由路径
-    localStorage.clear(); // 清空浏览器本地缓存中的所有数据
+  // == 保存前台路由路径的方法 ==
+  const saveFrontRoutePath = (newRoutePath) => {
+    frontRoutePath.value = newRoutePath;
+    localStorage.setItem("frontRoutePath", newRoutePath);
+  };
+
+  // == 保存后台路由路径的方法 ==
+  const saveBackRoutePath = (newRoutePath) => {
+    backRoutePath.value = newRoutePath;
+    localStorage.setItem("backRoutePath", newRoutePath);
+  };
+
+  // == 清除前台消费者会话 ==
+  const clearFrontSession = () => {
+    frontUserInfo.value = null;
+    frontRoutePath.value = null;
+    localStorage.removeItem("frontUserInfo");
+    localStorage.removeItem("frontRoutePath");
+  };
+
+  // == 清除后台工作人员会话 ==
+  const clearBackSession = () => {
+    backUserInfo.value = null;
+    backRoutePath.value = null;
+    localStorage.removeItem("backUserInfo");
+    localStorage.removeItem("backRoutePath");
+  };
+
+  // == 清除所有会话 (可选保留或重命名) ==
+  const clearAllSessions = () => {
+    frontUserInfo.value = null;
+    backUserInfo.value = null;
+    frontRoutePath.value = null;
+    backRoutePath.value = null;
+
+    localStorage.removeItem("frontUserInfo");
+    localStorage.removeItem("backUserInfo");
+    localStorage.removeItem("frontRoutePath");
+    localStorage.removeItem("backRoutePath");
+
+    // 如果还有其他需要保存在 localStorage 的用户相关状态，这里也要对应清除
   };
 
   return {
-    userInfo,      // 用户信息，包含 token
-    routePath,     // 路由路径
-    saveUserInfo,  // 保存用户信息的方法
-    saveRoutePath, // 保存路由路径的方法
-    clear,         // 清除所有数据的方法 (用于注销)
+    // 导出状态
+    frontUserInfo,
+    backUserInfo,
+    frontRoutePath,
+    backRoutePath,
+
+    // 导出方法
+    saveFrontUserInfo,
+    saveBackUserInfo,
+    saveFrontRoutePath,
+    saveBackRoutePath,
+    clearFrontSession,
+    clearBackSession,
+    clearAllSessions,
   };
 });

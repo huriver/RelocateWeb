@@ -49,7 +49,7 @@
                 AND mn.publish_date &lt;= #{publishDateEnd}
             </if>
         </where>
-        ORDER BY mn.publish_date DESC
+        ORDER BY mn.id
     </select>
 
     <select id="getByIdByAdmin" resultType="MovingNewsVO">

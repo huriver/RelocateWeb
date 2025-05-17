@@ -41,7 +41,7 @@
                 AND v.create_time &lt;= #{createTimeEnd}
             </if>
         </where>
-        ORDER BY v.create_time DESC
+        ORDER BY v.id
     </select>
 
     <select id="countByLicensePlateNumberExcludeId" resultType="java.lang.Integer">

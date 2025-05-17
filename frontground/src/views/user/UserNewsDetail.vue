@@ -1,8 +1,8 @@
 <script setup>
 	import { useRoute } from 'vue-router';
-	import { queryNewsDetailApi } from '@/api/common.js';
+	import { queryNewsDetailApi } from '@/api/common.js'; // 确保 common.js 导出了 queryNewsDetailApi
 	import { onMounted, ref } from 'vue';
-	import { ElMessage } from 'element-plus'; // 确保导入 ElMessage
+	import { ElMessage } from 'element-plus';
 
 	// 建议添加这行
 	defineOptions({
@@ -15,14 +15,21 @@
 	onMounted(async () => {
 		try {
 			const { data: res } = await queryNewsDetailApi(route.params.id);
-			if (res.code !== 1) {
-				ElMessage.error(res.msg || '获取新闻详情失败'); // 确保有默认错误信息
-				return;
+			if (res.code === 1 && res.data) {
+				// 判断业务成功并有数据
+				news.value = res.data;
+			} else {
+				// 业务失败 (code !== 1)，request.js 已经弹窗提示了后端 msg
+				// ElMessage.error(res.msg || '获取新闻详情失败'); // <-- 移除此行，避免重复提示
+				console.warn('获取新闻详情业务失败:', res.msg); // 可以保留日志
+				// 可以根据需要添加其他失败处理，比如重定向到错误页或列表页
 			}
-			news.value = res.data;
 		} catch (error) {
+			// 捕获真正的请求错误 (网络问题, CORS, request.js 拦截器抛出错误等)
 			console.error('Network or API error fetching news detail:', error);
-			ElMessage.error('网络错误或请求失败，请稍后再试'); // 增加网络错误提示
+			// request.js 已经在 rejection 时弹窗了，这里的 ElMessage 主要用于兜底
+			// 确保导入 ElMessage 才能使用
+			ElMessage.error('获取新闻详情失败，请稍后再试'); // <-- 这个用于网络或HTTP错误
 		}
 	});
 </script>
@@ -31,10 +38,22 @@
 	<div class="news-detail-container home-container">
 		<h1 class="title">{{ news.title }}</h1>
 		<div class="info">
-			<div class="publish-date">发布日期：{{ news.publishDate }}</div>
-			<div class="update-time">编辑时间：{{ news.updateTime }}</div>
+			<div class="publish-date" v-if="news.publishDate">发布日期：{{ news.publishDate }}</div>
+			<div
+				class="update-time"
+				v-if="news.updateTime"
+				:style="{ marginLeft: news.publishDate ? '20px' : '0' }"
+			>
+				编辑时间：{{ news.updateTime }}
+			</div>
 		</div>
-		<div class="content" v-html="news.content"></div>
+		<div class="content" v-if="news.content" v-html="news.content"></div>
+		<div
+			v-else-if="!news.id && !news.title && !news.content"
+			style="text-align: center; color: #999; margin-top: 50px"
+		>
+			正在加载新闻详情或新闻不存在...
+		</div>
 	</div>
 </template>
 
@@ -73,7 +92,7 @@
 		}
 
 		.update-time {
-			margin-left: 20px; // 编辑时间与发布日期之间留出间距
+			// margin-left: 20px; // 编辑时间与发布日期之间留出间距 - 通过 V-bind style 控制
 		}
 	}
 

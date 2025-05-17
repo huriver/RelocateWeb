@@ -46,7 +46,7 @@
                 AND create_time &lt;= #{createTimeEnd}
             </if>
         </where>
-        ORDER BY create_time DESC
+        ORDER BY id ASC
     </select>
 
 </mapper>

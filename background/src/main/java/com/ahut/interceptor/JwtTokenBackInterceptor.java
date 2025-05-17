@@ -8,6 +8,7 @@ import com.***REMOVED***.utils.RedisUtil;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -39,6 +40,14 @@ public class JwtTokenBackInterceptor implements HandlerInterceptor {
      * @throws Exception
      */
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // === 添加此处代码：如果请求方法是 OPTIONS，直接放行 ===
+        if (HttpMethod.OPTIONS.name().equals(request.getMethod())) {
+            log.info("放行 OPTIONS 请求: {}", request.getRequestURI());
+            return true; // 直接放行 OPTIONS 请求
+        }
+        // ==================================================
+
+
         //判断当前拦截到的是Controller的方法还是其他资源
         if (!(handler instanceof HandlerMethod)) {
             //当前拦截到的不是动态方法，直接放行

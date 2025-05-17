@@ -32,7 +32,7 @@
                 and is_banned = #{isBanned}
             </if>
         </where>
-        ORDER BY create_time DESC
+        ORDER BY id ASC
     </select>
 
 </mapper>

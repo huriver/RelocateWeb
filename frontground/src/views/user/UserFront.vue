@@ -2,6 +2,7 @@
 	import { queryNoticApi, queryNewsApi } from '@/api/common.js';
 	import { onMounted, ref } from 'vue';
 	import MoreCard from '@/components/user/component/MoreCard.vue';
+	import { ElMessage } from 'element-plus'; // 导入 ElMessage 用于错误提示
 
 	const noticForm = ref({
 		page: 1,
@@ -18,14 +19,15 @@
 				// 确保 res.data.records 即使为 undefined 也能被赋值为 []
 				noticData.value = res.data && res.data.records ? res.data.records : [];
 			} else {
-				// API 逻辑错误时，也确保数据为数组
-				console.error('Failed to fetch notic data:', res.msg || 'Unknown error');
-				noticData.value = [];
+				// API 逻辑错误时 (code !== 1)，request.js 已经弹窗提示了后端 msg
+				console.error('Failed to fetch notic data business error:', res.msg || 'Unknown error'); // 可以保留日志
+				noticData.value = []; // 清空数据
 			}
 		} catch (error) {
-			// 网络或意外错误时，确保数据为数组
+			// 捕获真正的请求错误 (网络或意外错误时)
 			console.error('Network or API error fetching notic data:', error);
-			noticData.value = [];
+			ElMessage.error('获取搬家须知失败，请稍后再试'); // <-- 添加通用错误提示
+			noticData.value = []; // 清空数据
 		}
 	};
 
@@ -44,14 +46,15 @@
 				// 确保 res.data.records 即使为 undefined 也能被赋值为 []
 				newsData.value = res.data && res.data.records ? res.data.records : [];
 			} else {
-				// API 逻辑错误时，也确保数据为数组
-				console.error('Failed to fetch news data:', res.msg || 'Unknown error');
-				newsData.value = [];
+				// API 逻辑错误时 (code !== 1)，request.js 已经弹窗提示了后端 msg
+				console.error('Failed to fetch news data business error:', res.msg || 'Unknown error'); // 可以保留日志
+				newsData.value = []; // 清空数据
 			}
 		} catch (error) {
-			// 网络或意外错误时，确保数据为数组
+			// 捕获真正的请求错误 (网络或意外错误时)
 			console.error('Network or API error fetching news data:', error);
-			newsData.value = [];
+			ElMessage.error('获取搬家新闻失败，请稍后再试'); // <-- 添加通用错误提示
+			newsData.value = []; // 清空数据
 		}
 	};
 
