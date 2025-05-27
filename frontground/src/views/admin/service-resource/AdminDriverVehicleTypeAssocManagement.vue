@@ -2,8 +2,7 @@
   <div class="admin-driver-truck-type-assoc-container">
     <h3>司机货车类型关联管理</h3>
 
-    <el-form :inline="true" :model="searchForm" class="search-form">
-      <div class="input-items-group evenly-distributed-group">
+    <el-form :model="searchForm" class="search-form">
         <el-form-item label="司机姓名">
           <el-input v-model="searchForm.driverName" placeholder="请输入司机姓名关键词" clearable></el-input>
         </el-form-item>
@@ -14,9 +13,8 @@
                        :value="item.id"></el-option>
           </el-select>
         </el-form-item>
-      </div>
 
-      <el-form-item class="button-group">
+      <el-form-item>
         <el-button type="primary" @click="handleSearch">查询</el-button>
         <el-button @click="resetSearchForm">重置</el-button>
       </el-form-item>
@@ -595,6 +593,10 @@
         :deep(.el-date-editor--daterange) {
           width: 240px; /* 日期范围选择器宽度 - 本页面不需要，但保留样式结构 */
         }
+      }
+
+      .el-form-item {
+        margin-bottom: 0;
       }
 
       // === 针对第一个分组的均匀分布样式 ===

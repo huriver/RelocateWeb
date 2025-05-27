@@ -229,8 +229,7 @@
   <div class="page-container">
     <h3>历史订单</h3>
 
-    <el-form :inline="true" :model="searchForm" class="search-form">
-      <div class="input-items-group">
+    <el-form :model="searchForm" class="search-form">
         <el-form-item label="订单号">
           <el-input v-model="searchForm.orderNumber" placeholder="请输入订单号" clearable
                     style="width: 180px;"></el-input>
@@ -254,9 +253,8 @@
                           start-placeholder="开始日期" end-placeholder="结束日期" value-format="YYYY-MM-DD"
                           :clearable="true" style="width: 240px;"></el-date-picker>
         </el-form-item>
-      </div>
 
-      <el-form-item class="button-group">
+      <el-form-item>
         <el-button type="primary" @click="handleSearch">查询</el-button>
         <el-button @click="resetSearchForm">重置</el-button>
       </el-form-item>
@@ -519,6 +517,10 @@
         :deep(.el-select) {
           width: 150px; /* 为下拉选择框设置宽度 */
         }
+      }
+
+      .el-form-item {
+        margin-bottom: 0;
       }
 
       .button-group {

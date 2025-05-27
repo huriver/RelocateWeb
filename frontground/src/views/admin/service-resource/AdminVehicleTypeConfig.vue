@@ -2,8 +2,7 @@
 	<div class="admin-vehicle-type-container">
 		<h3>车辆类型配置</h3>
 
-		<el-form :inline="true" :model="searchForm" class="search-form">
-			<div class="input-items-group evenly-distributed-group">
+		<el-form :model="searchForm" class="search-form">
 				<el-form-item label="类型名称">
 					<el-input
 						v-model="searchForm.typeName"
@@ -34,9 +33,7 @@
 						></el-input-number>
 					</div>
 				</el-form-item>
-			</div>
 
-			<div class="input-items-group">
 				<el-form-item label="创建日期">
 					<el-date-picker
 						v-model="searchForm.createTimeRange"
@@ -49,9 +46,8 @@
 						:default-time="[new Date(2000, 1, 1, 0, 0, 0), new Date(2000, 1, 1, 23, 59, 59)]"
 					></el-date-picker>
 				</el-form-item>
-			</div>
 
-			<el-form-item class="button-group">
+			<el-form-item>
 				<el-button type="primary" @click="handleSearch">查询</el-button>
 				<el-button @click="resetSearchForm">重置</el-button>
 				<el-button type="success" @click="handleAddVehicleType" class="add-button-separate"
@@ -738,6 +734,10 @@
 					width: 100%; /* Make standalone input-number fill container */
 				}
 			}
+
+      .el-form-item {
+        margin-bottom: 0;
+      }
 
 			// === 针对第一个分组的均匀分布样式 ===
 			.evenly-distributed-group {

@@ -135,24 +135,22 @@
     </div>
 
     <el-card class="filter-card mb-4" shadow="never">
-      <el-form :model="filterParams" class="demo-form-inline">
-        <el-row :gutter="20" align="middle">
-          <el-col :span="12">
-            <el-form-item label="显示前几名:">
-              <el-input-number v-model="filterParams.limit" :min="1" :max="50"
-                               controls-position="right">
-              </el-input-number>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="最低评价次数:">
-              <el-input-number v-model="filterParams.minRatingCount" :min="0"
-                               controls-position="right">
-              </el-input-number>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
+      <el-row :gutter="20" align="middle">
+        <el-col :span="12">
+          <div class="filter-item">
+            <label>显示前几名:</label>
+            <el-input-number v-model="filterParams.limit" :min="1" :max="50" controls-position="right">
+            </el-input-number>
+          </div>
+        </el-col>
+        <el-col :span="12">
+          <div class="filter-item">
+            <label>最低评价次数:</label>
+            <el-input-number v-model="filterParams.minRatingCount" :min="0" controls-position="right">
+            </el-input-number>
+          </div>
+        </el-col>
+      </el-row>
     </el-card>
 
     <el-row :gutter="20" class="mb-4">
@@ -247,63 +245,26 @@
     // 筛选卡片 - 复用代码二的 .filter-card 样式，并调整内边距使其更矮
     .filter-card {
       margin-bottom: 25px;
-      background-color: #fff;
-      // 修改上下内边距，使其更小
-      padding: 10px 20px; /* 上下10px，左右20px */
-      border-radius: 8px;
-      border: 1px solid #ebeef5;
-      transition: all 0.3s ease;
-      box-sizing: border-box;
-      box-shadow: none; // 确保 shadow="never" 生效
-
-      &:hover {
-        border-color: #409eff;
-        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-      }
-
-      // 调整 el-form-item 在 filter-card 内的样式以匹配 filter-item 布局
-      .el-form-item {
-        margin-bottom: 0; // 移除表单项底部默认间距，由 el-row 的 gutter 处理垂直间距
-        margin-right: 0; // 移除默认的右侧间距，由 el-col 的 gutter 处理水平间距
-
-        // 使用 Flexbox 使标签和内容水平对齐
-        display: flex;
-        align-items: center;
-        width: 100%; // 让 form item 占据其所在的 el-col 的全部宽度
-
-        // 标签样式 - 复用 distribution analysis filter-item label 样式
-        .el-form-item__label {
-          // 精确 targeting label 元素
-          margin-right: 15px; // 标签和输入框之间的间距
-          font-weight: bold; // 标签加粗
-          color: #555;
-          white-space: nowrap; // 防止标签换行
-          // 覆盖 Element Plus 默认的标签宽度和内边距
-          width: auto !important;
-          padding: 0 !important;
-          flex-shrink: 0; // 防止标签在空间不足时收缩
-        }
-
-        // 内容区域样式 (包含输入框/选择器等)
-        .el-form-item__content {
-          display: flex; // 让内容区域内部的元素（如输入框）可以进一步布局
-          flex-grow: 1; // 让内容区域填充剩余空间
-          // 覆盖 Element Plus 默认的左侧间距
-          margin-left: 0 !important;
-          align-items: center; // 垂直居中文本输入框/选择器等
-
-          // 让输入框填满可用空间
-          .el-input-number {
-            width: 100%; // 让输入框占据 el-form-item__content 的全部宽度
+      
+        .filter-item {
+          display: flex;
+          align-items: center;
+          justify-content: flex-start;
+          width: 100%; // 主筛选区域的 filter-item 宽度占满
+      
+          label {
+            margin-right: 15px;
+            font-weight: bold;
+            color: #555;
+            white-space: nowrap;
           }
         }
-      }
     }
 
     // 通用 el-card 样式 - 复用 distribution analysis 样式 (确保覆盖 filter-card 的 box-shadow: none)
     .el-card {
       background-color: #fff;
-      padding: 20px; // 增加内边距
+      // padding: 20px; // 增加内边距
       border-radius: 8-px; // 圆角
       border: 1px solid #ebeef5;
       transition: all 0.3s ease;
@@ -319,9 +280,9 @@
       font-size: 16px;
       font-weight: bold;
       color: #333;
-      padding-bottom: 10px; // 增加头部和表格之间的间距
-      border-bottom: 1px solid #eee; // 添加分隔线
-      margin-bottom: 15px; // 添加分隔线和表格之间的间距
+      // padding-bottom: 10px; // 增加头部和表格之间的间距
+      // border-bottom: 1px solid #eee; // 添加分隔线
+      // margin-bottom: 15px; // 添加分隔线和表格之间的间距
     }
 
     // 表格样式 - 保持 DataReportServiceQuality.vue 原有样式

@@ -161,7 +161,7 @@
     justify-content: center;
     align-items: flex-start; /* 调整垂直对齐方式 */
     padding: 20px;
-    background-color: #f5f7fa; /* 轻微的背景色 */
+    background-color: #fff; /* 轻微的背景色 */
     min-height: calc(
       100vh - var(--el-header-height, 60px) - var(--el-footer-height, 0px)
     ); /* 撑满剩余高度 */

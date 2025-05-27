@@ -2,8 +2,7 @@
 	<div class="admin-consumer-list-container">
 		<h3>消费者管理</h3>
 
-		<el-form :inline="true" :model="searchForm" class="search-form">
-			<div class="input-items-group">
+		<el-form :model="searchForm" class="search-form">
 				<el-form-item label="用户名">
 					<el-input v-model="searchForm.username" placeholder="请输入用户名" clearable></el-input>
 				</el-form-item>
@@ -19,7 +18,6 @@
 						<el-option label="已封禁" :value="true"></el-option>
 					</el-select>
 				</el-form-item>
-			</div>
 
 			<el-form-item label="注册时间">
 				<el-date-picker
@@ -453,9 +451,8 @@
 
 			// === 按钮组 (.button-group) 的布局样式 ===
 			.button-group {
-				margin-right: 0 !important; // 移除右侧外边距，确保靠右
-				margin-left: auto; // 推到最右侧
-				// margin-bottom 由上面的 > .el-form-item 控制
+        margin-left: 0 !important;
+        margin-right: auto; // 将按钮组推到最左边
 
 				.el-button {
 					margin-left: 10px; // 按钮之间的间距

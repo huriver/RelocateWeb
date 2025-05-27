@@ -2,7 +2,7 @@
 	<div class="admin-admin-list-container">
 		<h3>管理员管理</h3>
 
-		<el-form :inline="true" :model="searchForm" class="search-form">
+		<el-form :model="searchForm" class="search-form">
 			<el-form-item label="用户名">
 				<el-input v-model="searchForm.username" placeholder="请输入用户名" clearable></el-input>
 			</el-form-item>
@@ -16,7 +16,7 @@
 				</el-select>
 			</el-form-item>
 
-			<el-form-item class="button-group">
+			<el-form-item>
 				<el-button type="primary" @click="handleSearch">查询</el-button>
 				<el-button @click="resetSearchForm">重置</el-button>
 				<el-button type="success" @click="handleAddAdmin" class="add-button-separate"
@@ -554,39 +554,6 @@
 				:deep(.el-select__wrapper),
 				:deep(.el-input-number__input-wrap),
 				:deep(.el-date-editor .el-input__wrapper) {
-				}
-			}
-
-			.button-group {
-				margin-right: 0 !important;
-				margin-left: auto;
-
-				.el-button {
-					margin-left: 10px;
-					&:first-child {
-						margin-left: 0;
-					}
-				}
-
-				.add-button-separate {
-					margin-left: 30px;
-				}
-
-				.el-button {
-					height: 32px;
-					border-radius: 4px;
-				}
-				.el-button--primary {
-					background-color: #1890ff !important;
-					border-color: #1890ff !important;
-					color: #fff !important;
-					font-weight: bold;
-				}
-
-				.el-button--success {
-					background-color: #67c23a !important;
-					border-color: #67c23a !important;
-					color: #fff !important;
 				}
 			}
 		}

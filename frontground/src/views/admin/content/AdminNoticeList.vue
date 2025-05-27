@@ -2,8 +2,7 @@
 	<div class="admin-notice-list-container">
 		<h3>搬家须知管理</h3>
 
-		<el-form :inline="true" :model="searchForm" class="search-form">
-			<div class="input-items-group evenly-distributed-group">
+		<el-form :model="searchForm" class="search-form">
 				<el-form-item label="标题">
 					<el-input v-model="searchForm.title" placeholder="请输入标题关键词" clearable></el-input>
 				</el-form-item>
@@ -23,9 +22,7 @@
 						<el-option label="未发布" :value="false"></el-option>
 					</el-select>
 				</el-form-item>
-			</div>
 
-			<div class="input-items-group">
 				<el-form-item label="发布日期">
 					<el-date-picker
 						v-model="searchForm.publishDateRange"
@@ -37,9 +34,8 @@
 						:clearable="true"
 					></el-date-picker>
 				</el-form-item>
-			</div>
 
-			<el-form-item class="button-group">
+			<el-form-item>
 				<el-button type="primary" @click="handleSearch">查询</el-button>
 				<el-button @click="resetSearchForm">重置</el-button>
 				<el-button type="success" @click="handleAddNotice" class="add-button-separate"
@@ -641,6 +637,10 @@
 				}
 			}
 
+      .el-form-item {
+        margin-bottom: 0;
+      }
+
 			.evenly-distributed-group {
 				.el-form-item {
 					flex-grow: 1;
@@ -657,40 +657,6 @@
 						width: 100% !important;
 						min-width: auto;
 					}
-				}
-			}
-
-			.button-group {
-				margin-left: auto;
-				margin-right: 0 !important;
-				flex-shrink: 0;
-
-				.el-button {
-					margin-left: 10px;
-					&:first-child {
-						margin-left: 0;
-					}
-				}
-
-				.add-button-separate {
-					margin-left: 30px;
-				}
-
-				.el-button {
-					height: 32px;
-					border-radius: 4px;
-				}
-				.el-button--primary {
-					background-color: #1890ff !important;
-					border-color: #1890ff !important;
-					color: #fff !important;
-					font-weight: bold;
-				}
-
-				.el-button--success {
-					background-color: #67c23a !important;
-					border-color: #67c23a !important;
-					color: #fff !important;
 				}
 			}
 		}

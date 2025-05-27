@@ -2,8 +2,7 @@
   <div class="admin-mover-list-container">
     <h3>搬家工人管理</h3>
 
-    <el-form :inline="true" :model="searchForm" class="search-form">
-      <div class="input-items-group">
+    <el-form label-position="top" :model="searchForm" class="search-form">
         <el-form-item label="用户名">
           <el-input v-model="searchForm.username" placeholder="请输入用户名" clearable></el-input>
         </el-form-item>
@@ -19,9 +18,7 @@
             <el-option label="已封禁" :value="true"></el-option>
           </el-select>
         </el-form-item>
-      </div>
 
-      <div class="input-items-group range-filters-group">
         <el-form-item label="平均评分">
           <div class="range-inputs">
             <el-input-number v-model="searchForm.minAverageRating" :min="1" :max="5" :precision="1"
@@ -45,7 +42,6 @@
                              placeholder="最高" clearable style="width: 100px"></el-input-number>
           </div>
         </el-form-item>
-      </div>
 
       <el-form-item label="注册时间">
         <el-date-picker v-model="searchForm.createTimeRange" type="datetimerange"
@@ -588,39 +584,7 @@
       }
 
       .button-group {
-        margin-right: 0 !important;
-        margin-left: auto; // 将按钮组推到最右边
-
-        // 默认按钮间距（应用于查询和重置之间）
-        .el-button {
-          margin-left: 10px;
-          &:first-child {
-            margin-left: 0;
-          }
-        }
-
-        // === 新增司机按钮的特定样式，增加左外边距 ===
-        .add-button-separate {
-          margin-left: 30px; // 设置一个更大的左外边距，例如 30px
-        }
-
-        .el-button {
-          height: 32px;
-          border-radius: 4px;
-        }
-        .el-button--primary {
-          background-color: #1890ff !important;
-          border-color: #1890ff !important;
-          color: #fff !important;
-          font-weight: bold;
-        }
-
-        // 新增按钮的绿色风格
-        .el-button--success {
-          background-color: #67c23a !important;
-          border-color: #67c23a !important;
-          color: #fff !important;
-        }
+        margin-top: 28px;
       }
     }
     .el-table {

@@ -2,8 +2,7 @@
   <div class="admin-service-item-setting-container">
     <h3>服务项设置</h3>
 
-    <el-form :inline="true" :model="searchForm" class="search-form">
-      <div class="input-items-group evenly-distributed-group">
+    <el-form :model="searchForm" class="search-form">
         <el-form-item label="服务项名称">
           <el-input v-model="searchForm.serviceName" placeholder="请输入服务项名称" clearable></el-input>
         </el-form-item>
@@ -19,9 +18,7 @@
                        :value="truck.id"></el-option>
           </el-select>
         </el-form-item>
-      </div>
 
-      <div class="input-items-group evenly-distributed-group">
         <el-form-item label="平均评分">
           <div class="rating-range-input">
             <el-input-number v-model="searchForm.minAverageRating" :min="1" :max="5" :precision="1"
@@ -50,15 +47,12 @@
             <el-option label="停售" :value="0"></el-option>
           </el-select>
         </el-form-item>
-      </div>
 
-      <div class="input-items-group">
         <el-form-item label="创建时间">
           <el-date-picker v-model="searchForm.createTimeRange" type="datetimerange"
                           range-separator="至" start-placeholder="开始时间" end-placeholder="结束时间"
                           value-format="YYYY-MM-DD HH:mm:ss" :clearable="true"></el-date-picker>
         </el-form-item>
-      </div>
 
       <el-form-item class="button-group">
         <el-button type="primary" @click="handleSearch">查询</el-button>
@@ -677,8 +671,10 @@
       border-radius: 6px;
 
       display: flex;
-      flex-direction: column; // 表单项垂直排列
-      gap: 10px; /* 垂直间距 */
+      flex-wrap: wrap; // 允许换行
+      align-items: center;
+      gap: 10px 20px;
+      /* 行和列之间的间距 */
 
       .input-items-group {
         display: flex;
@@ -780,6 +776,10 @@
         }
       }
 
+      .el-form-item {
+        margin-bottom: 0;
+      }
+
       // === 针对第一个分组的均匀分布样式 (如果需要，此处可以调整) ===
       // 当前修改为 flex-direction: column，evenly-distributed-group 的效果可能需要重新思考或调整
       // 比如让每个 input-items-group 内部的 form-item 均匀分布
@@ -806,42 +806,7 @@
       }
 
       .button-group {
-        // margin-left: auto; /* 将按钮组推到最右边 */
-        margin-right: 0 !important; /* 确保没有右侧 margin */
-        flex-shrink: 0; // 防止按钮组缩小
-        width: 100%; // 确保按钮组占据一行
-        display: flex; // 使用 flex 布局
-        justify-content: flex-end; // 右对齐按钮
-
-        .el-button {
-          margin-left: 10px; // 按钮之间的水平间距
-          &:first-child {
-            margin-left: 0;
-          }
-        }
-
-        // === 新增按钮的特定样式，增加左外边距 ===
-        .add-button-separate {
-          margin-left: 30px; // 设置一个更大的左外边距，例如 30px
-        }
-
-        .el-button {
-          height: 32px;
-          border-radius: 4px;
-        }
-        .el-button--primary {
-          background-color: #1890ff !important;
-          border-color: #1890ff !important;
-          color: #fff !important;
-          font-weight: bold;
-        }
-
-        // 新增按钮的绿色风格
-        .el-button--success {
-          background-color: #67c23a !important;
-          border-color: #67c23a !important;
-          color: #fff !important;
-        }
+       
       }
     }
     .el-table {

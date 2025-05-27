@@ -2,8 +2,7 @@
   <div class="admin-vehicle-management-container">
     <h3>车辆管理</h3>
 
-    <el-form :inline="true" :model="searchForm" class="search-form">
-      <div class="input-items-group evenly-distributed-group">
+    <el-form :model="searchForm" class="search-form">
         <el-form-item label="车牌号">
           <el-input v-model="searchForm.licensePlateNumber" placeholder="请输入车牌号关键词"
                     clearable></el-input>
@@ -20,18 +19,15 @@
         <el-form-item label="车辆品牌">
           <el-input v-model="searchForm.vehicleBrand" placeholder="请输入车辆品牌关键词" clearable></el-input>
         </el-form-item>
-      </div>
 
-      <div class="input-items-group">
         <el-form-item label="创建日期">
           <el-date-picker v-model="searchForm.createTimeRange" type="daterange" range-separator="至"
                           start-placeholder="开始日期" end-placeholder="结束日期"
                           value-format="YYYY-MM-DD HH:mm:ss" :clearable="true"
                           :default-time="[new Date(2000, 1, 1, 0, 0, 0), new Date(2000, 1, 1, 23, 59, 59)]"></el-date-picker>
         </el-form-item>
-      </div>
 
-      <el-form-item class="button-group">
+      <el-form-item>
         <el-button type="primary" @click="handleSearch">查询</el-button>
         <el-button @click="resetSearchForm">重置</el-button>
         <el-button type="success" @click="handleAddVehicle"
@@ -674,6 +670,10 @@
         .el-dialog :deep(.el-input-number) {
           width: 100%; /* Make standalone input-number fill container in dialog */
         }
+      }
+
+      .el-form-item {
+        margin-bottom: 0;
       }
 
       // === 针对第一个分组的均匀分布样式 ===

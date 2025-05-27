@@ -2,8 +2,7 @@
 	<div class="admin-news-list-container">
 		<h3>搬家新闻管理</h3>
 
-		<el-form :inline="true" :model="searchForm" class="search-form">
-			<div class="input-items-group evenly-distributed-group">
+		<el-form :model="searchForm" class="search-form">
 				<el-form-item label="标题">
 					<el-input v-model="searchForm.title" placeholder="请输入标题关键词" clearable></el-input>
 				</el-form-item>
@@ -20,9 +19,7 @@
 						<el-option label="未发布" :value="false"></el-option>
 					</el-select>
 				</el-form-item>
-			</div>
 
-			<div class="input-items-group">
 				<el-form-item label="发布日期">
 					<el-date-picker
 						v-model="searchForm.publishDateRange"
@@ -34,9 +31,8 @@
 						:clearable="true"
 					></el-date-picker>
 				</el-form-item>
-			</div>
 
-			<el-form-item class="button-group">
+			<el-form-item>
 				<el-button type="primary" @click="handleSearch">查询</el-button>
 				<el-button @click="resetSearchForm">重置</el-button>
 				<el-button type="success" @click="handleAddNews" class="add-button-separate"
@@ -663,6 +659,10 @@
 					width: auto; /* 数字输入框宽度由内容或父级flex决定 */
 				}
 			}
+
+      .el-form-item {
+        margin-bottom: 0;
+      }
 
 			// === 针对第一个分组的均匀分布样式 ===
 			.evenly-distributed-group {

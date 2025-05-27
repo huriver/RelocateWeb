@@ -1,319 +1,186 @@
 <template>
-	<div class="admin-order-list-container">
-		<h3>订单列表</h3>
+  <div class="admin-order-list-container">
+    <h3>订单列表</h3>
 
-		<el-form :inline="true" :model="searchForm" class="search-form">
-			<div class="input-items-group">
-				<el-form-item label="订单号">
-					<el-input
-						v-model="searchForm.orderNumber"
-						placeholder="请输入订单号"
-						clearable
-					></el-input>
-				</el-form-item>
-				<el-form-item label="订单状态">
-					<el-select v-model="searchForm.orderStatus" placeholder="请选择状态" clearable>
-						<el-option
-							v-for="status in orderStatusOptions"
-							:key="status.code"
-							:label="status.description"
-							:value="status.code"
-						></el-option>
-					</el-select>
-				</el-form-item>
-				<el-form-item label="支付状态">
-					<el-select v-model="searchForm.isPaid" placeholder="请选择支付状态" clearable>
-						<el-option
-							v-for="status in paymentStatusOptions"
-							:key="status.code"
-							:label="status.description"
-							:value="status.code"
-						></el-option>
-					</el-select>
-				</el-form-item>
-			</div>
+    <el-form label-position="top" :model="searchForm" class="search-form">
+      <el-form-item label="订单号">
+        <el-input v-model="searchForm.orderNumber" placeholder="请输入订单号" clearable></el-input>
+      </el-form-item>
+      <el-form-item label="订单状态">
+        <el-select v-model="searchForm.orderStatus" placeholder="请选择状态" clearable>
+          <el-option v-for="status in orderStatusOptions" :key="status.code" :label="status.description"
+            :value="status.code"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="支付状态">
+        <el-select v-model="searchForm.isPaid" placeholder="请选择支付状态" clearable>
+          <el-option v-for="status in paymentStatusOptions" :key="status.code" :label="status.description"
+            :value="status.code"></el-option>
+        </el-select>
+      </el-form-item>
 
-			<div class="input-items-group">
-				<el-form-item label="客户信息">
-					<el-input
-						v-model="searchForm.customerKeyword"
-						placeholder="姓名/手机号"
-						clearable
-					></el-input>
-				</el-form-item>
-				<el-form-item label="司机姓名">
-					<el-input
-						v-model="searchForm.driverName"
-						placeholder="请输入司机姓名"
-						clearable
-					></el-input>
-				</el-form-item>
-				<el-form-item label="服务项名称">
-					<el-input
-						v-model="searchForm.serviceItemName"
-						placeholder="请输入服务项名称"
-						clearable
-					></el-input>
-				</el-form-item>
-			</div>
+      <el-form-item label="客户信息">
+        <el-input v-model="searchForm.customerKeyword" placeholder="姓名/手机号" clearable></el-input>
+      </el-form-item>
+      <el-form-item label="司机姓名">
+        <el-input v-model="searchForm.driverName" placeholder="请输入司机姓名" clearable></el-input>
+      </el-form-item>
+      <el-form-item label="服务项名称">
+        <el-input v-model="searchForm.serviceItemName" placeholder="请输入服务项名称" clearable></el-input>
+      </el-form-item>
 
-			<div class="input-items-group">
-				<el-form-item label="服务类别">
-					<el-select v-model="searchForm.categoryId" placeholder="请选择服务类别" clearable>
-						<el-option
-							v-for="category in serviceCategoryOptions"
-							:key="category.id"
-							:label="category.typeName"
-							:value="category.id"
-						></el-option>
-					</el-select>
-				</el-form-item>
-				<el-form-item label="货车类型">
-					<el-select v-model="searchForm.truckTypeId" placeholder="请选择货车类型" clearable>
-						<el-option
-							v-for="truckType in truckTypeOptions"
-							:key="truckType.id"
-							:label="truckType.typeName"
-							:value="truckType.id"
-						></el-option>
-					</el-select>
-				</el-form-item>
-			</div>
+      <el-form-item label="服务类别">
+        <el-select v-model="searchForm.categoryId" placeholder="请选择服务类别" clearable>
+          <el-option v-for="category in serviceCategoryOptions" :key="category.id" :label="category.typeName"
+            :value="category.id"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="货车类型">
+        <el-select v-model="searchForm.truckTypeId" placeholder="请选择货车类型" clearable>
+          <el-option v-for="truckType in truckTypeOptions" :key="truckType.id" :label="truckType.typeName"
+            :value="truckType.id"></el-option>
+        </el-select>
+      </el-form-item>
 
-			<el-form-item label="创建时间">
-				<el-date-picker
-					v-model="searchForm.createTimeRange"
-					type="datetimerange"
-					range-separator="至"
-					start-placeholder="开始时间"
-					end-placeholder="结束时间"
-					value-format="YYYY-MM-DD HH:mm:ss"
-				></el-date-picker>
-			</el-form-item>
+      <el-form-item label="创建时间">
+        <el-date-picker v-model="searchForm.createTimeRange" type="datetimerange" range-separator="至"
+          start-placeholder="开始时间" end-placeholder="结束时间" value-format="YYYY-MM-DD HH:mm:ss"></el-date-picker>
+      </el-form-item>
 
-			<el-form-item label="预约时间">
-				<el-date-picker
-					v-model="searchForm.reservationTimeRange"
-					type="datetimerange"
-					range-separator="至"
-					start-placeholder="开始时间"
-					end-placeholder="结束时间"
-					value-format="YYYY-MM-DD HH:mm:ss"
-				></el-date-picker>
-			</el-form-item>
+      <el-form-item label="预约时间">
+        <el-date-picker v-model="searchForm.reservationTimeRange" type="datetimerange" range-separator="至"
+          start-placeholder="开始时间" end-placeholder="结束时间" value-format="YYYY-MM-DD HH:mm:ss"></el-date-picker>
+      </el-form-item>
 
-			<el-form-item class="button-group">
-				<el-button type="primary" @click="handleSearch">查询</el-button>
-				<el-button @click="resetSearchForm">重置</el-button>
-			</el-form-item>
-		</el-form>
+      <el-form-item class="button-group">
+        <el-button type="primary" @click="handleSearch">查询</el-button>
+        <el-button @click="resetSearchForm">重置</el-button>
+      </el-form-item>
+    </el-form>
 
-		<el-table :data="tableData" v-loading="loading" border stripe style="width: 100%">
-			<el-table-column prop="id" label="ID" align="center"></el-table-column>
-			<el-table-column
-				prop="orderNumber"
-				label="订单号"
-				align="center"
-				width="200"
-			></el-table-column>
-			<el-table-column prop="orderStatusDescription" label="订单状态" align="center" width="110">
-				<template #default="scope">
-					<el-tag :type="getOrderStatusTagType(scope.row.orderStatus)">
-						{{ scope.row.orderStatusDescription }}
-					</el-tag>
-				</template>
-			</el-table-column>
-			<el-table-column prop="isPaidDescription" label="支付状态" align="center" width="110">
-				<template #default="scope">
-					<el-tag :type="getPaymentStatusTagType(scope.row.isPaid)">
-						{{ scope.row.isPaidDescription }}
-					</el-tag>
-				</template>
-			</el-table-column>
-			<el-table-column
-				prop="customerName"
-				label="客户姓名"
-				align="center"
-				width="110"
-			></el-table-column>
-			<el-table-column
-				prop="customerPhone"
-				label="客户手机号"
-				align="center"
-				width="120"
-			></el-table-column>
-			<el-table-column
-				prop="serviceName"
-				label="服务名称"
-				align="center"
-				width="200"
-			></el-table-column>
-			<el-table-column
-				prop="truckTypeName"
-				label="车型"
-				align="center"
-				width="120"
-			></el-table-column>
-			<el-table-column
-				prop="reservationTime"
-				label="预约时间"
-				align="center"
-				width="180"
-			></el-table-column>
-			<el-table-column
-				prop="movingOrigin"
-				label="出发地"
-				align="center"
-				min-width="150"
-			></el-table-column>
-			<el-table-column
-				prop="movingDestination"
-				label="目的地"
-				align="center"
-				min-width="150"
-			></el-table-column>
-			<el-table-column
-				prop="movingPrice"
-				label="订单金额"
-				align="center"
-				width="110"
-			></el-table-column>
-			<el-table-column
-				prop="driverName"
-				label="司机姓名"
-				align="center"
-				width="110"
-			></el-table-column>
-			<el-table-column
-				prop="vehiclePlateNumber"
-				label="车牌号"
-				align="center"
-				width="110"
-			></el-table-column>
-			<el-table-column
-				prop="createTime"
-				label="创建时间"
-				align="center"
-				width="180"
-			></el-table-column>
-			<el-table-column label="操作" width="350" align="center" fixed="right">
-				<template #default="scope">
-					<el-button size="small" @click="showDetails(scope.row)" class="detail-button"
-						>详情</el-button
-					>
-					<el-button
-						size="small"
-						type="danger"
-						style="margin-left: 20px"
-						@click="handleCancelOrder(scope.row)"
-						:disabled="scope.row.orderStatus === 4 || scope.row.orderStatus === 5"
-					>
-						取消订单
-					</el-button>
-					<el-button
-						size="small"
-						type="success"
-						style="margin-left: 10px"
-						@click="handleForceComplete(scope.row)"
-						:disabled="scope.row.orderStatus !== 3"
-						>强制完成</el-button
-					>
-				</template>
-			</el-table-column>
-		</el-table>
+    <el-table :data="tableData" v-loading="loading" border stripe style="width: 100%">
+      <el-table-column prop="id" label="ID" align="center"></el-table-column>
+      <el-table-column prop="orderNumber" label="订单号" align="center" width="200"></el-table-column>
+      <el-table-column prop="orderStatusDescription" label="订单状态" align="center" width="110">
+        <template #default="scope">
+          <el-tag :type="getOrderStatusTagType(scope.row.orderStatus)">
+            {{ scope.row.orderStatusDescription }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="isPaidDescription" label="支付状态" align="center" width="110">
+        <template #default="scope">
+          <el-tag :type="getPaymentStatusTagType(scope.row.isPaid)">
+            {{ scope.row.isPaidDescription }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="customerName" label="客户姓名" align="center" width="110"></el-table-column>
+      <el-table-column prop="customerPhone" label="客户手机号" align="center" width="120"></el-table-column>
+      <el-table-column prop="serviceName" label="服务名称" align="center" width="200"></el-table-column>
+      <el-table-column prop="truckTypeName" label="车型" align="center" width="120"></el-table-column>
+      <el-table-column prop="reservationTime" label="预约时间" align="center" width="180"></el-table-column>
+      <el-table-column prop="movingOrigin" label="出发地" align="center" min-width="150"></el-table-column>
+      <el-table-column prop="movingDestination" label="目的地" align="center" min-width="150"></el-table-column>
+      <el-table-column prop="movingPrice" label="订单金额" align="center" width="110"></el-table-column>
+      <el-table-column prop="driverName" label="司机姓名" align="center" width="110"></el-table-column>
+      <el-table-column prop="vehiclePlateNumber" label="车牌号" align="center" width="110"></el-table-column>
+      <el-table-column prop="createTime" label="创建时间" align="center" width="180"></el-table-column>
+      <el-table-column label="操作" width="350" align="center" fixed="right">
+        <template #default="scope">
+          <el-button size="small" @click="showDetails(scope.row)" class="detail-button">详情</el-button>
+          <el-button size="small" type="danger" style="margin-left: 20px" @click="handleCancelOrder(scope.row)"
+            :disabled="scope.row.orderStatus === 4 || scope.row.orderStatus === 5">
+            取消订单
+          </el-button>
+          <el-button size="small" type="success" style="margin-left: 10px" @click="handleForceComplete(scope.row)"
+            :disabled="scope.row.orderStatus !== 3">强制完成</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
 
-		<el-pagination
-			@size-change="handleSizeChange"
-			@current-change="handleCurrentChange"
-			:current-page="pagination.page"
-			:page-sizes="[10, 20, 50, 100]"
-			:page-size="pagination.pageSize"
-			layout="total, sizes, prev, pager, next, jumper"
-			:total="pagination.total"
-			background
-			class="pagination"
-		></el-pagination>
+    <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pagination.page"
+      :page-sizes="[10, 20, 50, 100]" :page-size="pagination.pageSize" layout="total, sizes, prev, pager, next, jumper"
+      :total="pagination.total" background class="pagination"></el-pagination>
 
-		<el-dialog v-model="dialogVisible" title="订单详情" width="600px">
-			<el-form label-width="120px" v-if="currentRowDetails">
-				<el-form-item label="订单ID">{{ currentRowDetails.id }}</el-form-item>
-				<el-form-item label="订单号">{{ currentRowDetails.orderNumber }}</el-form-item>
-				<el-form-item label="订单状态">
-					<el-tag :type="getOrderStatusTagType(currentRowDetails.orderStatus)">
-						{{ currentRowDetails.orderStatusDescription }}
-					</el-tag>
-				</el-form-item>
-				<el-form-item label="是否已评价">
-					<el-tag :type="currentRowDetails.isReviewed ? 'success' : 'info'">
-						{{ currentRowDetails.isReviewed ? '是' : '否' }}
-					</el-tag>
-				</el-form-item>
-				<el-form-item label="客户姓名">{{ currentRowDetails.customerName }}</el-form-item>
-				<el-form-item label="客户手机号">{{ currentRowDetails.customerPhone }}</el-form-item>
-				<el-form-item label="服务类别">{{
-					currentRowDetails.serviceCategoryName || 'N/A'
-				}}</el-form-item>
-				<el-form-item label="服务项目">{{ currentRowDetails.serviceName }}</el-form-item>
-				<el-form-item label="预约时间">{{ currentRowDetails.reservationTime }}</el-form-item>
-				<el-form-item label="开始时间">{{
-					currentRowDetails.movingStartTime || '未开始'
-				}}</el-form-item>
-				<el-form-item label="结束时间">{{
-					currentRowDetails.movingEndTime || '未结束'
-				}}</el-form-item>
-				<el-form-item label="出发地">{{ currentRowDetails.movingOrigin }}</el-form-item>
-				<el-form-item label="目的地">{{ currentRowDetails.movingDestination }}</el-form-item>
-				<el-form-item label="司机姓名">{{ currentRowDetails.driverName || '待分配' }}</el-form-item>
-				<el-form-item label="司机手机号">{{
-					currentRowDetails.driverPhone || '待分配'
-				}}</el-form-item>
-				<el-form-item label="车辆类型">{{ currentRowDetails.truckTypeName }}</el-form-item>
-				<el-form-item label="车辆牌号">{{
-					currentRowDetails.vehiclePlateNumber || '待分配'
-				}}</el-form-item>
-				<el-form-item label="搬运工数量">{{ currentRowDetails.numberOfHelpers }}</el-form-item>
-				<el-form-item label="搬运工人">
-					<span v-if="currentRowDetails.moverList && currentRowDetails.moverList.length > 0">
-						<span v-for="(mover, index) in currentRowDetails.moverList" :key="mover.id">
-							{{ mover.name }} ({{ mover.phone }}){{
-								index < currentRowDetails.moverList.length - 1 ? ', ' : ''
-							}}
-						</span>
-					</span>
-					<span v-else>待分配</span>
-				</el-form-item>
-				<el-form-item label="订单金额">{{ currentRowDetails.movingPrice }}</el-form-item>
-				<el-form-item label="支付状态">
-					<el-tag :type="getPaymentStatusTagType(currentRowDetails.isPaid)">
-						{{ currentRowDetails.isPaidDescription }}
-					</el-tag>
-				</el-form-item>
-				<el-form-item label="支付时间">{{
-					currentRowDetails.paymentTime || '未支付'
-				}}</el-form-item>
-				<el-form-item label="支付方式">{{
-					currentRowDetails.payMethodDescription || '未支付'
-				}}</el-form-item>
-				<el-form-item label="里程费用">{{ currentRowDetails.mileageCost }}</el-form-item>
-				<el-form-item label="搬运工费用">{{ currentRowDetails.helperCost }}</el-form-item>
-				<el-form-item label="价格系数">{{
-					currentRowDetails.categoryPriceMultiplier
-				}}</el-form-item>
-				<el-form-item label="备注">{{ currentRowDetails.notes || '无' }}</el-form-item>
-				<el-form-item label="创建时间">{{ currentRowDetails.createTime }}</el-form-item>
-				<el-form-item label="更新时间">{{ currentRowDetails.updateTime }}</el-form-item>
-				<el-form-item label="取消原因">{{ currentRowDetails.cancelReason || '无' }}</el-form-item>
-				<el-form-item label="取消时间">{{ currentRowDetails.cancelTime || '未取消' }}</el-form-item>
-			</el-form>
-			<div v-else>正在加载订单详情...</div>
+    <el-dialog v-model="dialogVisible" title="订单详情" width="600px">
+      <el-form label-width="120px" v-if="currentRowDetails">
+        <el-form-item label="订单ID">{{ currentRowDetails.id }}</el-form-item>
+        <el-form-item label="订单号">{{ currentRowDetails.orderNumber }}</el-form-item>
+        <el-form-item label="订单状态">
+          <el-tag :type="getOrderStatusTagType(currentRowDetails.orderStatus)">
+            {{ currentRowDetails.orderStatusDescription }}
+          </el-tag>
+        </el-form-item>
+        <el-form-item label="是否已评价">
+          <el-tag :type="currentRowDetails.isReviewed ? 'success' : 'info'">
+            {{ currentRowDetails.isReviewed ? '是' : '否' }}
+          </el-tag>
+        </el-form-item>
+        <el-form-item label="客户姓名">{{ currentRowDetails.customerName }}</el-form-item>
+        <el-form-item label="客户手机号">{{ currentRowDetails.customerPhone }}</el-form-item>
+        <el-form-item label="服务类别">{{
+          currentRowDetails.serviceCategoryName || 'N/A'
+          }}</el-form-item>
+        <el-form-item label="服务项目">{{ currentRowDetails.serviceName }}</el-form-item>
+        <el-form-item label="预约时间">{{ currentRowDetails.reservationTime }}</el-form-item>
+        <el-form-item label="开始时间">{{
+          currentRowDetails.movingStartTime || '未开始'
+          }}</el-form-item>
+        <el-form-item label="结束时间">{{
+          currentRowDetails.movingEndTime || '未结束'
+          }}</el-form-item>
+        <el-form-item label="出发地">{{ currentRowDetails.movingOrigin }}</el-form-item>
+        <el-form-item label="目的地">{{ currentRowDetails.movingDestination }}</el-form-item>
+        <el-form-item label="司机姓名">{{ currentRowDetails.driverName || '待分配' }}</el-form-item>
+        <el-form-item label="司机手机号">{{
+          currentRowDetails.driverPhone || '待分配'
+          }}</el-form-item>
+        <el-form-item label="车辆类型">{{ currentRowDetails.truckTypeName }}</el-form-item>
+        <el-form-item label="车辆牌号">{{
+          currentRowDetails.vehiclePlateNumber || '待分配'
+          }}</el-form-item>
+        <el-form-item label="搬运工数量">{{ currentRowDetails.numberOfHelpers }}</el-form-item>
+        <el-form-item label="搬运工人">
+          <span v-if="currentRowDetails.moverList && currentRowDetails.moverList.length > 0">
+            <span v-for="(mover, index) in currentRowDetails.moverList" :key="mover.id">
+              {{ mover.name }} ({{ mover.phone }}){{
+              index < currentRowDetails.moverList.length - 1 ? ', ' : '' }} </span>
+            </span>
+            <span v-else>待分配</span>
+        </el-form-item>
+        <el-form-item label="订单金额">{{ currentRowDetails.movingPrice }}</el-form-item>
+        <el-form-item label="支付状态">
+          <el-tag :type="getPaymentStatusTagType(currentRowDetails.isPaid)">
+            {{ currentRowDetails.isPaidDescription }}
+          </el-tag>
+        </el-form-item>
+        <el-form-item label="支付时间">{{
+          currentRowDetails.paymentTime || '未支付'
+          }}</el-form-item>
+        <el-form-item label="支付方式">{{
+          currentRowDetails.payMethodDescription || '未支付'
+          }}</el-form-item>
+        <el-form-item label="里程费用">{{ currentRowDetails.mileageCost }}</el-form-item>
+        <el-form-item label="搬运工费用">{{ currentRowDetails.helperCost }}</el-form-item>
+        <el-form-item label="价格系数">{{
+          currentRowDetails.categoryPriceMultiplier
+          }}</el-form-item>
+        <el-form-item label="备注">{{ currentRowDetails.notes || '无' }}</el-form-item>
+        <el-form-item label="创建时间">{{ currentRowDetails.createTime }}</el-form-item>
+        <el-form-item label="更新时间">{{ currentRowDetails.updateTime }}</el-form-item>
+        <el-form-item label="取消原因">{{ currentRowDetails.cancelReason || '无' }}</el-form-item>
+        <el-form-item label="取消时间">{{ currentRowDetails.cancelTime || '未取消' }}</el-form-item>
+      </el-form>
+      <div v-else>正在加载订单详情...</div>
 
-			<template #footer>
-				<div class="dialog-footer">
-					<el-button @click="dialogVisible = false">关闭</el-button>
-				</div>
-			</template>
-		</el-dialog>
-	</div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="dialogVisible = false">关闭</el-button>
+        </div>
+      </template>
+    </el-dialog>
+  </div>
 </template>
 
 <script setup>
@@ -809,30 +676,7 @@
 			}
 
 			.button-group {
-				margin-left: auto;
-				/* 将按钮组推到最右边 */
-				margin-right: 0 !important;
-				/* 确保没有右侧 margin */
-				// margin-bottom: 10px; /* 如果使用了 gap，这里可能不需要 margin-bottom */
-				flex-shrink: 0; // 防止按钮组缩小
-
-				.el-button {
-					margin-left: 10px; // 按钮之间的水平间距
-					&:first-child {
-						margin-left: 0;
-					}
-				}
-
-				.el-button {
-					height: 32px;
-					border-radius: 4px;
-				}
-				.el-button--primary {
-					background-color: #1890ff !important;
-					border-color: #1890ff !important;
-					color: #fff !important;
-					font-weight: bold;
-				}
+        margin-top: 28px!important;
 			}
 		}
 		.el-table {

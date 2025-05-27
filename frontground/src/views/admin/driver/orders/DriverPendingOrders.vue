@@ -274,8 +274,7 @@
   <div class="page-container">
     <h3>待接订单</h3>
 
-    <el-form :inline="true" :model="searchForm" class="search-form">
-      <div class="input-items-group">
+    <el-form :model="searchForm" class="search-form">
         <el-form-item label="预约日期">
           <el-date-picker v-model="searchForm.reservationTimeRange" type="daterange"
                           range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期"
@@ -299,9 +298,8 @@
                        :value="item.value"></el-option>
           </el-select>
         </el-form-item>
-      </div>
 
-      <el-form-item class="button-group">
+      <el-form-item>
         <el-button type="primary" @click="handleSearch">查询</el-button>
         <el-button @click="resetSearchForm">重置</el-button>
       </el-form-item>
@@ -515,6 +513,10 @@
         :deep(.el-select) {
           width: 150px; /* 为下拉选择框设置宽度 */
         }
+      }
+
+      .el-form-item {
+        margin-bottom: 0;
       }
 
       .button-group {

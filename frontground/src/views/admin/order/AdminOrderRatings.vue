@@ -2,8 +2,7 @@
   <div class="admin-order-ratings-container">
     <h3>订单评价管理</h3>
 
-    <el-form :inline="true" :model="searchForm" class="search-form">
-      <div class="input-items-group">
+    <el-form :model="searchForm" class="search-form">
         <el-form-item label="订单号">
           <el-input v-model="searchForm.orderNumber" placeholder="请输入订单号" clearable></el-input>
         </el-form-item>
@@ -16,9 +15,7 @@
         <el-form-item label="被评价对象">
           <el-input v-model="searchForm.rateeName" placeholder="被评价者名称" clearable></el-input>
         </el-form-item>
-      </div>
 
-      <div class="input-items-group range-filters-group">
         <el-form-item label="评分值">
           <div class="range-inputs">
             <el-input-number v-model="searchForm.ratingValueMin" :min="1" :max="5" :precision="0"
@@ -31,7 +28,6 @@
                              style="width: 100px"></el-input-number>
           </div>
         </el-form-item>
-      </div>
 
       <el-form-item class="button-group">
         <el-button type="primary" @click="handleSearch">查询</el-button>

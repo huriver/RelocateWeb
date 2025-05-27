@@ -2,8 +2,7 @@
   <div class="admin-service-category-container">
     <h3>服务类型配置</h3>
 
-    <el-form :inline="true" :model="searchForm" class="search-form">
-      <div class="input-items-group evenly-distributed-group">
+    <el-form :model="searchForm" class="search-form">
         <el-form-item label="类型名称">
           <el-input v-model="searchForm.typeName" placeholder="请输入类型名称关键词" clearable></el-input>
         </el-form-item>
@@ -18,18 +17,15 @@
                              class="range-input-number"></el-input-number>
           </div>
         </el-form-item>
-      </div>
 
-      <div class="input-items-group">
         <el-form-item label="创建日期">
           <el-date-picker v-model="searchForm.createTimeRange" type="daterange" range-separator="至"
                           start-placeholder="开始日期" end-placeholder="结束日期"
                           value-format="YYYY-MM-DD HH:mm:ss" :clearable="true"
                           :default-time="[new Date(2000, 1, 1, 0, 0, 0), new Date(2000, 1, 1, 23, 59, 59)]"></el-date-picker>
         </el-form-item>
-      </div>
 
-      <el-form-item class="button-group">
+      <el-form-item>
         <el-button type="primary" @click="handleSearch">查询</el-button>
         <el-button @click="resetSearchForm">重置</el-button>
         <el-button type="success" @click="handleAddServiceCategory"
@@ -555,6 +551,10 @@
         }
       }
 
+      .el-form-item {
+        margin-bottom: 0;
+      }
+
       // === 针对第一个分组的均匀分布样式 ===
       .evenly-distributed-group {
         .el-form-item {
@@ -581,42 +581,6 @@
               min-width: 80px; // Minimum width for range input
             }
           }
-        }
-      }
-
-      .button-group {
-        margin-left: auto; /* 将按钮组推到最右边 */
-        margin-right: 0 !important; /* 确保没有右侧 margin */
-        flex-shrink: 0; // 防止按钮组缩小
-
-        .el-button {
-          margin-left: 10px; // 按钮之间的水平间距
-          &:first-child {
-            margin-left: 0;
-          }
-        }
-
-        // === 新增按钮的特定样式，增加左外边距 ===
-        .add-button-separate {
-          margin-left: 30px; // 设置一个更大的左外边距，例如 30px
-        }
-
-        .el-button {
-          height: 32px;
-          border-radius: 4px;
-        }
-        .el-button--primary {
-          background-color: #1890ff !important;
-          border-color: #1890ff !important;
-          color: #fff !important;
-          font-weight: bold;
-        }
-
-        // 新增按钮的绿色风格
-        .el-button--success {
-          background-color: #67c23a !important;
-          border-color: #67c23a !important;
-          color: #fff !important;
         }
       }
     }
