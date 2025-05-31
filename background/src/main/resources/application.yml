@@ -47,6 +47,11 @@ relocate:
   baidu:
     ak: ***REMOVED*** # 替换为实际的AK
 
+# Bcrypt密码加密的强度，通常在10-12之间
+# 较高的值提供更高的安全性，但会增加计算时间
+  bcrypt:
+    strength: 10
+
 #upload:
 #  image:
 #    base-path: D:\\Java\\code\\RelocateWeb\\background\\src\\main\\resources\\static\\images\\

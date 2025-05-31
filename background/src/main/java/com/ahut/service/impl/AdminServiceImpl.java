@@ -16,11 +16,12 @@ import com.***REMOVED***.vo.AdminDetailVO;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.DigestUtils;
 
 @Service
 @Slf4j
@@ -28,6 +29,9 @@ public class AdminServiceImpl implements AdminService {
 
     @Autowired
     private AdminMapper adminMapper;
+
+    @Value("${relocate.bcrypt.strength:10}") // 注入bcrypt强度，默认值为10
+    private int bcryptStrength;
 
     /**
      * 管理员登录
@@ -49,10 +53,8 @@ public class AdminServiceImpl implements AdminService {
             throw new AccountNotFoundException(MessageConstant.ACCOUNT_NOT_FOUND);
         }
 
-        //密码比对
-        //后期需要进行md5加密，然后再进行比对
-        password = DigestUtils.md5DigestAsHex(password.getBytes());
-        if (!password.equals(admin.getPassword())) {
+        // 密码比对，使用 BCrypt.checkpw() 来验证明文密码和数据库中存储的哈希密码是否匹配
+        if (!BCrypt.checkpw(password, admin.getPassword())) {
             //密码错误
             throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
         }
@@ -71,8 +73,12 @@ public class AdminServiceImpl implements AdminService {
         Admin admin = new Admin();
         // 对象属性拷贝
         BeanUtils.copyProperties(userRegisterDTO, admin);
-        // 对密码进行加密
-        admin.setPassword(DigestUtils.md5DigestAsHex(userRegisterDTO.getPassword().getBytes()));
+//        // 对密码进行加密
+//        admin.setPassword(DigestUtils.md5DigestAsHex(userRegisterDTO.getPassword().getBytes()));
+
+        // 5. 使用 BCrypt.hashpw() 加密新密码
+        admin.setPassword(BCrypt.hashpw(userRegisterDTO.getPassword(), BCrypt.gensalt(bcryptStrength)));
+
         admin.setName(admin.getUsername());
         admin.setIsBanned(false); // 默认账号未禁用
         admin.setCreateUser(BaseContext.getCurrentId());
@@ -144,9 +150,15 @@ public class AdminServiceImpl implements AdminService {
         // 2. 从数据库中查询出当前登录用户的密码哈希值
         String storedPasswordHash = adminMapper.getById(currentAdminId).getPassword();
 
+//        // 3. 验证旧密码是否正确
+//        String oldPasswordHashed = DigestUtils.md5DigestAsHex(changePasswordDTO.getOldPassword().getBytes());
+//        if (!oldPasswordHashed.equals(storedPasswordHash)) {
+//            throw new PasswordErrorException(MessageConstant.OLD_PASSWORD_ERROR);
+//        }
+
         // 3. 验证旧密码是否正确
-        String oldPasswordHashed = DigestUtils.md5DigestAsHex(changePasswordDTO.getOldPassword().getBytes());
-        if (!oldPasswordHashed.equals(storedPasswordHash)) {
+        // 使用 BCrypt.checkpw() 验证旧密码
+        if (!BCrypt.checkpw(changePasswordDTO.getOldPassword(), storedPasswordHash)) {
             throw new PasswordErrorException(MessageConstant.OLD_PASSWORD_ERROR);
         }
 
@@ -155,10 +167,15 @@ public class AdminServiceImpl implements AdminService {
             throw new PasswordErrorException(MessageConstant.PASSWORD_NOT_MATCH);
         }
 
-        // 6. 加密新密码
-        String newPasswordHashed = DigestUtils.md5DigestAsHex(changePasswordDTO.getNewPassword().getBytes());
+//        // 5. 加密新密码
+//        String newPasswordHashed = DigestUtils.md5DigestAsHex(changePasswordDTO.getNewPassword().getBytes());
 
-        // 7. 更新数据库中的密码
+        // 5. 加密新密码
+        // 使用 BCrypt.hashpw() 加密新密码
+        String newPasswordHashed = BCrypt.hashpw(changePasswordDTO.getNewPassword(), BCrypt.gensalt(bcryptStrength));
+
+
+        // 6. 更新数据库中的密码
         Admin admin = Admin.builder()
                 .id(currentAdminId)
                 .password(newPasswordHashed)
@@ -188,8 +205,13 @@ public class AdminServiceImpl implements AdminService {
             throw new BaseException(MessageConstant.ACCOUNT_NOT_FOUND);
         }
 
+//        // 2. 对固定的默认明文密码进行安全的哈希
+//        String hashedDefaultPassword = DigestUtils.md5DigestAsHex(PasswordConstant.DEFAULT_PASSWORD.getBytes());
+
         // 2. 对固定的默认明文密码进行安全的哈希
-        String hashedDefaultPassword = DigestUtils.md5DigestAsHex(PasswordConstant.DEFAULT_PASSWORD.getBytes());
+        // 使用 BCrypt.hashpw() 对默认密码进行哈希处理
+        String hashedDefaultPassword = BCrypt.hashpw(PasswordConstant.DEFAULT_PASSWORD, BCrypt.gensalt(bcryptStrength));
+
 
         // 3. 更新账号的密码字段和审计字段
         Admin updateAdmin = Admin.builder()

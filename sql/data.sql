@@ -14,7 +14,7 @@ DROP TABLE IF EXISTS `admin`;
 CREATE TABLE `admin` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键，自增',
   `username` varchar(100) NOT NULL COMMENT '用户名，唯一',
-  `password` varchar(100) NOT NULL COMMENT '密码',
+  `password` varchar(255) NOT NULL COMMENT '密码',
   `name` varchar(200) NOT NULL COMMENT '管理员姓名',
   `photo_url` varchar(200) COMMENT '照片URL',
   `is_banned` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否被禁用，0-否，1-是',
@@ -225,21 +225,6 @@ CREATE TABLE `service_category` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='服务类型表';
 
 -- ----------------------------
--- Table structure for system_log
--- ----------------------------
-DROP TABLE IF EXISTS `system_log`;
-CREATE TABLE `system_log` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键，自增',
-  `log_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '日志时间，默认当前时间',
-  `user_id` bigint(20) COMMENT '操作用户ID',
-  `user_type` varchar(50) COMMENT '用户类型（例如：customer, mover, driver, admin）',
-  `operation` varchar(200) COMMENT '操作内容',
-  `details` text COMMENT '操作详情',
-  `ip_address` varchar(50) COMMENT 'IP地址',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统日志表';
-
--- ----------------------------
 -- Table structure for truck_type
 -- ----------------------------
 DROP TABLE IF EXISTS `truck_type`;
@@ -448,14 +433,6 @@ VALUES
 -- 评价订单2 (服务2, 司机2)
 (4, 2, 2, 2, 'SERVICE', 4, '标准搬家服务符合预期，钢琴搬运也顺利。', '2025-04-18 19:30:00', '2025-04-18 19:30:00', '2025-04-18 19:30:00'),
 (5, 2, 2, 2, 'DRIVER', 4, '司机赵师傅路线熟悉，安全送达。', '2025-04-18 19:30:00', '2025-04-18 19:30:00', '2025-04-18 19:30:00');
-
--- ----------------------------
--- Data for table system_log
--- ----------------------------
-INSERT INTO `system_log` (`id`, `log_time`, `user_id`, `user_type`, `operation`, `details`, `ip_address`) VALUES
-(1, '2025-04-18 10:00:00', 1, 'customer', '创建订单', '用户张三创建订单 MO20250418001', '192.168.1.100'),
-(2, '2025-04-18 11:00:00', 1, 'driver', '接单', '司机王五接单 MO20250418001', '192.168.1.101'),
-(3, '2025-04-18 12:00:00', 1, 'admin', '修改配置', '管理员 admin1 修改网站名称为 轻松搬家网', '172.16.0.50');
 
 -- ----------------------------
 -- Data for table moving_news

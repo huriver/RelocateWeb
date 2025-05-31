@@ -14,11 +14,12 @@ import com.***REMOVED***.result.PageResult;
 import com.***REMOVED***.service.MoverService;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.DigestUtils;
 
 @Service
 public class MoverServiceImpl implements MoverService {
@@ -28,6 +29,9 @@ public class MoverServiceImpl implements MoverService {
 
     @Autowired
     private OrderMapper orderMapper;
+
+    @Value("${relocate.bcrypt.strength:10}") // 注入bcrypt强度，默认值为10
+    private int bcryptStrength;
 
     @Override
     public Mover login(UserLoginDTO userLoginDTO) {
@@ -45,8 +49,14 @@ public class MoverServiceImpl implements MoverService {
 
         //密码比对
         //后期需要进行md5加密，然后再进行比对
-        password = DigestUtils.md5DigestAsHex(password.getBytes());
-        if (!password.equals(mover.getPassword())) {
+//        password = DigestUtils.md5DigestAsHex(password.getBytes());
+//        if (!password.equals(mover.getPassword())) {
+//            //密码错误
+//            throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
+//        }
+
+        // 密码比对，使用 BCrypt.checkpw() 来验证明文密码和数据库中存储的哈希密码是否匹配
+        if (!BCrypt.checkpw(password, mover.getPassword())) {
             //密码错误
             throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
         }
@@ -65,8 +75,12 @@ public class MoverServiceImpl implements MoverService {
         Mover mover = new Mover();
         // 对象属性拷贝
         BeanUtils.copyProperties(userRegisterDTO, mover);
-        // 对密码进行加密
-        mover.setPassword(DigestUtils.md5DigestAsHex(userRegisterDTO.getPassword().getBytes()));
+//        // 对密码进行加密
+//        mover.setPassword(DigestUtils.md5DigestAsHex(userRegisterDTO.getPassword().getBytes()));
+
+        // 5. 使用 BCrypt.hashpw() 加密新密码
+        mover.setPassword(BCrypt.hashpw(userRegisterDTO.getPassword(), BCrypt.gensalt(bcryptStrength)));
+
         mover.setName(mover.getUsername());
         moverMapper.insert(mover);
     }
@@ -159,8 +173,14 @@ public class MoverServiceImpl implements MoverService {
         String storedPasswordHash = moverMapper.getById(currentMoverId).getPassword();
 
         // 3. 验证旧密码是否正确
-        String oldPasswordHashed = DigestUtils.md5DigestAsHex(changePasswordDTO.getOldPassword().getBytes());
-        if (!oldPasswordHashed.equals(storedPasswordHash)) {
+//        String oldPasswordHashed = DigestUtils.md5DigestAsHex(changePasswordDTO.getOldPassword().getBytes());
+//        if (!oldPasswordHashed.equals(storedPasswordHash)) {
+//            throw new PasswordErrorException(MessageConstant.OLD_PASSWORD_ERROR);
+//        }
+
+        // 3. 验证旧密码是否正确
+        // 使用 BCrypt.checkpw() 验证旧密码
+        if (!BCrypt.checkpw(changePasswordDTO.getOldPassword(), storedPasswordHash)) {
             throw new PasswordErrorException(MessageConstant.OLD_PASSWORD_ERROR);
         }
 
@@ -169,10 +189,14 @@ public class MoverServiceImpl implements MoverService {
             throw new PasswordErrorException(MessageConstant.PASSWORD_NOT_MATCH);
         }
 
-        // 6. 加密新密码
-        String newPasswordHashed = DigestUtils.md5DigestAsHex(changePasswordDTO.getNewPassword().getBytes());
+//        // 5. 加密新密码
+//        String newPasswordHashed = DigestUtils.md5DigestAsHex(changePasswordDTO.getNewPassword().getBytes());
 
-        // 7. 更新数据库中的密码
+        // 5. 加密新密码
+        // 使用 BCrypt.hashpw() 加密新密码
+        String newPasswordHashed = BCrypt.hashpw(changePasswordDTO.getNewPassword(), BCrypt.gensalt(bcryptStrength));
+
+        // 6. 更新数据库中的密码
         Mover mover = Mover.builder()
                 .id(currentMoverId)
                 .password(newPasswordHashed)
