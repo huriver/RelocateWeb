@@ -1,0 +1,91 @@
+# ===================================================================
+# RelocateWeb - Spring Boot 配置模板
+# ===================================================================
+#
+# 操作指南:
+# 1. 请勿将包含您敏感信息的配置文件提交到版本控制系统（如GitHub）。
+# 2. 如需配置本地开发环境，请先复制此文件。
+# 3. 将复制后的文件重命名为 'application-local.yml'。此文件名已被 .gitignore 忽略，不会被提交。
+# 4. 在 'application-local.yml' 文件中，将所有占位符（如 <你的数据库用户名>）替换为您的真实配置值。
+# 5. 修改主配置文件 'application.yml'，将 'spring.profiles.active' 的值设置为 'local'，以激活您的本地配置。
+#
+# ===================================================================
+
+server:
+  port: 8080
+
+# === 数据库配置 (敏感信息) ===
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 替换为您的数据库连接URL
+    url: jdbc:mysql://localhost:3306/relocateWeb?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8   
+    # 替换为您的数据库用户名
+    username: <你的数据库用户名>
+    # 替换为您的数据库密码
+    password: <你的数据库密码>
+
+  servlet:
+    multipart:
+      max-file-size: -1
+      max-request-size: -1
+      enabled: true
+
+  # === 邮箱配置 (敏感信息) ===
+  mail:
+    host: smtp.qq.com
+    port: 587
+    # 替换为您的邮箱账户
+    username: <你的邮箱账户>
+    # 替换为您的邮箱授权码（非邮箱密码）
+    password: <你的邮箱授权码>
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            debug: false # 开发调试时可设置为 true
+
+# === 应用专属配置 ===
+relocate:
+  # === JWT 密钥 (敏感信息) ===
+  jwt:
+    # 强烈建议将以下密钥更改为长且随机的字符串
+    back-secret-key: <你的后端JWT密钥>
+    back-ttl: 72000000
+    back-token-name: token
+
+    front-secret-key: <你的前端JWT密钥>
+    front-ttl: 72000000
+    front-token-name: authentication
+
+  # === 百度地图 API 密钥 (敏感信息) ===
+  baidu:
+    # 替换为您的百度地图AK (API Key)
+    ak: <你的百度地图AK>
+
+  bcrypt:
+    strength: 10
+
+# === 文件上传配置 ===
+upload:
+  image:
+    # 图片上传的本地存储路径 (根据您的环境修改)
+    # 注意：如果修改此路径，还需要同步修改 WebMvcConfiguration.java 中的 addResourceLocations 方法
+    base-path: <你的本地图片上传路径> # 示例: D:\\Java\\code\\RelocateWeb\\background\\uploads\\images\\
+    # 访问上传图片的根URL (应与服务器端口匹配)
+    base-url: http://localhost:8080/images/
+
+# === 日志 & MYBATIS 配置 (通常非敏感) ===
+logging:
+  pattern:
+    console: '%d{yyyy-MM-dd} [%thread] %-5level %logger- %msg%n'
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.***REMOVED***.entity, com.***REMOVED***.dto, com.***REMOVED***.vo
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

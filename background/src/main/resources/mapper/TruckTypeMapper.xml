@@ -33,7 +33,7 @@
                 AND tt.create_time &lt;= #{createTimeEnd}
             </if>
         </where>
-        ORDER BY tt.create_time DESC
+        ORDER BY tt.id
     </select>
 
     <select id="getByIdByAdmin" resultType="TruckTypeVO">
