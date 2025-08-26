@@ -75,3 +75,8 @@
 /background/src/main/resources/application-zpcdev.yml
 /background/src/main/resources/application-zbdev.yml
 /background/src/main/resources/application-local.yml
+
+# ===================================================================
+# 忽略IDE配置文件
+# ===================================================================
+*.iml
