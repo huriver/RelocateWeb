@@ -1,4 +1,4 @@
-package com.***REMOVED***.utils;
+package com.ahut.utils;
 
 import com.alibaba.fastjson.JSONObject;
 import org.apache.http.NameValuePair;

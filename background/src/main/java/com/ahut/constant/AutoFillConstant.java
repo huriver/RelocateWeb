@@ -1,4 +1,4 @@
-package com.***REMOVED***.constant;
+package com.ahut.constant;
 
 /**
  * 公共字段自动填充相关常量

@@ -1,11 +1,11 @@
-package com.***REMOVED***.controller.front;
+package com.ahut.controller.front;
 
-import com.***REMOVED***.context.BaseContext;
-import com.***REMOVED***.dto.OverallRatingSubmitDTO;
-import com.***REMOVED***.result.Result;
-import com.***REMOVED***.service.RatingService;
-import com.***REMOVED***.vo.CustomerRatingVO;
-import com.***REMOVED***.vo.ServiceRatingVO;
+import com.ahut.context.BaseContext;
+import com.ahut.dto.OverallRatingSubmitDTO;
+import com.ahut.result.Result;
+import com.ahut.service.RatingService;
+import com.ahut.vo.CustomerRatingVO;
+import com.ahut.vo.ServiceRatingVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

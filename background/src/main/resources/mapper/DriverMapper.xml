@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.***REMOVED***.mapper.DriverMapper">
+<mapper namespace="com.ahut.mapper.DriverMapper">
 
     <update id="update" parameterType="Driver">
         update driver
@@ -90,7 +90,7 @@
         <result column="description" property="truckTypeDescription"/>
         <result column="base_fare" property="truckTypeBaseFare"/>
 
-        <association property="assignedVehicle" javaType="com.***REMOVED***.vo.AssignedVehicleVO" autoMapping="true">
+        <association property="assignedVehicle" javaType="com.ahut.vo.AssignedVehicleVO" autoMapping="true">
         </association>
     </resultMap>
 

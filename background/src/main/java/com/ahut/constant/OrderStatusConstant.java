@@ -1,4 +1,4 @@
-package com.***REMOVED***.constant;
+package com.ahut.constant;
 
 import java.util.Arrays;
 import java.util.HashMap;

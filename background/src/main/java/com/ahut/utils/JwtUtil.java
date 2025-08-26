@@ -1,4 +1,4 @@
-package com.***REMOVED***.utils;
+package com.ahut.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;

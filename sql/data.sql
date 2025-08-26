@@ -318,7 +318,7 @@ INSERT INTO `configuration` (`id`, `name`, `value`, `create_time`, `update_time`
 -- Data for table customer
 -- ----------------------------
 INSERT INTO `customer` (`id`, `username`, `password`, `name`, `gender`, `phone`, `email`, `id_card`, `family_phone`, `photo_url`, `is_banned`, `create_time`, `update_time`) VALUES
-(1, 'customer1', '81dc9bdb52d04dc20036dbd8313ed055', '张三', '男', '138***REMOVED***5678', 'zhangsan@example.com', '31010119900101***REMOVED***', '021-***REMOVED***5678', '/uploads/customer/customer1_photo.jpg', 0, NOW(), NOW()),
+(1, 'customer1', '81dc9bdb52d04dc20036dbd8313ed055', '张三', '男', '13812345678', 'zhangsan@example.com', '310101199001011234', '021-12345678', '/uploads/customer/customer1_photo.jpg', 0, NOW(), NOW()),
 (2, 'customer2', '81dc9bdb52d04dc20036dbd8313ed055', '李四', '女', '13987654321', 'lisi@example.com', '440301198505054321', '010-98765432', '/uploads/customer/customer2_photo.png', 0, NOW(), NOW());
 
 -- ----------------------------
@@ -356,7 +356,7 @@ VALUES
 (1, 'driver1', '81dc9bdb52d04dc20036dbd8313ed055', '王五', '男', '13555556666', '320501198808087890', 5, '/uploads/driver/driver1_photo.jpg', 0,
  0.00, 0,
  NOW(), NOW()),
-(2, 'driver2', '81dc9bdb52d04dc20036dbd8313ed055', '赵六', '男', '13666667777', '51070119920909***REMOVED***', 10, '/uploads/driver/driver2_photo.png', 0,
+(2, 'driver2', '81dc9bdb52d04dc20036dbd8313ed055', '赵六', '男', '13666667777', '510701199209091234', 10, '/uploads/driver/driver2_photo.png', 0,
  0.00, 0,
  NOW(), NOW());
 
@@ -370,7 +370,7 @@ VALUES
 (1, 'mover1', '81dc9bdb52d04dc20036dbd8313ed055', '孙七', '男', '13777778888', '420101199510105678', '/uploads/mover/mover1_photo.jpg', 0,
  0.00, 0,
  NOW(), NOW()),
-(2, 'mover2', '81dc9bdb52d00dc20036dbd8313ed055', '周八', '男', '13000009999', '6108011998111***REMOVED***5', '/uploads/mover/mover2_photo.png', 0,
+(2, 'mover2', '81dc9bdb52d00dc20036dbd8313ed055', '周八', '男', '13000009999', '610801199811112345', '/uploads/mover/mover2_photo.png', 0,
  0.00, 0,
  NOW(), NOW());
 
@@ -387,7 +387,7 @@ INSERT INTO `driver_truck_type` (`driver_id`, `truck_type_id`, `create_time`, `u
 -- Data for table vehicle
 -- ----------------------------
 INSERT INTO `vehicle` (`id`, `driver_id`, `truck_type_id`, `license_plate_number`, `vehicle_brand`, `create_time`, `update_time`, `create_user`, `update_user`) VALUES
-(1, 1, 1, '沪A***REMOVED***5', '五菱宏光', NOW(), NOW(), 1, 1),
+(1, 1, 1, '沪A12345', '五菱宏光', NOW(), NOW(), 1, 1),
 (2, 2, 2, '京B98765', '福田时代', NOW(), NOW(), 1, 1);
 
 -- ----------------------------

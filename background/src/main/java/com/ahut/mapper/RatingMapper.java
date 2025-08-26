@@ -1,10 +1,10 @@
-package com.***REMOVED***.mapper;
+package com.ahut.mapper;
 
-import com.***REMOVED***.dto.DriverMyRatingPageQueryDTO;
-import com.***REMOVED***.dto.MoverMyRatingPageQueryDTO;
-import com.***REMOVED***.dto.RatingPageQueryDTO;
-import com.***REMOVED***.entity.Rating;
-import com.***REMOVED***.vo.*;
+import com.ahut.dto.DriverMyRatingPageQueryDTO;
+import com.ahut.dto.MoverMyRatingPageQueryDTO;
+import com.ahut.dto.RatingPageQueryDTO;
+import com.ahut.entity.Rating;
+import com.ahut.vo.*;
 import com.github.pagehelper.Page;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;

@@ -1,4 +1,4 @@
-package com.***REMOVED***.entity;
+package com.ahut.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

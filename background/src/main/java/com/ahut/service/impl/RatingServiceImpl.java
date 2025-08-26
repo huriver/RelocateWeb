@@ -1,17 +1,17 @@
-package com.***REMOVED***.service.impl;
+package com.ahut.service.impl;
 
-import com.***REMOVED***.constant.MessageConstant;
-import com.***REMOVED***.constant.OrderStatusConstant;
-import com.***REMOVED***.constant.RatingTypeConstant;
-import com.***REMOVED***.context.BaseContext;
-import com.***REMOVED***.dto.*;
-import com.***REMOVED***.entity.*;
-import com.***REMOVED***.exception.BusinessException;
-import com.***REMOVED***.exception.OrderBusinessException;
-import com.***REMOVED***.mapper.*;
-import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.service.RatingService;
-import com.***REMOVED***.vo.*;
+import com.ahut.constant.MessageConstant;
+import com.ahut.constant.OrderStatusConstant;
+import com.ahut.constant.RatingTypeConstant;
+import com.ahut.context.BaseContext;
+import com.ahut.dto.*;
+import com.ahut.entity.*;
+import com.ahut.exception.BusinessException;
+import com.ahut.exception.OrderBusinessException;
+import com.ahut.mapper.*;
+import com.ahut.result.PageResult;
+import com.ahut.service.RatingService;
+import com.ahut.vo.*;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
@@ -259,7 +259,7 @@ public class RatingServiceImpl implements RatingService {
             Integer ratingCount = ((Long) serviceRatingStats.get("ratingCount")).intValue();
 
             // 构建 Service 对象，只设置 id 和需要更新的字段
-            com.***REMOVED***.entity.Service updateService = com.***REMOVED***.entity.Service.builder()
+            com.ahut.entity.Service updateService = com.ahut.entity.Service.builder()
                     .id(serviceId)
                     .averageRating(avgRating)
                     .ratingCount(ratingCount)
@@ -363,7 +363,7 @@ public class RatingServiceImpl implements RatingService {
                     }
                     break;
                 case "SERVICE":
-                    com.***REMOVED***.entity.Service service = serviceMapper.getById(rating.getRateeId());
+                    com.ahut.entity.Service service = serviceMapper.getById(rating.getRateeId());
                     if (service != null) {
                         detailVO.setRateeName(service.getServiceName());
                     } else {

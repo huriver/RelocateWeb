@@ -1,10 +1,10 @@
-package com.***REMOVED***.service;
+package com.ahut.service;
 
-import com.***REMOVED***.dto.ServiceDTO;
-import com.***REMOVED***.dto.ServiceQueryDTO;
-import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.vo.ServiceDetailVO;
-import com.***REMOVED***.vo.ServiceRatingVO;
+import com.ahut.dto.ServiceDTO;
+import com.ahut.dto.ServiceQueryDTO;
+import com.ahut.result.PageResult;
+import com.ahut.vo.ServiceDetailVO;
+import com.ahut.vo.ServiceRatingVO;
 
 import java.util.List;
 

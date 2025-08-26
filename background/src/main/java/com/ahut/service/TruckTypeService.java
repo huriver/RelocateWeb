@@ -1,10 +1,10 @@
-package com.***REMOVED***.service;
+package com.ahut.service;
 
-import com.***REMOVED***.dto.TruckTypeDTO;
-import com.***REMOVED***.dto.TruckTypePageQueryDTO;
-import com.***REMOVED***.entity.TruckType;
-import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.vo.TruckTypeVO;
+import com.ahut.dto.TruckTypeDTO;
+import com.ahut.dto.TruckTypePageQueryDTO;
+import com.ahut.entity.TruckType;
+import com.ahut.result.PageResult;
+import com.ahut.vo.TruckTypeVO;
 
 import java.util.List;
 

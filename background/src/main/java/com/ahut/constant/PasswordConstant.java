@@ -1,10 +1,10 @@
-package com.***REMOVED***.constant;
+package com.ahut.constant;
 
 /**
  * 密码常量
  */
 public class PasswordConstant {
 
-    public static final String DEFAULT_PASSWORD = "***REMOVED***";
+    public static final String DEFAULT_PASSWORD = "1234";
 
 }

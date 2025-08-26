@@ -1,4 +1,4 @@
-package com.***REMOVED***.exception;
+package com.ahut.exception;
 
 public class BusinessException extends BaseException {
     public BusinessException() {

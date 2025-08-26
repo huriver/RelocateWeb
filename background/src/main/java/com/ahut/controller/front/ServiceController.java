@@ -1,10 +1,10 @@
-package com.***REMOVED***.controller.front;
+package com.ahut.controller.front;
 
-import com.***REMOVED***.dto.ServiceQueryDTO;
-import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.result.Result;
-import com.***REMOVED***.service.ServiceService;
-import com.***REMOVED***.vo.ServiceDetailVO;
+import com.ahut.dto.ServiceQueryDTO;
+import com.ahut.result.PageResult;
+import com.ahut.result.Result;
+import com.ahut.service.ServiceService;
+import com.ahut.vo.ServiceDetailVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

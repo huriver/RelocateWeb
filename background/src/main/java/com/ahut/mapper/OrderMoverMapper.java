@@ -1,6 +1,6 @@
-package com.***REMOVED***.mapper;
+package com.ahut.mapper;
 
-import com.***REMOVED***.vo.MoverVO;
+import com.ahut.vo.MoverVO;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;

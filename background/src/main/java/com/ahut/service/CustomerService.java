@@ -1,9 +1,9 @@
-package com.***REMOVED***.service;
+package com.ahut.service;
 
-import com.***REMOVED***.dto.*;
-import com.***REMOVED***.entity.Customer;
-import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.vo.CustomerRatingVO;
+import com.ahut.dto.*;
+import com.ahut.entity.Customer;
+import com.ahut.result.PageResult;
+import com.ahut.vo.CustomerRatingVO;
 
 import java.util.List;
 

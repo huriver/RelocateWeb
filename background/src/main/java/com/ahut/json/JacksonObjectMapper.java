@@ -1,4 +1,4 @@
-package com.***REMOVED***.json;
+package com.ahut.json;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,7 +1,7 @@
-package com.***REMOVED***.controller.common;
+package com.ahut.controller.common;
 
-import com.***REMOVED***.context.BaseContext;
-import com.***REMOVED***.result.Result;
+import com.ahut.context.BaseContext;
+import com.ahut.result.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;

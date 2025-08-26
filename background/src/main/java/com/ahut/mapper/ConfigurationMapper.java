@@ -1,6 +1,6 @@
-package com.***REMOVED***.mapper;
+package com.ahut.mapper;
 
-import com.***REMOVED***.entity.Configuration;
+import com.ahut.entity.Configuration;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 

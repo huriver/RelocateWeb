@@ -1,8 +1,8 @@
-package com.***REMOVED***.handler;
+package com.ahut.handler;
 
-import com.***REMOVED***.constant.MessageConstant;
-import com.***REMOVED***.exception.BaseException;
-import com.***REMOVED***.result.Result;
+import com.ahut.constant.MessageConstant;
+import com.ahut.exception.BaseException;
+import com.ahut.result.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

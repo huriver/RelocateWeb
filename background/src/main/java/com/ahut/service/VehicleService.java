@@ -1,9 +1,9 @@
-package com.***REMOVED***.service;
+package com.ahut.service;
 
-import com.***REMOVED***.dto.VehicleDTO;
-import com.***REMOVED***.dto.VehiclePageQueryDTO;
-import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.vo.VehicleVO;
+import com.ahut.dto.VehicleDTO;
+import com.ahut.dto.VehiclePageQueryDTO;
+import com.ahut.result.PageResult;
+import com.ahut.vo.VehicleVO;
 
 
 public interface VehicleService {

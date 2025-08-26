@@ -1,6 +1,6 @@
-package com.***REMOVED***.annotation;
+package com.ahut.annotation;
 
-import com.***REMOVED***.enumeration.OperationType;
+import com.ahut.enumeration.OperationType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

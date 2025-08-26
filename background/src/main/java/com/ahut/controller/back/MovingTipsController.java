@@ -1,11 +1,11 @@
-package com.***REMOVED***.controller.back;
+package com.ahut.controller.back;
 
-import com.***REMOVED***.dto.MovingTipsDTO;
-import com.***REMOVED***.dto.MovingTipsPageQueryDTO;
-import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.result.Result;
-import com.***REMOVED***.service.MovingTipsService;
-import com.***REMOVED***.vo.MovingTipsVO;
+import com.ahut.dto.MovingTipsDTO;
+import com.ahut.dto.MovingTipsPageQueryDTO;
+import com.ahut.result.PageResult;
+import com.ahut.result.Result;
+import com.ahut.service.MovingTipsService;
+import com.ahut.vo.MovingTipsVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

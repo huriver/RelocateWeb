@@ -1,11 +1,11 @@
-package com.***REMOVED***.controller.back;
+package com.ahut.controller.back;
 
-import com.***REMOVED***.dto.MovingNewsDTO;
-import com.***REMOVED***.dto.MovingNewsPageQueryDTO;
-import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.result.Result;
-import com.***REMOVED***.service.MovingNewsService;
-import com.***REMOVED***.vo.MovingNewsVO;
+import com.ahut.dto.MovingNewsDTO;
+import com.ahut.dto.MovingNewsPageQueryDTO;
+import com.ahut.result.PageResult;
+import com.ahut.result.Result;
+import com.ahut.service.MovingNewsService;
+import com.ahut.vo.MovingNewsVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.***REMOVED***.mapper.RatingMapper">
+<mapper namespace="com.ahut.mapper.RatingMapper">
 
     <insert id="insertBatch">
         INSERT INTO rating (order_id, customer_id, ratee_id, rating_type, rating_value, comment, rating_time,
@@ -90,7 +90,7 @@
         ORDER BY r.id
     </select>
 
-    <select id="getRatingsByOrderId" resultType="com.***REMOVED***.vo.RatingVO">
+    <select id="getRatingsByOrderId" resultType="com.ahut.vo.RatingVO">
         SELECT r.id    AS ratingId,
                r.ratee_id,
                r.rating_type,
@@ -118,7 +118,7 @@
         WHERE r.order_id = #{orderId}
     </select>
 
-    <select id="driverPageQueryMyRatings" resultType="com.***REMOVED***.vo.DriverMyRatingListVO">
+    <select id="driverPageQueryMyRatings" resultType="com.ahut.vo.DriverMyRatingListVO">
         SELECT r.id,
 
         mo.order_number, c.name AS customerName,
@@ -150,7 +150,7 @@
         ORDER BY r.rating_time DESC
     </select>
 
-    <select id="driverGetMyRatingDetail" resultType="com.***REMOVED***.vo.DriverMyRatingDetailVO">
+    <select id="driverGetMyRatingDetail" resultType="com.ahut.vo.DriverMyRatingDetailVO">
         SELECT r.id,
 
                r.rating_value,
@@ -179,7 +179,7 @@
           AND r.rating_type = 'DRIVER'
     </select>
 
-    <resultMap id="moverMyRatingListResultMap" type="com.***REMOVED***.vo.MoverMyRatingListVO">
+    <resultMap id="moverMyRatingListResultMap" type="com.ahut.vo.MoverMyRatingListVO">
         <id column="rating_id" property="id"/>
         <result column="order_number" property="orderNumber"/>
         <result column="customer_name" property="customerName"/>
@@ -228,7 +228,7 @@
         ORDER BY r.create_time DESC
     </select>
 
-    <resultMap id="moverMyRatingDetailResultMap" type="com.***REMOVED***.vo.MoverMyRatingDetailVO">
+    <resultMap id="moverMyRatingDetailResultMap" type="com.ahut.vo.MoverMyRatingDetailVO">
         <id column="rating_id" property="id"/>
         <result column="rating_value" property="ratingValue"/>
         <result column="comment" property="comment"/>

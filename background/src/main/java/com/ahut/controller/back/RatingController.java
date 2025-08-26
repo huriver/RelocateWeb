@@ -1,16 +1,16 @@
-package com.***REMOVED***.controller.back;
+package com.ahut.controller.back;
 
 
-import com.***REMOVED***.context.BaseContext;
-import com.***REMOVED***.dto.DriverMyRatingPageQueryDTO;
-import com.***REMOVED***.dto.MoverMyRatingPageQueryDTO;
-import com.***REMOVED***.dto.RatingPageQueryDTO;
-import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.result.Result;
-import com.***REMOVED***.service.RatingService;
-import com.***REMOVED***.vo.DriverMyRatingDetailVO;
-import com.***REMOVED***.vo.MoverMyRatingDetailVO;
-import com.***REMOVED***.vo.RatingDetailVO;
+import com.ahut.context.BaseContext;
+import com.ahut.dto.DriverMyRatingPageQueryDTO;
+import com.ahut.dto.MoverMyRatingPageQueryDTO;
+import com.ahut.dto.RatingPageQueryDTO;
+import com.ahut.result.PageResult;
+import com.ahut.result.Result;
+import com.ahut.service.RatingService;
+import com.ahut.vo.DriverMyRatingDetailVO;
+import com.ahut.vo.MoverMyRatingDetailVO;
+import com.ahut.vo.RatingDetailVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

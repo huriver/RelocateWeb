@@ -1,9 +1,9 @@
-package com.***REMOVED***.mapper;
+package com.ahut.mapper;
 
-import com.***REMOVED***.annotation.AutoFill;
-import com.***REMOVED***.dto.MoverPageQueryDTO;
-import com.***REMOVED***.entity.Mover;
-import com.***REMOVED***.enumeration.OperationType;
+import com.ahut.annotation.AutoFill;
+import com.ahut.dto.MoverPageQueryDTO;
+import com.ahut.entity.Mover;
+import com.ahut.enumeration.OperationType;
 import com.github.pagehelper.Page;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;

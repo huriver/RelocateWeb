@@ -1,4 +1,4 @@
-package com.***REMOVED***;
+package com.ahut;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -1,4 +1,4 @@
-package com.***REMOVED***.constant;
+package com.ahut.constant;
 
 public class RatingTypeConstant {
     // 定义评分类型常量

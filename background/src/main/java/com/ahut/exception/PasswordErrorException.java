@@ -1,4 +1,4 @@
-package com.***REMOVED***.exception;
+package com.ahut.exception;
 
 /**
  * 密码错误异常

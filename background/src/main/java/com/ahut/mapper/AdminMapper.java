@@ -1,9 +1,9 @@
-package com.***REMOVED***.mapper;
+package com.ahut.mapper;
 
-import com.***REMOVED***.annotation.AutoFill;
-import com.***REMOVED***.dto.AdminPageQueryDTO;
-import com.***REMOVED***.entity.Admin;
-import com.***REMOVED***.enumeration.OperationType;
+import com.ahut.annotation.AutoFill;
+import com.ahut.dto.AdminPageQueryDTO;
+import com.ahut.entity.Admin;
+import com.ahut.enumeration.OperationType;
 import com.github.pagehelper.Page;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;

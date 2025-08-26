@@ -1,4 +1,4 @@
-package com.***REMOVED***.vo;
+package com.ahut.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

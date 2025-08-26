@@ -1,9 +1,9 @@
-package com.***REMOVED***.service;
+package com.ahut.service;
 
-import com.***REMOVED***.dto.DriverTruckTypeBatchDTO;
-import com.***REMOVED***.dto.DriverTruckTypePageQueryDTO;
-import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.vo.DriverTruckTypeRelationVO;
+import com.ahut.dto.DriverTruckTypeBatchDTO;
+import com.ahut.dto.DriverTruckTypePageQueryDTO;
+import com.ahut.result.PageResult;
+import com.ahut.vo.DriverTruckTypeRelationVO;
 
 
 public interface DriverTruckTypeService {

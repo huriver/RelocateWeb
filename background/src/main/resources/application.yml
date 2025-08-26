@@ -17,7 +17,7 @@ spring:
     host: smtp.qq.com # QQ邮箱的 SMTP 服务器地址
     port: 587 # QQ邮箱推荐的 SMTP 端口（配合 STARTTLS）
     username: 2195445402@qq.com # 你的QQ邮箱账号
-    password: ***REMOVED*** # 这里填写你的授权码
+    password: gfhyjjampxvqdiig # 这里填写你的授权码
     properties:
       mail:
         smtp:
@@ -34,18 +34,18 @@ spring:
 relocate:
   jwt:
     # 设置jwt签名加密时使用的秘钥
-    back-secret-key: ***REMOVED***
+    back-secret-key: ahut
     # 设置jwt过期时间
     back-ttl: 72000000
     # 设置前端传递过来的令牌名称
     back-token-name: token
 
-    front-secret-key: ***REMOVED***
+    front-secret-key: ahut
     front-ttl: 72000000
     front-token-name: authentication
 
   baidu:
-    ak: ***REMOVED*** # 替换为实际的AK
+    ak: 0pKyge2XxdqkchNtGTGW5MhnmAVE9JnN # 替换为实际的AK
 
 # Bcrypt密码加密的强度，通常在10-12之间
 # 较高的值提供更高的安全性，但会增加计算时间
@@ -65,7 +65,7 @@ logging:
 mybatis:
   #mapper配置文件
   mapper-locations: classpath:mapper/*.xml
-  type-aliases-package: com.***REMOVED***.entity, com.***REMOVED***.dto, com.***REMOVED***.vo  # 类型别名所在包
+  type-aliases-package: com.ahut.entity, com.ahut.dto, com.ahut.vo  # 类型别名所在包
   configuration:
     #开启驼峰命名
     map-underscore-to-camel-case: true

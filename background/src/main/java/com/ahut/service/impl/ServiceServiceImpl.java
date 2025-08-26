@@ -1,20 +1,20 @@
-package com.***REMOVED***.service.impl;
+package com.ahut.service.impl;
 
-import com.***REMOVED***.constant.MessageConstant;
-import com.***REMOVED***.context.BaseContext;
-import com.***REMOVED***.dto.ServiceDTO;
-import com.***REMOVED***.dto.ServiceQueryDTO;
-import com.***REMOVED***.entity.Configuration;
-import com.***REMOVED***.entity.ServiceCategory;
-import com.***REMOVED***.entity.TruckType;
-import com.***REMOVED***.exception.BusinessException;
-import com.***REMOVED***.exception.ConfigurationNotFoundException;
-import com.***REMOVED***.mapper.*;
-import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.service.ServiceService;
-import com.***REMOVED***.vo.ServiceDetailVO;
-import com.***REMOVED***.vo.ServiceItemVO;
-import com.***REMOVED***.vo.ServiceVO;
+import com.ahut.constant.MessageConstant;
+import com.ahut.context.BaseContext;
+import com.ahut.dto.ServiceDTO;
+import com.ahut.dto.ServiceQueryDTO;
+import com.ahut.entity.Configuration;
+import com.ahut.entity.ServiceCategory;
+import com.ahut.entity.TruckType;
+import com.ahut.exception.BusinessException;
+import com.ahut.exception.ConfigurationNotFoundException;
+import com.ahut.mapper.*;
+import com.ahut.result.PageResult;
+import com.ahut.service.ServiceService;
+import com.ahut.vo.ServiceDetailVO;
+import com.ahut.vo.ServiceItemVO;
+import com.ahut.vo.ServiceVO;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
@@ -159,7 +159,7 @@ public class ServiceServiceImpl implements ServiceService {
         }
 
         // 3. 构建 Service 实体对象 (使用 Builder 模式)
-        com.***REMOVED***.entity.Service service = com.***REMOVED***.entity.Service.builder()
+        com.ahut.entity.Service service = com.ahut.entity.Service.builder()
                 .categoryId(serviceDTO.getCategoryId())
                 .truckTypeId(serviceDTO.getTruckTypeId())
                 .serviceName(serviceDTO.getServiceName())
@@ -188,7 +188,7 @@ public class ServiceServiceImpl implements ServiceService {
     @Transactional
     public void update(ServiceDTO serviceDTO) {
         // 1. 获取原始服务项信息
-        com.***REMOVED***.entity.Service originalService = serviceMapper.getById(serviceDTO.getId());
+        com.ahut.entity.Service originalService = serviceMapper.getById(serviceDTO.getId());
         if (originalService == null) {
             log.warn("修改服务项失败：服务项不存在，ID: {}", serviceDTO.getId());
             throw new BusinessException(MessageConstant.SERVICE_NOT_FOUND);
@@ -264,7 +264,7 @@ public class ServiceServiceImpl implements ServiceService {
     @Transactional
     public void deleteById(Long id) {
         // 1. 校验服务项是否存在
-        com.***REMOVED***.entity.Service service = serviceMapper.getById(id);
+        com.ahut.entity.Service service = serviceMapper.getById(id);
         if (service == null) {
             log.warn("删除服务项失败：服务项不存在，ID: {}", id);
             throw new BusinessException(MessageConstant.SERVICE_NOT_FOUND);
@@ -306,7 +306,7 @@ public class ServiceServiceImpl implements ServiceService {
         }
 
         // 2. 获取原始服务项信息
-        com.***REMOVED***.entity.Service originalService = serviceMapper.getById(id);
+        com.ahut.entity.Service originalService = serviceMapper.getById(id);
         if (originalService == null) {
             log.warn("修改服务项状态失败：服务项不存在，ID: {}", id);
             throw new BusinessException(MessageConstant.SERVICE_NOT_FOUND);
@@ -367,7 +367,7 @@ public class ServiceServiceImpl implements ServiceService {
         // 此时可能存在之前的未完成订单，系统允许这些订单继续完成流程。
 
         // 4. 调用 Mapper 更新状态
-        com.***REMOVED***.entity.Service service = com.***REMOVED***.entity.Service.builder()
+        com.ahut.entity.Service service = com.ahut.entity.Service.builder()
                 .id(id)
                 .status(status)
                 .updateUser(BaseContext.getCurrentId())

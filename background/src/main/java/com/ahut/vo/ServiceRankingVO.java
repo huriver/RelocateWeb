@@ -1,4 +1,4 @@
-package com.***REMOVED***.vo; // 请替换为实际包名
+package com.ahut.vo; // 请替换为实际包名
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,12 +1,12 @@
-package com.***REMOVED***.controller.back;
+package com.ahut.controller.back;
 
-import com.***REMOVED***.dto.ServiceCategoryDTO;
-import com.***REMOVED***.dto.ServiceCategoryPageQueryDTO;
-import com.***REMOVED***.entity.ServiceCategory;
-import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.result.Result;
-import com.***REMOVED***.service.ServiceCategoryService;
-import com.***REMOVED***.vo.ServiceCategoryVO;
+import com.ahut.dto.ServiceCategoryDTO;
+import com.ahut.dto.ServiceCategoryPageQueryDTO;
+import com.ahut.entity.ServiceCategory;
+import com.ahut.result.PageResult;
+import com.ahut.result.Result;
+import com.ahut.service.ServiceCategoryService;
+import com.ahut.vo.ServiceCategoryVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

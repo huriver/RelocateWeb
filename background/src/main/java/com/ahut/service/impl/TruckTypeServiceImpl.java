@@ -1,15 +1,15 @@
-package com.***REMOVED***.service.impl;
+package com.ahut.service.impl;
 
-import com.***REMOVED***.constant.MessageConstant;
-import com.***REMOVED***.context.BaseContext;
-import com.***REMOVED***.dto.TruckTypeDTO;
-import com.***REMOVED***.dto.TruckTypePageQueryDTO;
-import com.***REMOVED***.entity.TruckType;
-import com.***REMOVED***.exception.DeletionNotAllowedException;
-import com.***REMOVED***.mapper.*;
-import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.service.TruckTypeService;
-import com.***REMOVED***.vo.TruckTypeVO;
+import com.ahut.constant.MessageConstant;
+import com.ahut.context.BaseContext;
+import com.ahut.dto.TruckTypeDTO;
+import com.ahut.dto.TruckTypePageQueryDTO;
+import com.ahut.entity.TruckType;
+import com.ahut.exception.DeletionNotAllowedException;
+import com.ahut.mapper.*;
+import com.ahut.result.PageResult;
+import com.ahut.service.TruckTypeService;
+import com.ahut.vo.TruckTypeVO;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.springframework.beans.BeanUtils;

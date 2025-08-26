@@ -1,4 +1,4 @@
-package com.***REMOVED***.constant;
+package com.ahut.constant;
 
 /**
  * 支付方式常量

@@ -1,10 +1,10 @@
-package com.***REMOVED***.service;
+package com.ahut.service;
 
-import com.***REMOVED***.dto.MovingTipsDTO;
-import com.***REMOVED***.dto.MovingTipsPageQueryDTO;
-import com.***REMOVED***.entity.MovingTips;
-import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.vo.MovingTipsVO;
+import com.ahut.dto.MovingTipsDTO;
+import com.ahut.dto.MovingTipsPageQueryDTO;
+import com.ahut.entity.MovingTips;
+import com.ahut.result.PageResult;
+import com.ahut.vo.MovingTipsVO;
 
 public interface MovingTipsService {
     PageResult pageQuery(MovingTipsPageQueryDTO movingTipsPageQueryDTO);

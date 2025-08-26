@@ -1,4 +1,4 @@
-package com.***REMOVED***.exception;
+package com.ahut.exception;
 
 public class DeletionNotAllowedException extends BaseException {
 

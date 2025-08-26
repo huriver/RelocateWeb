@@ -1,8 +1,8 @@
-package com.***REMOVED***.service;
+package com.ahut.service;
 
-import com.***REMOVED***.dto.*;
-import com.***REMOVED***.entity.Mover;
-import com.***REMOVED***.result.PageResult;
+import com.ahut.dto.*;
+import com.ahut.entity.Mover;
+import com.ahut.result.PageResult;
 
 public interface MoverService {
     Mover login(UserLoginDTO userLoginDTO);

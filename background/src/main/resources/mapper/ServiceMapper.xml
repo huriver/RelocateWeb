@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.***REMOVED***.mapper.ServiceMapper">
+<mapper namespace="com.ahut.mapper.ServiceMapper">
 
-    <resultMap id="serviceDetailVOResultMap" type="com.***REMOVED***.vo.ServiceDetailVO">
+    <resultMap id="serviceDetailVOResultMap" type="com.ahut.vo.ServiceDetailVO">
         <id column="s_id" property="id"/>
         <result column="s_category_id" property="categoryId"/>
         <result column="s_truck_type_id" property="truckTypeId"/>
@@ -22,7 +22,7 @@
         <result column="sc_id" property="categoryId"/>
         <result column="sc_name" property="categoryName"/>
         <result column="sc_price_multiplier" property="categoryPriceMultiplier"/>
-        <association property="truckType" javaType="com.***REMOVED***.entity.TruckType">
+        <association property="truckType" javaType="com.ahut.entity.TruckType">
             <id column="tt_id" property="id"/>
             <result column="tt_name" property="typeName"/>
             <result column="tt_capacity" property="capacity"/>
@@ -41,7 +41,7 @@
 
     </resultMap>
 
-    <select id="pageQuery" parameterType="com.***REMOVED***.dto.ServiceQueryDTO" resultType="com.***REMOVED***.vo.ServiceVO">
+    <select id="pageQuery" parameterType="com.ahut.dto.ServiceQueryDTO" resultType="com.ahut.vo.ServiceVO">
         SELECT
         s.id as id,
         s.service_name as serviceName,
@@ -150,7 +150,7 @@
         WHERE s.id = #{id}
     </select>
 
-    <update id="update" parameterType="com.***REMOVED***.entity.Service">
+    <update id="update" parameterType="com.ahut.entity.Service">
         update service
         <set>
             <if test="categoryId != null">category_id = #{categoryId},</if>

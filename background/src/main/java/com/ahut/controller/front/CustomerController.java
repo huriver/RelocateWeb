@@ -1,11 +1,11 @@
-package com.***REMOVED***.controller.front;
+package com.ahut.controller.front;
 
-import com.***REMOVED***.context.BaseContext;
-import com.***REMOVED***.dto.ChangePasswordDTO;
-import com.***REMOVED***.dto.CustomerDTO;
-import com.***REMOVED***.entity.Customer;
-import com.***REMOVED***.result.Result;
-import com.***REMOVED***.service.CustomerService;
+import com.ahut.context.BaseContext;
+import com.ahut.dto.ChangePasswordDTO;
+import com.ahut.dto.CustomerDTO;
+import com.ahut.entity.Customer;
+import com.ahut.result.Result;
+import com.ahut.service.CustomerService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

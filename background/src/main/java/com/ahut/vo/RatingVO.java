@@ -1,4 +1,4 @@
-package com.***REMOVED***.vo; // 使用您提供的包名
+package com.ahut.vo; // 使用您提供的包名
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

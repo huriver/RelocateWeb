@@ -1,9 +1,9 @@
-package com.***REMOVED***.aspect;
+package com.ahut.aspect;
 
 
-import com.***REMOVED***.annotation.AutoFill;
-import com.***REMOVED***.constant.AutoFillConstant;
-import com.***REMOVED***.enumeration.OperationType;
+import com.ahut.annotation.AutoFill;
+import com.ahut.constant.AutoFillConstant;
+import com.ahut.enumeration.OperationType;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
@@ -25,7 +25,7 @@ public class AutoFillAspect {
     /**
      * 切入点
      */
-    @Pointcut("execution(* com.***REMOVED***.mapper.*.*(..)) && @annotation(com.***REMOVED***.annotation.AutoFill)")
+    @Pointcut("execution(* com.ahut.mapper.*.*(..)) && @annotation(com.ahut.annotation.AutoFill)")
     public void autoFillPointCut() {
     }
 

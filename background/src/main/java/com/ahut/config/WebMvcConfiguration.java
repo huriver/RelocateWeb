@@ -1,9 +1,9 @@
-package com.***REMOVED***.config;
+package com.ahut.config;
 
 
-import com.***REMOVED***.interceptor.JwtTokenBackInterceptor;
-import com.***REMOVED***.interceptor.JwtTokenFrontInterceptor;
-import com.***REMOVED***.json.JacksonObjectMapper;
+import com.ahut.interceptor.JwtTokenBackInterceptor;
+import com.ahut.interceptor.JwtTokenFrontInterceptor;
+import com.ahut.json.JacksonObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;

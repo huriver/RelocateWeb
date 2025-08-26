@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.***REMOVED***.mapper.OrderMapper">
+<mapper namespace="com.ahut.mapper.OrderMapper">
 
     <update id="update" parameterType="MovingOrder">
         update moving_order
@@ -22,7 +22,7 @@
         where id = #{id}
     </update>
 
-    <resultMap id="orderVOResultMap" type="com.***REMOVED***.vo.OrderVO">
+    <resultMap id="orderVOResultMap" type="com.ahut.vo.OrderVO">
         <id column="order_id" property="id"/>
         <result column="customer_id" property="customerId"/>
         <result column="order_number" property="orderNumber"/>
@@ -66,7 +66,7 @@
 
         <result column="vehicle_plate" property="vehiclePlateNumber"/>
 
-        <collection property="moverList" ofType="com.***REMOVED***.vo.MoverVO" column="order_id">
+        <collection property="moverList" ofType="com.ahut.vo.MoverVO" column="order_id">
             <id column="mover_id" property="id"/>
             <result column="mover_name" property="name"/>
             <result column="mover_phone" property="phone"/>
@@ -173,7 +173,7 @@
         where mo.id = #{id}
     </select>
 
-    <select id="pageQueryByAdmin" parameterType="com.***REMOVED***.dto.OrdersPageQueryDTO" resultMap="orderVOResultMap">
+    <select id="pageQueryByAdmin" parameterType="com.ahut.dto.OrdersPageQueryDTO" resultMap="orderVOResultMap">
         SELECT
         mo.id as order_id,
         mo.customer_id,
@@ -253,7 +253,7 @@
         ORDER BY mo.id
     </select>
 
-    <resultMap id="driverAvailableOrderSummaryResultMap" type="com.***REMOVED***.vo.DriverAvailableOrderSummaryVO">
+    <resultMap id="driverAvailableOrderSummaryResultMap" type="com.ahut.vo.DriverAvailableOrderSummaryVO">
         <id column="id" property="orderId"/>
         <result column="order_number" property="orderNumber"/>
 
@@ -326,7 +326,7 @@
 
     </select>
 
-    <resultMap id="driverAvailableOrderDetailResultMap" type="com.***REMOVED***.vo.DriverAvailableOrderDetailVO">
+    <resultMap id="driverAvailableOrderDetailResultMap" type="com.ahut.vo.DriverAvailableOrderDetailVO">
         <id column="id" property="orderId"/>
         <result column="order_number" property="orderNumber"/>
 
@@ -419,7 +419,7 @@
         )
     </select>
 
-    <resultMap id="driverMyOrderSummaryResultMap" type="com.***REMOVED***.vo.DriverMyOrderSummaryVO">
+    <resultMap id="driverMyOrderSummaryResultMap" type="com.ahut.vo.DriverMyOrderSummaryVO">
         <id column="id" property="orderId"/>
         <result column="order_number" property="orderNumber"/>
 
@@ -486,7 +486,7 @@
         ORDER BY mo.reservation_time ASC
     </select>
 
-    <resultMap id="driverMyOrderDetailResultMap" type="com.***REMOVED***.vo.DriverMyOrderDetailVO">
+    <resultMap id="driverMyOrderDetailResultMap" type="com.ahut.vo.DriverMyOrderDetailVO">
         <id column="id" property="orderId"/>
         <result column="order_number" property="orderNumber"/>
 
@@ -525,24 +525,24 @@
 
         <association property="assignedVehicle" resultMap="assignedVehicleResultMap"/>
 
-        <collection property="assignedMovers" ofType="com.***REMOVED***.vo.MoverVO" resultMap="moverResultMap"/>
+        <collection property="assignedMovers" ofType="com.ahut.vo.MoverVO" resultMap="moverResultMap"/>
 
     </resultMap>
 
 
-    <resultMap id="assignedVehicleResultMap" type="com.***REMOVED***.vo.AssignedVehicleVO">
+    <resultMap id="assignedVehicleResultMap" type="com.ahut.vo.AssignedVehicleVO">
         <id column="assignedVehicle_id" property="vehicleId"/>
         <result column="assignedVehicle_license_plate_number" property="licensePlateNumber"/>
         <result column="assignedVehicle_vehicle_brand" property="vehicleBrand"/>
     </resultMap>
 
-    <resultMap id="assignedVehicleResultMap2" type="com.***REMOVED***.vo.AssignedVehicleVO">
+    <resultMap id="assignedVehicleResultMap2" type="com.ahut.vo.AssignedVehicleVO">
         <id column="vehicle_id" property="vehicleId"/>
         <result column="license_plate_number" property="licensePlateNumber"/>
         <result column="vehicle_brand" property="vehicleBrand"/>
     </resultMap>
 
-    <resultMap id="moverResultMap" type="com.***REMOVED***.vo.MoverVO">
+    <resultMap id="moverResultMap" type="com.ahut.vo.MoverVO">
         <id column="assignedMover_id" property="id"/>
         <result column="assignedMover_name" property="name"/>
         <result column="assignedMover_phone" property="phone"/>
@@ -617,7 +617,7 @@
         ORDER BY mo.reservation_time ASC -- 示例排序
     </select>
 
-    <resultMap id="driverHistoricalOrderSummaryVOMap" type="com.***REMOVED***.vo.DriverHistoricalOrderSummaryVO">
+    <resultMap id="driverHistoricalOrderSummaryVOMap" type="com.ahut.vo.DriverHistoricalOrderSummaryVO">
         <id property="orderId" column="id"/>
         <result property="orderNumber" column="order_number"/>
         <result property="orderStatus" column="order_status"/>
@@ -698,7 +698,7 @@
         ORDER BY mo.moving_end_time DESC
     </select>
 
-    <resultMap id="HistoricalOrderDetailVOMap" type="com.***REMOVED***.vo.DriverHistoricalOrderDetailVO">
+    <resultMap id="HistoricalOrderDetailVOMap" type="com.ahut.vo.DriverHistoricalOrderDetailVO">
         <id property="orderId" column="mo_id"/>
         <result property="orderNumber" column="mo_order_number"/>
         <result property="orderStatus" column="mo_order_status"/>
@@ -739,7 +739,7 @@
         <result property="truckTypeDescription" column="tt_description"/>
         <result property="truckTypeBaseFare" column="tt_base_fare"/>
 
-        <association property="assignedVehicle" javaType="com.***REMOVED***.vo.AssignedVehicleVO">
+        <association property="assignedVehicle" javaType="com.ahut.vo.AssignedVehicleVO">
             <result property="vehicleId" column="v_id"/>
             <result property="licensePlateNumber" column="v_license_plate_number"/>
             <result property="vehicleBrand" column="v_vehicle_brand"/>
@@ -806,7 +806,7 @@
           AND mo.driver_id = #{currentDriverId}
     </select>
 
-    <resultMap id="moverAvailableOrderSummaryResultMap" type="com.***REMOVED***.vo.MoverAvailableOrderSummaryVO">
+    <resultMap id="moverAvailableOrderSummaryResultMap" type="com.ahut.vo.MoverAvailableOrderSummaryVO">
         <id column="order_id" property="orderId"/>
         <result column="order_number" property="orderNumber"/>
         <result column="reservation_time" property="reservationTime"/>
@@ -879,7 +879,7 @@
         mo.reservation_time ASC
     </select>
 
-    <resultMap id="moverAvailableOrderDetailResultMap" type="com.***REMOVED***.vo.MoverAvailableOrderDetailVO">
+    <resultMap id="moverAvailableOrderDetailResultMap" type="com.ahut.vo.MoverAvailableOrderDetailVO">
         <id column="order_id" property="orderId"/>
         <result column="order_number" property="orderNumber"/>
         <result column="order_status" property="orderStatus"/>
@@ -919,13 +919,13 @@
         <result column="helper_cost" property="helperCost"/>
         <result column="category_price_multiplier" property="categoryPriceMultiplier"/>
 
-        <association property="assignedVehicle" javaType="com.***REMOVED***.vo.AssignedVehicleVO">
+        <association property="assignedVehicle" javaType="com.ahut.vo.AssignedVehicleVO">
             <id column="vehicle_id" property="vehicleId"/>
             <result column="license_plate_number" property="licensePlateNumber"/>
             <result column="vehicle_brand" property="vehicleBrand"/>
         </association>
 
-        <collection property="assignedMovers" ofType="com.***REMOVED***.vo.MoverVO">
+        <collection property="assignedMovers" ofType="com.ahut.vo.MoverVO">
             <id column="mover_id" property="id"/>
             <result column="mover_name" property="name"/>
             <result column="mover_phone" property="phone"/>
@@ -1010,7 +1010,7 @@
           AND mo.is_paid = 1
     </select>
 
-    <resultMap id="moverMyOrderSummaryResultMap" type="com.***REMOVED***.vo.MoverMyOrderSummaryVO">
+    <resultMap id="moverMyOrderSummaryResultMap" type="com.ahut.vo.MoverMyOrderSummaryVO">
         <id column="order_id" property="orderId"/>
         <result column="order_number" property="orderNumber"/>
         <result column="order_status" property="orderStatus"/>
@@ -1077,7 +1077,7 @@
         ORDER BY mo.reservation_time DESC, mo.create_time DESC
     </select>
 
-    <resultMap id="moverMyOrderDetailResultMap" type="com.***REMOVED***.vo.MoverMyOrderDetailVO">
+    <resultMap id="moverMyOrderDetailResultMap" type="com.ahut.vo.MoverMyOrderDetailVO">
         <id column="order_id" property="orderId"/>
         <result column="order_number" property="orderNumber"/>
         <result column="order_status" property="orderStatus"/>
@@ -1120,13 +1120,13 @@
         <result column="helper_cost" property="helperCost"/>
         <result column="category_price_multiplier" property="categoryPriceMultiplier"/>
 
-        <association property="assignedVehicle" javaType="com.***REMOVED***.vo.AssignedVehicleVO">
+        <association property="assignedVehicle" javaType="com.ahut.vo.AssignedVehicleVO">
             <id column="vehicle_id" property="vehicleId"/>
             <result column="license_plate_number" property="licensePlateNumber"/>
             <result column="vehicle_brand" property="vehicleBrand"/>
         </association>
 
-        <collection property="assignedMovers" ofType="com.***REMOVED***.vo.MoverVO">
+        <collection property="assignedMovers" ofType="com.ahut.vo.MoverVO">
             <id column="mover_id" property="id"/>
             <result column="mover_name" property="name"/>
             <result column="mover_phone" property="phone"/>
@@ -1208,7 +1208,7 @@
         WHERE mo.id = #{orderId}
     </select>
 
-    <resultMap id="moverHistoricalOrderSummaryResultMap" type="com.***REMOVED***.vo.MoverHistoricalOrderSummaryVO">
+    <resultMap id="moverHistoricalOrderSummaryResultMap" type="com.ahut.vo.MoverHistoricalOrderSummaryVO">
         <id column="order_id" property="orderId"/>
         <result column="order_number" property="orderNumber"/>
         <result column="order_status" property="orderStatus"/>
@@ -1307,13 +1307,13 @@
         mo.moving_end_time DESC, mo.create_time DESC
     </select>
 
-    <resultMap id="moverVOResultMap" type="com.***REMOVED***.vo.MoverVO">
+    <resultMap id="moverVOResultMap" type="com.ahut.vo.MoverVO">
         <id column="mover_id_in_list" property="id"/>
         <result column="mover_name_in_list" property="name"/>
         <result column="mover_phone_in_list" property="phone"/>
     </resultMap>
 
-    <resultMap id="ratingVOResultMap" type="com.***REMOVED***.vo.RatingVO">
+    <resultMap id="ratingVOResultMap" type="com.ahut.vo.RatingVO">
         <id column="rating_id" property="ratingId"/>
         <result column="rating_type" property="ratingType"/>
         <result column="rating_type_label" property="ratingTypeLabel"/>
@@ -1323,7 +1323,7 @@
         <result column="rating_time" property="ratingTime"/>
     </resultMap>
 
-    <resultMap id="moverHistoricalOrderDetailResultMap" type="com.***REMOVED***.vo.MoverHistoricalOrderDetailVO">
+    <resultMap id="moverHistoricalOrderDetailResultMap" type="com.ahut.vo.MoverHistoricalOrderDetailVO">
         <id column="order_id" property="orderId"/>
         <result column="order_number" property="orderNumber"/>
         <result column="order_status" property="orderStatus"/>
@@ -1371,9 +1371,9 @@
 
         <association property="assignedVehicle" resultMap="assignedVehicleResultMap2"/>
 
-        <collection property="assignedMovers" ofType="com.***REMOVED***.vo.MoverVO" resultMap="moverVOResultMap"/>
+        <collection property="assignedMovers" ofType="com.ahut.vo.MoverVO" resultMap="moverVOResultMap"/>
 
-        <collection property="ratings" ofType="com.***REMOVED***.vo.RatingVO" resultMap="ratingVOResultMap"/>
+        <collection property="ratings" ofType="com.ahut.vo.RatingVO" resultMap="ratingVOResultMap"/>
     </resultMap>
 
 

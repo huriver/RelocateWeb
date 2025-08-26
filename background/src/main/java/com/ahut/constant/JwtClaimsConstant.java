@@ -1,4 +1,4 @@
-package com.***REMOVED***.constant;
+package com.ahut.constant;
 
 public class JwtClaimsConstant {
 

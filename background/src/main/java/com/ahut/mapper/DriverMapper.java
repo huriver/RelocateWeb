@@ -1,10 +1,10 @@
-package com.***REMOVED***.mapper;
+package com.ahut.mapper;
 
-import com.***REMOVED***.annotation.AutoFill;
-import com.***REMOVED***.dto.DriverPageQueryDTO;
-import com.***REMOVED***.entity.Driver;
-import com.***REMOVED***.enumeration.OperationType;
-import com.***REMOVED***.vo.DriverTypeVehicleVO;
+import com.ahut.annotation.AutoFill;
+import com.ahut.dto.DriverPageQueryDTO;
+import com.ahut.entity.Driver;
+import com.ahut.enumeration.OperationType;
+import com.ahut.vo.DriverTypeVehicleVO;
 import com.github.pagehelper.Page;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;

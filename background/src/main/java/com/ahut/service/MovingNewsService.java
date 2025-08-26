@@ -1,10 +1,10 @@
-package com.***REMOVED***.service;
+package com.ahut.service;
 
-import com.***REMOVED***.dto.MovingNewsDTO;
-import com.***REMOVED***.dto.MovingNewsPageQueryDTO;
-import com.***REMOVED***.entity.MovingNews;
-import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.vo.MovingNewsVO;
+import com.ahut.dto.MovingNewsDTO;
+import com.ahut.dto.MovingNewsPageQueryDTO;
+import com.ahut.entity.MovingNews;
+import com.ahut.result.PageResult;
+import com.ahut.vo.MovingNewsVO;
 
 public interface MovingNewsService {
     PageResult pageQuery(MovingNewsPageQueryDTO movingNewsPageQueryDTO);

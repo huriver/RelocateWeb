@@ -1,4 +1,4 @@
-package com.***REMOVED***.dto;
+package com.ahut.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

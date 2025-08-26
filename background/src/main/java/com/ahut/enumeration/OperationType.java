@@ -1,4 +1,4 @@
-package com.***REMOVED***.enumeration;
+package com.ahut.enumeration;
 
 /**
  * 数据库操作类型

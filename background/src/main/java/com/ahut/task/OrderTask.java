@@ -1,9 +1,9 @@
-package com.***REMOVED***.task;
+package com.ahut.task;
 
 
-import com.***REMOVED***.entity.MovingOrder;
-import com.***REMOVED***.mapper.OrderMapper;
-import com.***REMOVED***.service.OrderService;
+import com.ahut.entity.MovingOrder;
+import com.ahut.mapper.OrderMapper;
+import com.ahut.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;

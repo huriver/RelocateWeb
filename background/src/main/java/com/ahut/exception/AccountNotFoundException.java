@@ -1,4 +1,4 @@
-package com.***REMOVED***.exception;
+package com.ahut.exception;
 
 /**
  * 账号不存在异常

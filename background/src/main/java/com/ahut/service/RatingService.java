@@ -1,11 +1,11 @@
-package com.***REMOVED***.service;
+package com.ahut.service;
 
-import com.***REMOVED***.dto.DriverMyRatingPageQueryDTO;
-import com.***REMOVED***.dto.MoverMyRatingPageQueryDTO;
-import com.***REMOVED***.dto.OverallRatingSubmitDTO;
-import com.***REMOVED***.dto.RatingPageQueryDTO;
-import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.vo.*;
+import com.ahut.dto.DriverMyRatingPageQueryDTO;
+import com.ahut.dto.MoverMyRatingPageQueryDTO;
+import com.ahut.dto.OverallRatingSubmitDTO;
+import com.ahut.dto.RatingPageQueryDTO;
+import com.ahut.result.PageResult;
+import com.ahut.vo.*;
 
 import java.util.List;
 

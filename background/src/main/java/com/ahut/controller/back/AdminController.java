@@ -1,13 +1,13 @@
-package com.***REMOVED***.controller.back;
+package com.ahut.controller.back;
 
-import com.***REMOVED***.context.BaseContext;
-import com.***REMOVED***.dto.AdminDTO;
-import com.***REMOVED***.dto.AdminPageQueryDTO;
-import com.***REMOVED***.dto.ChangePasswordDTO;
-import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.result.Result;
-import com.***REMOVED***.service.AdminService;
-import com.***REMOVED***.vo.AdminDetailVO;
+import com.ahut.context.BaseContext;
+import com.ahut.dto.AdminDTO;
+import com.ahut.dto.AdminPageQueryDTO;
+import com.ahut.dto.ChangePasswordDTO;
+import com.ahut.result.PageResult;
+import com.ahut.result.Result;
+import com.ahut.service.AdminService;
+import com.ahut.vo.AdminDetailVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

@@ -1,6 +1,6 @@
-package com.***REMOVED***.vo;
+package com.ahut.vo;
 
-import com.***REMOVED***.entity.MovingOrder;
+import com.ahut.entity.MovingOrder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

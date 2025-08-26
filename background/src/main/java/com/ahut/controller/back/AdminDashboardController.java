@@ -1,9 +1,9 @@
-package com.***REMOVED***.controller.back; // 请替换为实际包名，放在admin子包下更清晰
+package com.ahut.controller.back; // 请替换为实际包名，放在admin子包下更清晰
 
 
-import com.***REMOVED***.result.Result;
-import com.***REMOVED***.service.DashboardService;
-import com.***REMOVED***.vo.*;
+import com.ahut.result.Result;
+import com.ahut.service.DashboardService;
+import com.ahut.vo.*;
 import com.yourcompany.relocateweb.admin.dashboard.vo.DashboardBusinessDataVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;

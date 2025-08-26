@@ -1,12 +1,12 @@
-package com.***REMOVED***.controller.back;
+package com.ahut.controller.back;
 
-import com.***REMOVED***.dto.TruckTypeDTO;
-import com.***REMOVED***.dto.TruckTypePageQueryDTO;
-import com.***REMOVED***.entity.TruckType;
-import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.result.Result;
-import com.***REMOVED***.service.TruckTypeService;
-import com.***REMOVED***.vo.TruckTypeVO;
+import com.ahut.dto.TruckTypeDTO;
+import com.ahut.dto.TruckTypePageQueryDTO;
+import com.ahut.entity.TruckType;
+import com.ahut.result.PageResult;
+import com.ahut.result.Result;
+import com.ahut.service.TruckTypeService;
+import com.ahut.vo.TruckTypeVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

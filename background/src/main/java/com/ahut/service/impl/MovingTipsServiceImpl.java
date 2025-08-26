@@ -1,14 +1,14 @@
-package com.***REMOVED***.service.impl;
+package com.ahut.service.impl;
 
-import com.***REMOVED***.constant.isPublishedConstant;
-import com.***REMOVED***.context.BaseContext;
-import com.***REMOVED***.dto.MovingTipsDTO;
-import com.***REMOVED***.dto.MovingTipsPageQueryDTO;
-import com.***REMOVED***.entity.MovingTips;
-import com.***REMOVED***.mapper.MovingTipsMapper;
-import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.service.MovingTipsService;
-import com.***REMOVED***.vo.MovingTipsVO;
+import com.ahut.constant.isPublishedConstant;
+import com.ahut.context.BaseContext;
+import com.ahut.dto.MovingTipsDTO;
+import com.ahut.dto.MovingTipsPageQueryDTO;
+import com.ahut.entity.MovingTips;
+import com.ahut.mapper.MovingTipsMapper;
+import com.ahut.result.PageResult;
+import com.ahut.service.MovingTipsService;
+import com.ahut.vo.MovingTipsVO;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import org.springframework.beans.BeanUtils;

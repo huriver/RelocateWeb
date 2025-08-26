@@ -1,8 +1,8 @@
-package com.***REMOVED***.mapper; // 请替换为实际包名
+package com.ahut.mapper; // 请替换为实际包名
 
-import com.***REMOVED***.vo.DriverRankingVO;
-import com.***REMOVED***.vo.MoverRankingVO;
-import com.***REMOVED***.vo.ServiceRankingVO;
+import com.ahut.vo.DriverRankingVO;
+import com.ahut.vo.MoverRankingVO;
+import com.ahut.vo.ServiceRankingVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

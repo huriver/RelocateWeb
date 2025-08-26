@@ -1,19 +1,19 @@
-package com.***REMOVED***.service.impl;
+package com.ahut.service.impl;
 
 
-import com.***REMOVED***.constant.*;
-import com.***REMOVED***.context.BaseContext;
-import com.***REMOVED***.dto.*;
-import com.***REMOVED***.entity.*;
-import com.***REMOVED***.exception.*;
-import com.***REMOVED***.mapper.*;
-import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.result.PriceCalculationResult;
-import com.***REMOVED***.service.CustomerService;
-import com.***REMOVED***.service.EmailService;
-import com.***REMOVED***.service.OrderService;
-import com.***REMOVED***.utils.HttpClientUtil;
-import com.***REMOVED***.vo.*;
+import com.ahut.constant.*;
+import com.ahut.context.BaseContext;
+import com.ahut.dto.*;
+import com.ahut.entity.*;
+import com.ahut.exception.*;
+import com.ahut.mapper.*;
+import com.ahut.result.PageResult;
+import com.ahut.result.PriceCalculationResult;
+import com.ahut.service.CustomerService;
+import com.ahut.service.EmailService;
+import com.ahut.service.OrderService;
+import com.ahut.utils.HttpClientUtil;
+import com.ahut.vo.*;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -128,7 +128,7 @@ public class OrderServiceImpl implements OrderService {
         // --- 1. 获取定价所需数据 ---
 
         // 1.1 获取服务项、货车类型和服务分类数据
-        com.***REMOVED***.entity.Service service = serviceMapper.getById(serviceId);
+        com.ahut.entity.Service service = serviceMapper.getById(serviceId);
         if (service == null) {
             throw new ServiceNotFoundException(MessageConstant.SERVICE_ITEM_NOT_EXIST);
         }
@@ -410,7 +410,7 @@ public class OrderServiceImpl implements OrderService {
 
         // 设置服务项ID和关联的货车类型ID
         // 假设 serviceMapper.getById 方法存在
-        com.***REMOVED***.entity.Service service = serviceMapper.getById(orderSubmitDTO.getServiceId());
+        com.ahut.entity.Service service = serviceMapper.getById(orderSubmitDTO.getServiceId());
         order.setTruckTypeId(service.getTruckTypeId()); // 设置关联的货车类型ID
 
         // 设置初始订单状态和支付状态

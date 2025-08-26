@@ -1,4 +1,4 @@
-package com.***REMOVED***.dto;
+package com.ahut.dto;
 
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;

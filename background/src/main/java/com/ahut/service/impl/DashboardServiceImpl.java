@@ -1,10 +1,10 @@
-package com.***REMOVED***.service.impl; // 请替换为实际包名
+package com.ahut.service.impl; // 请替换为实际包名
 
 
-import com.***REMOVED***.exception.BusinessException;
-import com.***REMOVED***.mapper.DashboardMapper;
-import com.***REMOVED***.service.DashboardService;
-import com.***REMOVED***.vo.*;
+import com.ahut.exception.BusinessException;
+import com.ahut.mapper.DashboardMapper;
+import com.ahut.service.DashboardService;
+import com.ahut.vo.*;
 import com.yourcompany.relocateweb.admin.dashboard.vo.DashboardBusinessDataVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

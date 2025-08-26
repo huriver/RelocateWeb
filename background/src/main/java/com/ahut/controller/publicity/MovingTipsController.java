@@ -1,10 +1,10 @@
-package com.***REMOVED***.controller.publicity;
+package com.ahut.controller.publicity;
 
-import com.***REMOVED***.dto.MovingTipsPageQueryDTO;
-import com.***REMOVED***.entity.MovingTips;
-import com.***REMOVED***.result.PageResult;
-import com.***REMOVED***.result.Result;
-import com.***REMOVED***.service.MovingTipsService;
+import com.ahut.dto.MovingTipsPageQueryDTO;
+import com.ahut.entity.MovingTips;
+import com.ahut.result.PageResult;
+import com.ahut.result.Result;
+import com.ahut.service.MovingTipsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

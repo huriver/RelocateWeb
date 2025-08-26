@@ -1,7 +1,7 @@
-package com.***REMOVED***.vo;
+package com.ahut.vo;
 
-import com.***REMOVED***.entity.Service;
-import com.***REMOVED***.entity.TruckType;
+import com.ahut.entity.Service;
+import com.ahut.entity.TruckType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

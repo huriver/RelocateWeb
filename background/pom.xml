@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <groupId>com.***REMOVED***</groupId>
+    <groupId>com.ahut</groupId>
     <artifactId>background</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 

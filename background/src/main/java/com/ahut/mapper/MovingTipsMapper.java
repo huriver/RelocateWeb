@@ -1,10 +1,10 @@
-package com.***REMOVED***.mapper;
+package com.ahut.mapper;
 
-import com.***REMOVED***.annotation.AutoFill;
-import com.***REMOVED***.dto.MovingTipsPageQueryDTO;
-import com.***REMOVED***.entity.MovingTips;
-import com.***REMOVED***.enumeration.OperationType;
-import com.***REMOVED***.vo.MovingTipsVO;
+import com.ahut.annotation.AutoFill;
+import com.ahut.dto.MovingTipsPageQueryDTO;
+import com.ahut.entity.MovingTips;
+import com.ahut.enumeration.OperationType;
+import com.ahut.vo.MovingTipsVO;
 import com.github.pagehelper.Page;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
