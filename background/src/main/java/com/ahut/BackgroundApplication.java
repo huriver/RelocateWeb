@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class BackgroundApplication {
 
     public static void main(String[] args) {
+        // 测试一下
         SpringApplication.run(BackgroundApplication.class, args);
     }
 
