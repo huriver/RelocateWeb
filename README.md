@@ -1,6 +1,10 @@
 # RelocateWeb - 基于 SpringBoot + Vue 的搬家服务管理系统
 
 [![Vue](https://img.shields.io/badge/Vue.js-3-4FC08D?style=for-the-badge&logo=vue.js)](https://vuejs.org/)[![Spring Boot](https://img.shields.io/badge/Spring_Boot-2.7.14-6DB33F?style=for-the-badge&logo=spring)](https://spring.io/projects/spring-boot)[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql)](https://www.mysql.com/)[![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+<div align="center">
+  <strong>😜 如果能给你带来些许帮助，请给项目点点 Star 吧，这对我真的很重要！</strong>
+</div>
+
 
 ## 📖 项目简介
 
