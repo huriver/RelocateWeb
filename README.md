@@ -1,6 +1,6 @@
 # RelocateWeb - 基于 SpringBoot + Vue 的搬家服务管理系统
 
-[![Vue](https://img.shields.io/badge/Vue.js-3-4FC08D?style=for-the-badge&logo=vue.js)](https://vuejs.org/)[![Spring Boot](https://img.shields.io/badge/Spring_Boot-2.7.14-6DB33F?style=for-the-badge&logo=spring)](https://spring.io/projects/spring-boot)[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql)](https://www.mysql.com/)[![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![Vue](https://img.shields.io/badge/Vue.js-3-4FC08D?style=for-the-badge&logo=vue.js)](https://vuejs.org/)[![Spring Boot](https://img.shields.io/badge/Spring_Boot-2.7.14-6DB33F?style=for-the-badge&logo=spring)](https://spring.io/projects/spring-boot)[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql)](https://www.mysql.com/)[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=for-the-badge)](LICENSE)
 <div align="center">
   <strong>😜 如果能给你带来些许帮助，请给项目点点 Star 吧，这对我真的很重要！</strong>
 </div>
@@ -48,7 +48,7 @@
 
 ## 🏛️ 系统架构
 
-本系统采用经典且成熟的前后端分离分层架构。前端项目包含两个独立的应用：**用户端** 和 **管理端**。这种设计确保了系统的高内聚、低耦合，为未来的维护与扩展奠定了良好基础。
+本系统采用经典且成熟的前后端分离分层架构。前端项目包含两个独立的应用：**用户端** 和 **管理端**。这种设计确保了系统的高内-couplage，为未来的维护与扩展奠定了良好基础。
 
 ![系统逻辑架构图](docs/images/system_architecture.png)
 
@@ -199,4 +199,4 @@
 
 ## 📄 License
 
-本项目采用 [MIT License](https://opensource.org/licenses/MIT) 开源。
+本项目采用 [Apache License 2.0](LICENSE) 开源。
